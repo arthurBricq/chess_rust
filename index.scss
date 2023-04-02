@@ -1,0 +1,26 @@
+.title {
+    font-size: 2em;
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    border: 2px dashed #7d7a77;
+}
+
+.attacked {
+    font-size: 2em;
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    border: 2px dashed #7d7a77;
+    background-color: #e59f26b8;
+
+}
+
+.row {
+    display: flex;
+    justify-content: space-equal;
+}
+
+.small {
+    font-size: 2em;
+}
