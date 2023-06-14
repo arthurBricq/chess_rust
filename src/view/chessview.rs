@@ -128,7 +128,7 @@ impl ChessViewModel
     pub fn play_with_engine(&mut self) -> bool {
         // Make the engine play
         let mut solver = Engine::new();
-        if let (Some(best_move), _nps) = solver.find_best_move(&self.game, false) {
+        if let (Some(best_move), _nps) = solver.find_best_move(self.game, false) {
             // Save the move
             self.engine_move = Some((best_move.from, best_move.to));
             // Apply the move

@@ -610,9 +610,10 @@ impl ChessGame {
                 }
             }
         }
-        score *= 10;
+        // The bigger this ratio is, the less the engine will favor attacking positions.
+        score *= 15;
 
-        // Castling : we also want to favor the castle, which secures the king 
+        // Castling : we want to favor the castle, which secures the king
         if is_set(self.flags, FLAG_WK_CASTLED) {
             score += 30;
         }
