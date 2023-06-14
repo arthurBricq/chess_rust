@@ -20,7 +20,7 @@ use model::game::*;
 use model::engine::Engine;
 use model::moves::Move;
 
-#[cfg(feature = "fltk")]
+#[cfg(all(feature = "fltk", not(feature = "benchmark")))]
 fn play() {
     use crate::view::gtk_view::*;
     // Hierarchy problem:
@@ -30,7 +30,7 @@ fn play() {
     view.run_app();
 }
 
-#[cfg(not(feature = "fltk"))]
+#[cfg(all(not(feature = "fltk"), not(feature = "benchmark")))]
 fn play() {
     use view::terminal_display::TerminalChessViewModelModel;
 
@@ -44,6 +44,11 @@ fn play() {
 
     let mut view = TerminalChessViewModelModel::new(&mut game);
     view.display();
+}
+
+#[cfg(feature = "benchmark")]
+fn play() {
+    benchmark();
 }
 
 /// This function runs a benchmarking of the chess game
@@ -71,6 +76,5 @@ fn benchmark() {
 }
 
 fn main() {
-    // play();
-    benchmark()
+    play();
 }
