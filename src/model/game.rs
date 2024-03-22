@@ -437,7 +437,6 @@ impl ChessGame {
                     clear_at!(self.kings, m.from);
                     set_at!(self.kings, m.to);
 
-
                     // Flags update : king moved
                     // TODO OPT: check if setting the flag only at the first is worth it 
                     if is_white {
@@ -521,15 +520,13 @@ impl ChessGame {
 // Functions for the solver
 
 impl ChessGame {
-    fn fill_moves(&self, to_fill: &mut Vec<Move>, starting_from: &[i8], motions: &[i8]) {
-        for pos in starting_from {
-            for motion in motions {
-                let des: i8 = pos + motion;
-                if des >= 0 && des < 64 {
-                    let mut m = Move::new(*pos, des);
-                    if self.is_move_valid(&mut m) {
-                        to_fill.push(m);
-                    }
+    fn fill_moves(&self, to_fill: &mut Vec<Move>, from: i8, motions: &[i8]) {
+        for motion in motions {
+            let des: i8 = from + motion;
+            if des >= 0 && des < 64 {
+                let mut m = Move::new(from, des);
+                if self.is_move_valid(&mut m) {
+                    to_fill.push(m);
                 }
             }
         }
@@ -538,17 +535,16 @@ impl ChessGame {
     /// Fills the vector of moves with all the valid moves starting from the given position
     pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8) {
         if let Some(t) = self.type_at_index(from) {
-            let positions: [i8; 1] = [from];
             match t {
-                Type::Pawn => self.fill_moves(&mut moves, &positions, &PAWN_MOVES),
-                Type::Bishop => self.fill_moves(&mut moves, &positions, &BISHOP_MOVES),
-                Type::Rook => self.fill_moves(&mut moves, &positions, &ROOK_MOVES),
-                Type::Knight => self.fill_moves(&mut moves, &positions, &KNIGHT_MOVES),
+                Type::Pawn => self.fill_moves(&mut moves, from, &PAWN_MOVES),
+                Type::Bishop => self.fill_moves(&mut moves, from, &BISHOP_MOVES),
+                Type::Rook => self.fill_moves(&mut moves, from, &ROOK_MOVES),
+                Type::Knight => self.fill_moves(&mut moves, from, &KNIGHT_MOVES),
                 Type::King => {
-                    self.fill_moves(&mut moves, &positions, &KING_MOVES);
-                    self.fill_moves(&mut moves, &positions, &KING_SPECIAL_MOVES);
+                    self.fill_moves(&mut moves, from, &KING_MOVES);
+                    self.fill_moves(&mut moves, from, &KING_SPECIAL_MOVES);
                 }
-                Type::Queen => self.fill_moves(&mut moves, &positions, &QUEEN_MOVES),
+                Type::Queen => self.fill_moves(&mut moves, from, &QUEEN_MOVES),
             }
         }
     }
@@ -559,15 +555,12 @@ impl ChessGame {
     pub fn get_available_moves(&self, is_white_playing: bool) -> Vec<Move> {
         let mut moves: Vec<Move> = Vec::new();
 
-        // all pieces 
-        let mut pieces = self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings;
-
-        // saved by color
-        if is_white_playing {
-            pieces &= self.whites;
+        // Get the pieces at the given color
+        let pieces = if is_white_playing {
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & self.whites
         } else {
-            pieces &= !self.whites;
-        }
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & !self.whites
+        };
 
         // fill possibles moves from each of the pieces taken in consideration.
         for i in 0..64 {
@@ -614,6 +607,7 @@ impl ChessGame {
         return score;
     }
 }
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;

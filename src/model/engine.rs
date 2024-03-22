@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use super::super::model::game::*;
 use super::super::model::moves::*;
 use std::time::Instant;
-use fltk::widget_extends;
 
 const ENGINE_DEPTH: i8 = 4;
 const EXTRA_CAPTURE_MOVE: i8 = 4;
@@ -18,7 +17,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: false}
+        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true}
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
