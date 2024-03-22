@@ -4,6 +4,13 @@ mod tests {
     use std::hash::Hash;
     use crate::model::game::{ChessGame, ScoreType};
     use crate::model::moves::Move;
+    #[test]
+    fn test_wrong_knigt_move() {
+
+        let mut game = ChessGame::new();
+
+    }
+
 
     #[test]
     fn test_simple_motions() {
@@ -36,7 +43,6 @@ mod tests {
     #[test]
     fn test_simple_hash_map() {
         let mut map: HashMap<i8, i8> = HashMap::new();
-        map.insert(1, 11);
         map.insert(1, 12);
         assert_eq!(map.contains_key(&1), true);
         assert_eq!(map.contains_key(&2), false);

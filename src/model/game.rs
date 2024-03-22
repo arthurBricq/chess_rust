@@ -236,8 +236,6 @@ impl ChessGame {
 
     /// Returns true if the destination is in bound
     fn is_in_bound(&self, m: &Move, t: &Type) -> bool {
-        /* This is the alternative method that we could use
-        */
         let motion = m.to - m.from;
         let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
 
@@ -286,9 +284,6 @@ impl ChessGame {
                 return is_rook_valid(&motion, &m);
             }
             Type::Queen => {
-                // return false; 
-                // return is_rook_valid(&motion, &m); 
-                // return is_bishop_valid(&motion, &x1, &y1, &x2, &y2); 
                 return is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || is_rook_valid(&motion, &m);
             }
             Type::Knight => {
@@ -297,19 +292,19 @@ impl ChessGame {
                     15 | 6 => return x2 < x1 && y2 > y1,
                     -10 | -17 => return x2 < x1 && y2 < y1,
                     -15 | -6 => return x2 > x1 && y2 < y1,
-                    _ => {}
+                    _ => return false
                 }
             }
             Type::King => {
                 match motion {
                     7 | 8 | 9 => if !(y2 > y1) { return false; },
                     -7 | -8 | -9 => if !(y2 < y1) { return false; },
-                    _ => {}
+                    _ => return false
                 }
                 match motion {
                     -7 | 9 | 1 => if !(x2 > x1) { return false; },
                     7 | -9 | -1 => if !(x2 < x1) { return false; },
-                    _ => {}
+                    _ => return false
                 }
                 return true;
             }
@@ -635,5 +630,19 @@ impl ChessGame {
         println!("whites: {} -> {:?}", self.whites, find_ones(self.whites));
         println!("pawns: {} -> {:?}", self.pawns, find_ones(self.pawns));
         println!("rooks: {} -> {:?}", self.rooks, find_ones(self.rooks));
+    }
+}
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::hash::Hash;
+    use crate::model::game::{ChessGame, ScoreType};
+    use crate::model::moves::Move;
+
+    #[test]
+    fn test_wrong_knigt_move() {
+        let game = ChessGame::new();
+        let mut invalid_move = Move::new(6, 31);
+        assert!(!game.is_move_valid(&mut invalid_move))
     }
 }

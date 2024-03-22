@@ -150,23 +150,17 @@ impl ChessViewModel
             }
 
             Msg::SquareTapped(pos) => {
-                if self.selected_pos == None {
-                    self.selected_pos = Some(*pos);
-                } else {
+                if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;
-
-                    let success = self.game.apply_move_safe(
-                        Move::new(self.selected_pos.unwrap(), *pos)
-                    );
-
-                    if success {
-                        // reset the selected position
+                    if self.game.apply_move_safe(Move::new(self.selected_pos.unwrap(), *pos)) {
                         self.selected_pos = None;
-
                         self.play_with_engine();
                     } else {
                         self.selected_pos = Some(*pos);
                     }
+                } else {
+                    println!("Invalid move");
+                    self.selected_pos = Some(*pos)
                 }
 
                 return true;

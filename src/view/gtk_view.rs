@@ -99,13 +99,6 @@ impl GTKView {
                 // Call the chessview to run the logic
                 self.chessview.message_received(&msg);
 
-                match msg {
-                    Msg::SquareTapped(pos) => {
-                        println!("Button tapped: {pos}");
-                    }
-                    _ => {}
-                }
-
                 for i in 0..8 {
                     for j in 0..8 {
                         self.draw_button_at(i as i8, 7 - j as i8, &mut buttons[i][j]);

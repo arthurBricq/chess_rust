@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use super::super::model::game::*;
 use super::super::model::moves::*;
 use std::time::Instant;
+use fltk::widget_extends;
 
 const ENGINE_DEPTH: i8 = 4;
 const EXTRA_CAPTURE_MOVE: i8 = 4;
@@ -11,12 +12,13 @@ type SearchResult = (ScoreType, Option<Move>);
 
 pub struct Engine {
     iter: u64,
-    transposition_table: HashMap<ChessGame, ScoreType>
+    transposition_table: HashMap<ChessGame, ScoreType>,
+    use_transposition: bool
 }
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new()}
+        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: false}
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
@@ -26,15 +28,16 @@ impl Engine {
         self.transposition_table.clear();
         let start = Instant::now();
         let result = self.tree_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
-        let end = start.elapsed().as_millis();
-        let nps = (self.iter as u128) / end;
-        println!("Solver finished after evaluating {} positions", self.iter);
-        println!("Transposition table contains {} positions", self.transposition_table.keys().len());
-        return (result.1, nps);
+        let end = start.elapsed().as_millis() as f64 / 1000.;
+        let nps = (self.iter as f64) / end;
+        println!("\n\nSolver finished after evaluating {} positions", self.iter);
+        println!("    nps = {nps} [moves/second]");
+        println!("    transposition table contains {} positions", self.transposition_table.keys().len());
+        return (result.1, nps as u128);
     }
 
     fn tree_search(&mut self,
-                   mut game: ChessGame,
+                   game: ChessGame,
                    white_to_play: bool,
                    depth: i8,
                    mut alpha: ScoreType,
@@ -45,11 +48,13 @@ impl Engine {
             if (last_move_captured && depth == ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) || (!last_move_captured) {
                 self.iter += 1;
                 // Compute score only if it was not computed before
-                if self.transposition_table.contains_key(&game) {
+                if self.use_transposition && self.transposition_table.contains_key(&game) {
                     return (*self.transposition_table.get(&game).unwrap(), None)
                 } else {
                     let s = game.score();
-                    self.transposition_table.insert(game, s);
+                    if self.use_transposition {
+                        self.transposition_table.insert(game, s);
+                    }
                     return (s, None);
                 }
             }
@@ -110,21 +115,14 @@ impl Engine {
                     beta = result.0;
                 }
             }
-
-            // Debug print
-            // let indent = 3*depth as usize; 
-            // println!("{:indent$}{}", "", format!("[{}], move {}, score={}, current_score={current_score}", white_to_play, moves[i], result.0), indent=indent);
         }
 
         // Once we reach this point, we know which is the best move. We return the score.
 
-        // let indent = 3*depth as usize; 
-        // println!("{:indent$}{}", "", format!("returning score-->{current_score}"), indent=indent);
-
-        if depth == 0 {
-            return (current_score, Some(moves[best_move]));
+        return if depth == 0 {
+            (current_score, Some(moves[best_move]))
         } else {
-            return (current_score, None);
+            (current_score, None)
         }
     }
 }
