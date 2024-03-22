@@ -190,6 +190,11 @@ impl ChessGame {
         is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
     }
 
+    /// Returns true if one of the two kind is dead
+    pub fn is_finished(&self) -> bool {
+        self.kings.count_ones() != 2
+    }
+
     pub fn apply_capture(&mut self, m: &Move) {
         // We can simply clear the position for all integers
         // TODO: evaluate if this approach is not more time consuming than checking all the different integers 
@@ -583,7 +588,7 @@ impl ChessGame {
         }
 
         // The bigger this ratio is, the less the engine will favor attacking positions.
-        score *= 50;
+        score *= 100;
 
         // Castling : we want to favor the castle, which secures the king
         if is_set!(self.flags, FLAG_WK_CASTLED) {
@@ -620,9 +625,9 @@ impl ChessGame {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
     use std::hash::Hash;
-    use crate::model::game::{ChessGame, ScoreType};
+
+    use crate::model::game::ChessGame;
     use crate::model::moves::Move;
 
     #[test]

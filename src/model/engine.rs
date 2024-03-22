@@ -42,23 +42,24 @@ impl Engine {
                    mut beta: ScoreType,
                    last_move_captured: bool,
     ) -> SearchResult {
-        if depth >= ENGINE_DEPTH {
-            if (last_move_captured && depth == ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) || (!last_move_captured) {
-                self.iter += 1;
-                // Compute score only if it was not computed before
-                if self.use_transposition && self.transposition_table.contains_key(&game) {
-                    return (*self.transposition_table.get(&game).unwrap(), None)
-                } else {
-                    let s = game.score();
-                    if self.use_transposition {
-                        self.transposition_table.insert(game, s);
-                    }
-                    return (s, None);
+
+        if (!last_move_captured && depth >= ENGINE_DEPTH) ||
+            (last_move_captured && depth >= ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) ||
+            (game.is_finished())
+        {
+            self.iter += 1;
+            // Compute score only if it was not computed before
+            if self.use_transposition && self.transposition_table.contains_key(&game) {
+                return (*self.transposition_table.get(&game).unwrap(), None)
+            } else {
+                let s = game.score();
+                if self.use_transposition {
+                    self.transposition_table.insert(game, s);
                 }
+                return (s, None);
             }
         }
 
-        // GOAL 
         let mut current_score = if white_to_play {
             ScoreType::MIN
         } else {

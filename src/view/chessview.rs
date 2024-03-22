@@ -156,10 +156,7 @@ impl ChessViewModel
                     if self.game.apply_move_safe(Move::new(previous_pos, *pos)) {
                         self.selected_pos = None;
 
-                        self.game.print_game_integers();
                         self.play_with_engine();
-                        self.game.print_game_integers();
-
                     } else {
                         self.selected_pos = Some(*pos);
                     }
