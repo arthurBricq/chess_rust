@@ -12,7 +12,7 @@ pub struct GTKView {
     chessview: ChessViewModel,
 }
 
-const BUTTON_WIDTH: i32 = 80;
+const BUTTON_WIDTH: i32 = 50;
 const TOP: i32 = 10;
 const LEFT: i32 = 10;
 
@@ -24,11 +24,11 @@ impl GTKView {
     }
 
     fn draw_button_at(&self, i: i8, j: i8, button: &mut Button) {
-        // For wome weird reaons, the buttons don't behve properly without a label.
+        // For some weird reasons, the buttons don't behave properly without a label.
         button.set_label("");
         button.set_label_size(0);
 
-        if let Some(name) = self.chessview.get_image_name_at(i as i8, j as i8) {
+        if let Some(name) = self.chessview.get_image_name_at(i, j) {
             let path = format!("src/images/{name}");
             let img = SvgImage::load(path).unwrap();
             button.set_image(Some(img));
@@ -43,8 +43,8 @@ impl GTKView {
         match (self.chessview.get_square_type(i as i8, j as i8), index % 2) {
             (SquareType::Attacked, _) => button.set_color(Color::from_hex(0xFF9933)),
             (SquareType::LastEngineMove, _) => button.set_color(Color::from_hex(0xf5f58c)),
-            (SquareType::Idle, 0) => button.set_color(Color::from_hex(0xeeeed2)),
-            (SquareType::Idle, 1) => button.set_color(Color::from_hex(0xbaca44)),
+            (SquareType::Idle, 1) => button.set_color(Color::from_hex(0xeeeed2)),
+            (SquareType::Idle, 0) => button.set_color(Color::from_hex(0xbaca44)),
             _ => { println!("Weird for index {index}, i={i}, j={j}") }
         }
 

@@ -1,15 +1,23 @@
 # ♔ Chess Engine in Rust ♚
 
-This repo contains the code of a **chess engine** fully written in Rust, from scratch. This was a personal project to learn Rust, since the final result is quite satisfying, I decided to publish it.
+This repo contains the code of a **chess engine** fully written in Rust, from scratch. 
 
-My chess engine features
-- Tree-search for the best move
-- Alpha Beta pruning to do it faster
-- Extra depth for captures move
+This is one of my many personal projects in Rust. And it is my second chess engine (*I had done the first in [C++](https://github.com/arthurBricq/chess_cpp)*)
+
+![](screenshot.png)
+
+The engine features :
+
+- Tree-search for the best move (min-max algorithm). The resulting computing speed is about 500'000 moves / second.
+  - Alpha Beta pruning to do it faster
+  - Transposition table to avoid double computation
+  - Extra depth for captures move
 - Evaluation function that favors attacking positions
-- light-weight chess representation 
+- An extremely light-weight chess representation
+- UI to play locally on your computer
 
-The whole idea behind this chess engine is that the representation of a chess game is very small: it's **only** 7 integers.
+
+The whole idea behind this chess engine is that the representation of a chess game is very small: it's **only** 7 integers !
 
 ```rust
 pub struct ChessGame {
@@ -29,14 +37,16 @@ This was a design decision, that has benefits and drawbacks.
 - Benefits: It's super quick to copy a game, therefore the solver can just create massive amounts of games instead of 
   having to work with a single game.
 
-## Quick Start 
-
 This code contains the following part:
 - The **representation of a chess game** (position of pieces, rules to determine if moves are valid), under `model/game.rs` and `model/moves.rs`. This part is really the most difficult part.
 - The **chess engine**. Basically, it's a recursive function that explores the **tree of possible moves** until a given depth. The tree-serach algorithm is a **min-max** search with **alpha-beta prunning**. The engine is located under `model/engine.rs`
-- To play with this engine, I have developed a **UI** very easy to deploy with FTLK.rs. There is also a WebApp (because i wanted to try `yew.rs`) in the eventual possibility to host this engine on my website... 
+- To play with this engine, I have developed a **UI** very easy to deploy with FTLK.rs. There is also a WebApp (because i wanted to try `yew.rs`) in the eventual possibility to host this engine on my website...
+
+## Quick Start
 
 The only required dependency is Rust with cargo.
+
+Feel free to try it out and let me know !
 
 ```bash
 git clone <...>
@@ -55,16 +65,10 @@ Programming a chess engine is a brilliant exercise for an accomplished developer
 ## [Dev] TODO List for myself
 
 List of missing features
-- rules
-    - [ ] En Passant, using a stateful representation
-    - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
-    - [ ] Non-queen promotions
-- solver and optimisation
-    - [ ] Move ordering: consider the better moves first
-    - [ ] Hash each evaluated position to avoid recomputing score of a position that already existed
-- view
-    - [ ] Better ViewModel <--> View architecture
-    - [ ] Improve the terminal view (to be able to run on Linux without X server)
+
+  - [ ] En Passant, using a stateful representation
+  - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
+  - [ ] Non-queen promotions
 
 ### How to optimise the score function ? 
 
@@ -77,12 +81,5 @@ List of missing features
 ## Benchmarking result
 
 The command `cargo run` without any features will run the benchmarking test.
-
-## Transposition table
-
-Idea = hash all the positions with their evaluated score, keep them into a hash map
-
-Better idea = instead of keeping only 1 hash
-
 
 

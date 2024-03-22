@@ -4,10 +4,13 @@ use super::super::model::moves::*;
 use std::time::Instant;
 use crate::model::engine::MoveOrderState::{AcceptsOnlyCapture, Finished, AcceptsAllMove};
 
+const ENGINE_DEPTH: i8 = 6;
+const EXTRA_CAPTURE_MOVE: i8 = 4;
+
 enum MoveOrderState {
     AcceptsOnlyCapture,
     AcceptsAllMove,
-    Finished
+    Finished,
 }
 
 impl MoveOrderState {
@@ -29,20 +32,18 @@ impl MoveOrderState {
     }
 }
 
-const ENGINE_DEPTH: i8 = 6;
-const EXTRA_CAPTURE_MOVE: i8 = 4;
 
 type SearchResult = (ScoreType, Option<Move>);
 
 pub struct Engine {
     iter: u64,
     transposition_table: HashMap<ChessGame, ScoreType>,
-    use_transposition: bool
+    use_transposition: bool,
 }
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true}
+        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
@@ -55,6 +56,7 @@ impl Engine {
         let end = start.elapsed().as_millis() as f64 / 1000.;
         let nps = (self.iter as f64) / end;
         println!("\n\nSolver finished after evaluating {} positions", self.iter);
+        println!("    time = {end} [second]");
         println!("    nps = {nps} [moves/second]");
         println!("    transposition table contains {} positions", self.transposition_table.keys().len());
         return (result.1, nps as u128);
@@ -78,7 +80,6 @@ impl Engine {
                    mut beta: ScoreType,
                    last_move_captured: bool,
     ) -> SearchResult {
-
         if (!last_move_captured && depth >= ENGINE_DEPTH) ||
             (last_move_captured && depth >= ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) ||
             (game.is_finished())
@@ -86,7 +87,7 @@ impl Engine {
             self.iter += 1;
             // Compute score only if it was not computed before
             if self.use_transposition && self.transposition_table.contains_key(&game) {
-                return (*self.transposition_table.get(&game).unwrap(), None)
+                return (*self.transposition_table.get(&game).unwrap(), None);
             } else {
                 let s = game.score();
                 if self.use_transposition {
@@ -123,13 +124,20 @@ impl Engine {
                 let mut new_game = game.clone();
                 new_game.apply_move_unsafe(&moves[move_index]);
 
+                // check the transposition table
+                // If this position was already evaluated, then don't start a new recursion
+                let result = if self.use_transposition && self.transposition_table.contains_key(&new_game) {
+                    (*self.transposition_table.get(&new_game).unwrap(), None)
+                } else {
+                    self.tree_search(new_game,
+                                     !white_to_play,
+                                     depth + 1,
+                                     alpha,
+                                     beta,
+                                     moves[move_index].is_capture())
+                };
+
                 // call the recursion
-                let result = self.tree_search(new_game,
-                                              !white_to_play,
-                                              depth + 1,
-                                              alpha,
-                                              beta,
-                                              moves[move_index].is_capture());
 
                 // Alpha beta prunning
                 if white_to_play {
@@ -157,11 +165,10 @@ impl Engine {
                         beta = result.0;
                     }
                 }
-
             }
 
             if visited_moves.len() == moves.len() {
-                break
+                break;
             }
 
             // When the move index reaches the end of the list of moves, apply the following
@@ -174,7 +181,6 @@ impl Engine {
                     Finished => break
                 }
             }
-
         }
 
         // Once we reach this point, we have explored all the possible moves of this branch
@@ -184,7 +190,6 @@ impl Engine {
             (current_score, Some(moves[best_move]))
         } else {
             (current_score, None)
-        }
+        };
     }
-
 }
