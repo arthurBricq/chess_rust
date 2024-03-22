@@ -368,14 +368,13 @@ impl ChessGame {
         // Check that there is a piece to move at the destination
         if let Some(t) = self.type_at_index(m.from) {
             let is_white = is_set!(self.whites, m.from);
-            // If it's a pawn move, check that it is a valid one
-            if t == Type::Pawn && !self.is_pawn_move_valid(&m, is_white) {
-                return false;
-            }
 
-            // If it's a king move, check that it is a valid one
-            if t == Type::King && !self.is_king_move_valid(&m, is_white) {
-                return false;
+            if match t {
+                Type::Pawn => !self.is_pawn_move_valid(&m, is_white),
+                Type::King => !self.is_king_move_valid(&m, is_white),
+                _ => false
+            } {
+                return false
             }
 
             // Check that the destination is valid and that the moves remains within the chess board
