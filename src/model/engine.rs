@@ -23,6 +23,7 @@ impl Engine {
     /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
     pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (Option<Move>, u128) {
         self.iter = 0;
+        self.transposition_table.clear();
         let start = Instant::now();
         let result = self.tree_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
         let end = start.elapsed().as_millis();

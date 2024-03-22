@@ -77,5 +77,11 @@ List of missing features
 
 The command `cargo run` without any features will run the benchmarking test.
 
+## Transposition table
+
+Idea = hash all the positions with their evaluated score, keep them into a hash map
+
+Better idea = instead of keeping only 1 hash
+
 
 

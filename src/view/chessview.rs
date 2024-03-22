@@ -16,6 +16,7 @@ pub enum SquareType {
 
 pub struct ChessViewModel {
     game: ChessGame,
+    solver: Engine,
     selected_pos: Option<i8>,
     engine_move: Option<(i8, i8)>,
 }
@@ -32,6 +33,7 @@ impl ChessViewModel
     pub fn new() -> Self {
         Self {
             game: ChessGame::new(),
+            solver: Engine::new(),
             selected_pos: None,
             engine_move: None,
         }
@@ -127,8 +129,7 @@ impl ChessViewModel
 
     pub fn play_with_engine(&mut self) -> bool {
         // Make the engine play
-        let mut solver = Engine::new();
-        if let (Some(best_move), _nps) = solver.find_best_move(self.game, false) {
+        if let (Some(best_move), _nps) = self.solver.find_best_move(self.game, false) {
             // Save the move
             self.engine_move = Some((best_move.from, best_move.to));
             // Apply the move
