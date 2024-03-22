@@ -95,8 +95,8 @@ impl ChessViewModel
     pub fn is_attacked_at(&self, i: i8, j: i8) -> bool {
         if let Some(pos) = self.selected_pos {
             let mut moves: Vec<Move> = Vec::new();
-            let attacked = self.game.fill_possible_moves_from(&mut moves, pos);
-
+            self.game.fill_possible_moves_from(&mut moves, pos);
+            let attacked: Vec<i8> = moves.iter().map(|m| m.to).collect();
             let to_check = pos_to_index(i, j);
             if attacked.contains(&to_check) {
                 return true;

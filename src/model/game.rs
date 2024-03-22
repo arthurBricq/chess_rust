@@ -487,20 +487,6 @@ impl ChessGame {
         return false;
     }
 
-    fn _match_template(&self) {
-        let at: i8 = 5;
-        if let Some(t) = self.type_at_index(at) {
-            match t {
-                Type::Pawn => {}
-                Type::Bishop => {}
-                Type::Knight => {}
-                Type::Rook => {}
-                Type::Queen => {}
-                Type::King => {}
-            }
-        }
-    }
-
     pub fn new_test1() -> Self {
         let mut whites = 0;
         let mut pawns = 0;
@@ -549,7 +535,7 @@ impl ChessGame {
         }
     }
 
-    pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8) -> Vec<i8> {
+    pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8) {
         if let Some(t) = self.type_at_index(from) {
             let positions: [i8; 1] = [from];
             match t {
@@ -564,9 +550,6 @@ impl ChessGame {
                 Type::Queen => self.fill_moves(&mut moves, &positions, &QUEEN_MOVES),
             }
         }
-
-        let attacked = moves.iter().map(|m| m.to).collect();
-        return attacked;
     }
 
 
