@@ -535,6 +535,7 @@ impl ChessGame {
         }
     }
 
+    /// Fills the vector of moves with all the valid moves starting from the given position
     pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8) {
         if let Some(t) = self.type_at_index(from) {
             let positions: [i8; 1] = [from];
@@ -552,11 +553,10 @@ impl ChessGame {
         }
     }
 
-
     /**
      * Returns the list of possible moves for the requested player.
      */
-    pub fn get_avalaible_moves(&self, is_white_playing: bool) -> Vec<Move> {
+    pub fn get_available_moves(&self, is_white_playing: bool) -> Vec<Move> {
         let mut moves: Vec<Move> = Vec::new();
 
         // all pieces 
@@ -608,8 +608,8 @@ impl ChessGame {
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
 
         // Number of attacked squares: this is added to favor an attacking position
-        score += self.get_avalaible_moves(true).len() as ScoreType;
-        score -= self.get_avalaible_moves(false).len() as ScoreType;
+        score += self.get_available_moves(true).len() as ScoreType;
+        score -= self.get_available_moves(false).len() as ScoreType;
 
         return score;
     }

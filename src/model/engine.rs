@@ -72,7 +72,7 @@ impl Engine {
 
         // get the list of available moves
         // this is the only time that the function is called
-        let moves = game.get_avalaible_moves(white_to_play);
+        let moves = game.get_available_moves(white_to_play);
 
         // for each available move that is also valid, apply this move and run the search to the next depth
         for i in 0..moves.len() {
