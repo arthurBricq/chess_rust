@@ -1,4 +1,3 @@
-use std::cmp;
 use std::collections::HashMap;
 use super::super::model::game::*;
 use super::super::model::moves::*;

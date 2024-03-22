@@ -275,26 +275,26 @@ impl ChessGame {
             }
         }
 
-        match t {
+        return match t {
             Type::Pawn => {
-                return (x2 - x1).abs() <= 1;
+                (x2 - x1).abs() <= 1
             }
             Type::Bishop => {
-                return is_bishop_valid(&motion, &x1, &y1, &x2, &y2);
+                is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
             }
             Type::Rook => {
-                return is_rook_valid(&motion, &m);
+                is_rook_valid(&motion, &m)
             }
             Type::Queen => {
-                return is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || is_rook_valid(&motion, &m);
+                is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || is_rook_valid(&motion, &m)
             }
             Type::Knight => {
                 match motion {
-                    17 | 10 => return x2 > x1 && y2 > y1,
-                    15 | 6 => return x2 < x1 && y2 > y1,
-                    -10 | -17 => return x2 < x1 && y2 < y1,
-                    -15 | -6 => return x2 > x1 && y2 < y1,
-                    _ => return false
+                    17 | 10 => x2 > x1 && y2 > y1,
+                    15 | 6 => x2 < x1 && y2 > y1,
+                    -10 | -17 => x2 < x1 && y2 < y1,
+                    -15 | -6 => x2 > x1 && y2 < y1,
+                    _ => false
                 }
             }
             Type::King => {
@@ -308,11 +308,9 @@ impl ChessGame {
                     7 | -9 | -1 => if !(x2 < x1) { return false; },
                     _ => return false
                 }
-                return true;
+                true
             }
         }
-
-        return true;
     }
 
     fn is_pawn_move_valid(&self, m: &Move, is_white: bool) -> bool {
@@ -553,7 +551,7 @@ impl ChessGame {
      * Returns the list of possible moves for the requested player.
      */
     pub fn get_available_moves(&self, is_white_playing: bool) -> Vec<Move> {
-        let mut moves: Vec<Move> = Vec::new();
+        let mut moves: Vec<Move> = Vec::with_capacity(32);
 
         // Get the pieces at the given color
         let pieces = if is_white_playing {
