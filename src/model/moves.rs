@@ -70,7 +70,7 @@ impl Move {
         Self {from, to, quality: MoveQuality::Motion}
     }
 
-    pub fn increase_qualiy(&mut self) {
+    pub fn set_as_capture(&mut self) {
         self.quality = MoveQuality::Capture;
     }
 

@@ -222,16 +222,10 @@ impl ChessGame {
     }
 
     /// Returns true if the final square does not have the same color as the origin color
-    fn valid_destination(&self, m: &mut Move) -> bool {
+    fn valid_destination(&self, m: &Move) -> bool {
         // In the case where there is a piece at the last position, check that it has a different color
         if self.has_piece_at(m.to) {
-            let to_is_white = is_set!(self.whites, m.to);
-            let from_is_white = is_set!(self.whites, m.from);
-            if to_is_white == from_is_white {
-                return false;
-            } else {
-                m.increase_qualiy();
-            }
+            return is_set!(self.whites, m.to) != is_set!(self.whites, m.from)
         }
         return true;
     }
@@ -364,7 +358,7 @@ impl ChessGame {
 
     /// Returns true if the move respect the rules of check
     /// This function eventually edits the `quality` property of a move
-    fn is_move_valid(&self, mut m: &mut Move) -> bool {
+    fn is_move_valid(&self, m: &Move) -> bool {
         // Check that there is a piece to move at the destination
         if let Some(t) = self.type_at_index(m.from) {
             let is_white = is_set!(self.whites, m.from);
@@ -378,7 +372,7 @@ impl ChessGame {
             }
 
             // Check that the destination is valid and that the moves remains within the chess board
-            if !self.valid_destination(&mut m) || !self.is_in_bound(&m, &t) {
+            if !self.valid_destination(&m) || !self.is_in_bound(&m, &t) {
                 return false;
             }
 
@@ -475,8 +469,8 @@ impl ChessGame {
         }
     }
 
-    pub fn apply_move_safe(&mut self, mut m: Move) -> bool {
-        if self.is_move_valid(&mut m) {
+    pub fn apply_move_safe(&mut self, m: Move) -> bool {
+        if self.is_move_valid(&m) {
             self.apply_move_unsafe(&m);
             return true;
         }
@@ -522,7 +516,11 @@ impl ChessGame {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
                 let mut m = Move::new(from, des);
-                if self.is_move_valid(&mut m) {
+                if self.is_move_valid(&m) {
+                    // Optionally mark the move as a capture move
+                    if self.has_piece_at(m.to) {
+                        m.set_as_capture();
+                    }
                     to_fill.push(m);
                 }
             }
