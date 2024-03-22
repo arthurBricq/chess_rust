@@ -1,9 +1,35 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use super::super::model::game::*;
 use super::super::model::moves::*;
 use std::time::Instant;
+use crate::model::engine::MoveOrderState::{AcceptsOnlyCapture, Finished, AcceptsAllMove};
 
-const ENGINE_DEPTH: i8 = 4;
+enum MoveOrderState {
+    AcceptsOnlyCapture,
+    AcceptsAllMove,
+    Finished
+}
+
+impl MoveOrderState {
+    fn next(&mut self) {
+        match self {
+            AcceptsOnlyCapture => *self = AcceptsAllMove,
+            AcceptsAllMove => *self = Finished,
+            _ => panic!("We must not arrive here")
+        }
+    }
+
+    /// Returns true if the move is accepted at this stage of the looping through moves
+    fn accepts(&self, m: &Move) -> bool {
+        match self {
+            AcceptsOnlyCapture => m.is_capture(),
+            AcceptsAllMove => true,
+            _ => panic!("We must not arrive here")
+        }
+    }
+}
+
+const ENGINE_DEPTH: i8 = 6;
 const EXTRA_CAPTURE_MOVE: i8 = 4;
 
 type SearchResult = (ScoreType, Option<Move>);
@@ -34,6 +60,16 @@ impl Engine {
         return (result.1, nps as u128);
     }
 
+    /// Chess engine tree search
+    ///
+    /// Alpha-Beta Pruning: engine stops evaluating a move when at least one possibility has been found
+    ///                      that proves the move to be worse than a previously examined move.
+    /// * alpha = minimum score that white is assured of
+    ///         = worth case for white
+    /// * beta  = maximum score that black is assured of
+    ///         = worth case of black
+    ///
+    /// Move ordering : we favor moves that captures
     fn tree_search(&mut self,
                    game: ChessGame,
                    white_to_play: bool,
@@ -73,50 +109,76 @@ impl Engine {
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
 
-        // for each available move that is also valid, apply this move and run the search to the next depth
-        for i in 0..moves.len() {
-            // make a copy of the game
-            let mut new_game = game.clone();
+        // A small state machine is used to pass through moves
+        let mut move_index = 0;
+        let mut move_state = AcceptsOnlyCapture;
+        let mut visited_moves: HashSet<usize> = HashSet::with_capacity(moves.len());
 
-            // apply the move on the copy, without any kind of check 
-            // (because we only have valid moves)
-            new_game.apply_move_unsafe(&moves[i]);
+        loop {
+            if !visited_moves.contains(&move_index) && move_state.accepts(&moves[move_index]) {
+                visited_moves.insert(move_index);
 
-            // call the recursion
-            let result = self.tree_search(new_game, !white_to_play, depth + 1,
-                                          alpha,
-                                          beta,
-                                          moves[i].is_capture());
+                // apply the move on the copy, without any kind of check
+                // (because we only have valid moves)
+                let mut new_game = game.clone();
+                new_game.apply_move_unsafe(&moves[move_index]);
 
-            // Update the scores
-            if white_to_play {
-                if result.0 > current_score {
-                    best_move = i;
-                    current_score = result.0;
+                // call the recursion
+                let result = self.tree_search(new_game,
+                                              !white_to_play,
+                                              depth + 1,
+                                              alpha,
+                                              beta,
+                                              moves[move_index].is_capture());
+
+                // Alpha beta prunning
+                if white_to_play {
+                    if result.0 > current_score {
+                        best_move = move_index;
+                        current_score = result.0;
+                    }
+                    if result.0 > beta {
+                        // stop exploring
+                        break;
+                    }
+                    if result.0 > alpha {
+                        alpha = result.0;
+                    }
+                } else {
+                    if result.0 < current_score {
+                        best_move = move_index;
+                        current_score = result.0;
+                    }
+                    if result.0 < alpha {
+                        // stop exploring
+                        break;
+                    }
+                    if result.0 < beta {
+                        beta = result.0;
+                    }
                 }
-                if result.0 > beta {
-                    // stop exploring
-                    break;
-                }
-                if result.0 > alpha {
-                    alpha = result.0;
-                }
-            } else {
-                if result.0 < current_score {
-                    best_move = i;
-                    current_score = result.0;
-                }
-                if result.0 < alpha {
-                    // stop exploring
-                    break;
-                }
-                if result.0 < beta {
-                    beta = result.0;
+
+            }
+
+            if visited_moves.len() == moves.len() {
+                break
+            }
+
+            // When the move index reaches the end of the list of moves, apply the following
+            // state of the engine state machine
+            move_index += 1;
+            if move_index == moves.len() {
+                move_state.next();
+                match move_state {
+                    AcceptsOnlyCapture | AcceptsAllMove => move_index = 0,
+                    Finished => break
                 }
             }
+
         }
 
-        // Once we reach this point, we know which is the best move. We return the score.
+        // Once we reach this point, we have explored all the possible moves of this branch
+        // ==> we know which is the best move
 
         return if depth == 0 {
             (current_score, Some(moves[best_move]))
@@ -124,4 +186,5 @@ impl Engine {
             (current_score, None)
         }
     }
+
 }
