@@ -301,12 +301,12 @@ impl ChessGame {
                 match motion {
                     7 | 8 | 9 => if !(y2 > y1) { return false; },
                     -7 | -8 | -9 => if !(y2 < y1) { return false; },
-                    _ => return false
+                    _ => {}
                 }
                 match motion {
                     -7 | 9 | 1 => if !(x2 > x1) { return false; },
                     7 | -9 | -1 => if !(x2 < x1) { return false; },
-                    _ => return false
+                    _ => {}
                 }
                 true
             }
@@ -583,6 +583,7 @@ impl ChessGame {
                 }
             }
         }
+
         // The bigger this ratio is, the less the engine will favor attacking positions.
         score *= 50;
 
@@ -594,7 +595,7 @@ impl ChessGame {
             score -= 30;
         }
 
-        // TODO: This is really the problem: the number of attacked squres takes a lot of time to be found 
+        // This is really the problem: the number of attacked squres takes a lot of time to be found
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
 
         // Number of attacked squares: this is added to favor an attacking position
@@ -603,6 +604,20 @@ impl ChessGame {
 
         return score;
     }
+
+    pub fn print_game_integers(&self) {
+        println!("\n----");
+        println!("whites:  {}", self.whites);
+        println!("pawns:   {}", self.pawns);
+        println!("bishops: {}", self.bishops);
+        println!("knights: {}", self.knights);
+        println!("rooks:   {}", self.rooks);
+        println!("queens:  {}", self.queens);
+        println!("kings:   {}", self.kings);
+        println!("flags:   {}", self.flags);
+        println!("----");
+    }
+
 }
 
 #[cfg(test)]
@@ -617,5 +632,31 @@ mod tests {
         let game = ChessGame::new();
         let mut invalid_move = Move::new(6, 31);
         assert!(!game.is_move_valid(&mut invalid_move))
+    }
+
+    #[test]
+    fn test_valid_king_moves() {
+        // This is the chess position reached after
+        // (e4,e5)
+        // (Nf3, Qf6)
+        // (Bc4, Qf4)
+        // which by the way is terrible for black...
+        // It is white's turn
+        // White can castle or move the king up
+        let game = ChessGame {
+            whites:  337702815,
+            pawns:   67272588421820160,
+            bishops: 2594073385432514564,
+            knights: 4755801206505340930,
+            rooks:   9295429630892703873,
+            queens:  536870920,
+            kings:   1152921504606846992,
+            flags:   0
+        };
+
+        // this is castle
+        // it is valid
+        let mut move1 = Move::new(4, 6);
+        assert!(game.is_move_valid(&mut move1))
     }
 }

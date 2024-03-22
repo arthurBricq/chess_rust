@@ -57,7 +57,9 @@ Programming a chess engine is a brilliant exercise for an accomplished developer
 List of missing features
 - rules
     - [ ] En Passant, using a stateful representation
+    - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
     - [ ] Non-queen promotions
+    - [ ] Stop after checkmate ! This yields to weird position.
 - solver and optimisation
     - [ ] Move ordering: consider the better moves first
     - [ ] Hash each evaluated position to avoid recomputing score of a position that already existed

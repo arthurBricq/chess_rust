@@ -65,7 +65,6 @@ impl ChessViewModel
         }
     }
 
-
     pub fn get_char_at(&self, i: i8, j: i8) -> String {
         if let Some(t) = self.game.type_at(i, j) {
             if self.game.is_white_at(i, j) {
@@ -150,11 +149,17 @@ impl ChessViewModel
             }
 
             Msg::SquareTapped(pos) => {
+                println!("tapped: {pos}");
+
                 if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;
-                    if self.game.apply_move_safe(Move::new(self.selected_pos.unwrap(), *pos)) {
+                    if self.game.apply_move_safe(Move::new(previous_pos, *pos)) {
                         self.selected_pos = None;
+
+                        self.game.print_game_integers();
                         self.play_with_engine();
+                        self.game.print_game_integers();
+
                     } else {
                         self.selected_pos = Some(*pos);
                     }
