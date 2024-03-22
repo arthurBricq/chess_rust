@@ -5,10 +5,6 @@ pub fn pos_to_index(x: i8, y: i8) -> i8 {
     x + 8 * y
 }
 
-pub fn is_set(a: u64, at: i8) -> bool {
-    ((a >> at) & 1u64) == 1
-}
-
 /// Returns the position of ones in the provided int
 pub fn find_ones(num: u64) -> Vec<i8> {
     let mut indices = Vec::new();
@@ -72,7 +68,13 @@ const FLAG_BK_MOVED: i8 = 1;
 const FLAG_WK_CASTLED: i8 = 2;
 const FLAG_BK_CASTLED: i8 = 3;
 
-// Macros are used to work with integers
+macro_rules! is_set {
+    ($a: expr, $at: expr) => {
+        (($a >> $at) & 1u64) == 1
+    };
+}
+
+/// Set the bits
 macro_rules! set_at {
     ($a:expr , $b:expr) => (
         $a |= 1u64 << $b; 
@@ -160,23 +162,23 @@ impl ChessGame {
     }
 
     pub fn is_white_at(&self, x: i8, y: i8) -> bool {
-        is_set(self.whites, pos_to_index(x, y))
+        is_set!(self.whites, pos_to_index(x, y))
     }
 
     /// Returns the type of the provided index. 
     /// If no type is present, returns None.
     fn type_at_index(&self, at: i8) -> Option<Type> {
-        if is_set(self.pawns, at) {
+        if is_set!(self.pawns, at) {
             Some(Type::Pawn)
-        } else if is_set(self.bishops, at) {
+        } else if is_set!(self.bishops, at) {
             Some(Type::Bishop)
-        } else if is_set(self.knights, at) {
+        } else if is_set!(self.knights, at) {
             Some(Type::Knight)
-        } else if is_set(self.rooks, at) {
+        } else if is_set!(self.rooks, at) {
             Some(Type::Rook)
-        } else if is_set(self.kings, at) {
+        } else if is_set!(self.kings, at) {
             Some(Type::King)
-        } else if is_set(self.queens, at) {
+        } else if is_set!(self.queens, at) {
             Some(Type::Queen)
         } else {
             None
@@ -185,7 +187,7 @@ impl ChessGame {
 
     /// Returns true if there is a piece at this position
     fn has_piece_at(&self, at: i8) -> bool {
-        is_set(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
+        is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
     }
 
     pub fn apply_capture(&mut self, m: &Move) {
@@ -223,8 +225,8 @@ impl ChessGame {
     fn valid_destination(&self, m: &mut Move) -> bool {
         // In the case where there is a piece at the last position, check that it has a different color
         if self.has_piece_at(m.to) {
-            let to_is_white = is_set(self.whites, m.to);
-            let from_is_white = is_set(self.whites, m.from);
+            let to_is_white = is_set!(self.whites, m.to);
+            let from_is_white = is_set!(self.whites, m.from);
             if to_is_white == from_is_white {
                 return false;
             } else {
@@ -344,17 +346,17 @@ impl ChessGame {
         if motion == 2 || motion == -2 {
             // 1. check that the king did not move or castled
             // using the flag for white or black
-            if (is_white && is_set(self.flags, FLAG_WK_MOVED)) || (!is_white && is_set(self.flags, FLAG_BK_MOVED)) {
+            if (is_white && is_set!(self.flags, FLAG_WK_MOVED)) || (!is_white && is_set!(self.flags, FLAG_BK_MOVED)) {
                 return false;
             }
 
             // check that there is a rook
             if motion > 0 {
-                if !is_set(self.rooks, m.from + 3) {
+                if !is_set!(self.rooks, m.from + 3) {
                     return false;
                 }
             } else {
-                if !is_set(self.rooks, m.from - 4) {
+                if !is_set!(self.rooks, m.from - 4) {
                     return false;
                 }
             }
@@ -367,7 +369,7 @@ impl ChessGame {
     fn is_move_valid(&self, mut m: &mut Move) -> bool {
         // Check that there is a piece to move at the destination
         if let Some(t) = self.type_at_index(m.from) {
-            let is_white = is_set(self.whites, m.from);
+            let is_white = is_set!(self.whites, m.from);
             // If it's a pawn move, check that it is a valid one
             if t == Type::Pawn && !self.is_pawn_move_valid(&m, is_white) {
                 return false;
@@ -402,7 +404,7 @@ impl ChessGame {
             // Eventually apply the capture
             self.apply_capture(&m);
 
-            let is_white = is_set(self.whites, m.from);
+            let is_white = is_set!(self.whites, m.from);
 
             // Apply the move
             match t {
@@ -585,8 +587,11 @@ impl ChessGame {
         }
 
         // fill possibles moves from each of the pieces taken in consideration.
-        for pos in find_ones(pieces) {
-            self.fill_possible_moves_from(&mut moves, pos);
+        for i in 0..64 {
+            if pieces & (1 << i) != 0 {
+                // it means that 'i'-th bit contains a piece of the desired color
+                self.fill_possible_moves_from(&mut moves, i);
+            }
         }
 
         return moves;
@@ -598,7 +603,7 @@ impl ChessGame {
         // Value of pieces
         for i in 0..64 {
             if let Some(t) = self.type_at_index(i) {
-                if is_set(self.whites, i) {
+                if is_set!(self.whites, i) {
                     score += t.score();
                 } else {
                     score -= t.score();
@@ -609,10 +614,10 @@ impl ChessGame {
         score *= 50;
 
         // Castling : we want to favor the castle, which secures the king
-        if is_set(self.flags, FLAG_WK_CASTLED) {
+        if is_set!(self.flags, FLAG_WK_CASTLED) {
             score += 30;
         }
-        if is_set(self.flags, FLAG_BK_CASTLED) {
+        if is_set!(self.flags, FLAG_BK_CASTLED) {
             score -= 30;
         }
 
@@ -624,12 +629,6 @@ impl ChessGame {
         score -= self.get_avalaible_moves(false).len() as ScoreType;
 
         return score;
-    }
-
-    pub fn debug(&self) {
-        println!("whites: {} -> {:?}", self.whites, find_ones(self.whites));
-        println!("pawns: {} -> {:?}", self.pawns, find_ones(self.pawns));
-        println!("rooks: {} -> {:?}", self.rooks, find_ones(self.rooks));
     }
 }
 #[cfg(test)]
