@@ -43,7 +43,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: false }
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
@@ -110,8 +110,6 @@ impl Engine {
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
         
-        // println!("{moves:?}");
-
         // A small state machine is used to pass through moves in a specific order
         // This is why the code is quite hard to read. 
         // This state machine allows to avoid sorting moves, but I am not sure if this was a good decision.
@@ -148,6 +146,7 @@ impl Engine {
                 
                 if depth == 0 {
                     println!("   score = {:?}", result.0);
+                    println!("   move = {:?}", result.1);
                 }
 
                 // Alpha beta prunning
@@ -201,10 +200,12 @@ impl Engine {
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
 
-        return if depth == 0 {
-            (current_score, Some(moves[best_move]))
-        } else {
-            (current_score, None)
-        };
+        return (current_score, Some(moves[best_move]));
+        
+        // return if depth == 0 {
+        //     (current_score, Some(moves[best_move]))
+        // } else {
+        //     (current_score, None)
+        // };
     }
 }

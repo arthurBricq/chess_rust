@@ -133,6 +133,7 @@ mod tests {
         game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
         game.set_piece(Pawn, true, chesspos_to_index("d2") as u8);
         game.set_piece(Pawn, true, chesspos_to_index("f2") as u8);
+        game.set_piece(Rook, true, chesspos_to_index("h4") as u8);
 
         game.set_piece(Pawn, false, chesspos_to_index("a7") as u8);
         game.set_piece(Rook, false, chesspos_to_index("f5") as u8);
@@ -140,6 +141,7 @@ mod tests {
         // The game needs to have kings alive
         game.set_piece(King, true, chesspos_to_index("e1") as u8);
         game.set_piece(King, false, chesspos_to_index("d5") as u8);
+        game.block_castling();
 
         let display = TerminalChessView::new(&mut game);
         display.display();

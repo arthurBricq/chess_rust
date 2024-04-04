@@ -254,6 +254,13 @@ impl ChessGame {
             set_at!(self.whites, at)
         }
     }
+    
+    pub fn block_castling(&mut self) {
+        set_at!(self.flags, FLAG_BK_CASTLED);
+        set_at!(self.flags, FLAG_WK_CASTLED);
+        set_at!(self.flags, FLAG_WK_MOVED);
+        set_at!(self.flags, FLAG_BK_MOVED);
+    }
 
     /// Returns true if one of the two kind is dead
     pub fn is_finished(&self) -> bool {
