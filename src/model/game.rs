@@ -5,6 +5,41 @@ pub fn pos_to_index(x: i8, y: i8) -> i8 {
     x + 8 * y
 }
 
+/// Convert an algreabraic chess position to an integer
+pub fn chesspos_to_index(text: &str) -> i8 {
+    let mut chars: Vec<char> = text.chars().collect();
+    let row = chars[1].to_digit(10).unwrap();
+    let col = match chars[0] {
+        'a' => 0,
+        'b' => 1,
+        'c' => 2,
+        'd' => 3,
+        'e' => 4,
+        'f' => 5,
+        'g' => 6,
+        'h' => 7,
+        _ => panic!("Unknown chess position at char: {}", chars[0])
+    };
+    pos_to_index(col, row as i8 - 1)
+}
+
+pub fn index_to_chesspos(index: i8) -> String {
+    let x = index % 8;
+    let y = index / 8 + 1;
+    let s = match x {
+        0 => "a".to_string(),
+        1 => "b".to_string(),
+        2 => "c".to_string(),
+        3 => "d".to_string(),
+        4 => "e".to_string(),
+        5 => "f".to_string(),
+        6 => "g".to_string(),
+        7 => "h".to_string(),
+        _ => panic!("Impossible position: {x}")
+    };
+    s + format!("{y}").as_str()
+}
+
 /// Returns the position of ones in the provided int
 pub fn find_ones(num: u64) -> Vec<i8> {
     let mut indices = Vec::new();
@@ -89,6 +124,19 @@ macro_rules! clear_at {
 
 
 impl ChessGame {
+    pub fn empty() -> Self {
+        ChessGame {
+            whites: 0,
+            pawns: 0,
+            bishops: 0,
+            knights: 0,
+            rooks: 0,
+            queens: 0,
+            kings: 0,
+            flags: 0,
+        }
+    }
+
     /// Constructor for a normal chess game.
     /// The pieces are set like on a normal chess set.
     pub fn new() -> Self {
@@ -187,7 +235,24 @@ impl ChessGame {
 
     /// Returns true if there is a piece at this position
     fn has_piece_at(&self, at: i8) -> bool {
+        // TODO why is this fucking i8 ???
         is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
+    }
+
+    /// Adds a piece to self.
+    /// Can be used to create custom boards.
+    pub fn set_piece(&mut self, piece: Type, white: bool, at: u8) {
+        match piece {
+            Type::Pawn => set_at!(self.pawns, at),
+            Type::Bishop => set_at!(self.bishops, at),
+            Type::Knight => set_at!(self.knights, at),
+            Type::Rook => set_at!(self.rooks, at),
+            Type::Queen => set_at!(self.queens, at),
+            Type::King => set_at!(self.kings, at),
+        }
+        if white {
+            set_at!(self.whites, at)
+        }
     }
 
     /// Returns true if one of the two kind is dead
@@ -493,8 +558,6 @@ impl ChessGame {
 
         // Set some pieces here
         set_at!(rooks, pos_to_index(3,3));
-        // set_at!(bishops, pos_to_index(3,5));
-
         set_at!(rooks, pos_to_index(1,3));
         set_at!(whites, pos_to_index(1,3));
         set_at!(pawns, pos_to_index(3,1));
@@ -602,8 +665,8 @@ impl ChessGame {
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
 
         // Number of attacked squares: this is added to favor an attacking position
-        score += self.get_available_moves(true).len() as ScoreType;
-        score -= self.get_available_moves(false).len() as ScoreType;
+        // score += self.get_available_moves(true).len() as ScoreType;
+        // score -= self.get_available_moves(false).len() as ScoreType;
 
         return score;
     }

@@ -14,6 +14,7 @@ pub mod view {
 
 pub mod tests {
     pub mod test;
+    pub mod test_engine;
 }
 
 use model::game::*;
@@ -32,7 +33,7 @@ fn play() {
 
 #[cfg(all(not(feature = "fltk"), not(feature = "benchmark")))]
 fn play() {
-    use view::terminal_display::TerminalChessViewModelModel;
+    use view::terminal_display::TerminalChessView;
 
     let mut game = ChessGame::new();
     let mut solver = Engine::new();
@@ -42,7 +43,7 @@ fn play() {
         );
     }
 
-    let mut view = TerminalChessViewModelModel::new(&mut game);
+    let mut view = TerminalChessView::new(&mut game);
     view.display();
 }
 

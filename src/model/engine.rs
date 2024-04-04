@@ -110,7 +110,11 @@ impl Engine {
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
 
-        // A small state machine is used to pass through moves
+        // A small state machine is used to pass through moves in a specific order
+        // This is why the code is quite hard to read. 
+        // This state machine allows to avoid sorting moves, but I am not sure if this was a good decision.
+        // Instead of sorting moves, the `move_index` passes through the all list of moves several times and each time only 
+        // one type of move is accepted.
         let mut move_index = 0;
         let mut move_state = AcceptsOnlyCapture;
         let mut visited_moves: HashSet<usize> = HashSet::with_capacity(moves.len());
@@ -119,13 +123,12 @@ impl Engine {
             if !visited_moves.contains(&move_index) && move_state.accepts(&moves[move_index]) {
                 visited_moves.insert(move_index);
 
-                // apply the move on the copy, without any kind of check
-                // (because we only have valid moves)
+                // TODO maybe these two functions can be squashed into a single one
                 let mut new_game = game.clone();
                 new_game.apply_move_unsafe(&moves[move_index]);
 
-                // check the transposition table
-                // If this position was already evaluated, then don't start a new recursion
+                // call the recursion
+                // with the check in the transposition table
                 let result = if self.use_transposition && self.transposition_table.contains_key(&new_game) {
                     (*self.transposition_table.get(&new_game).unwrap(), None)
                 } else {
@@ -137,18 +140,19 @@ impl Engine {
                                      moves[move_index].is_capture())
                 };
 
-                // call the recursion
-
                 // Alpha beta prunning
                 if white_to_play {
+                    // Keep the maximum score
                     if result.0 > current_score {
                         best_move = move_index;
                         current_score = result.0;
                     }
-                    if result.0 > beta {
-                        // stop exploring
+                    // beta cutoff
+                    if current_score > beta {
                         break;
                     }
+                    // Update alpha: eg, the minimum score that white is guaranteed
+                    // alpha becomes the max of the score
                     if result.0 > alpha {
                         alpha = result.0;
                     }
@@ -157,8 +161,8 @@ impl Engine {
                         best_move = move_index;
                         current_score = result.0;
                     }
-                    if result.0 < alpha {
-                        // stop exploring
+                    // alpha cutoff
+                    if current_score < alpha {
                         break;
                     }
                     if result.0 < beta {
@@ -167,6 +171,7 @@ impl Engine {
                 }
             }
 
+            // Break when we have gone through all moves
             if visited_moves.len() == moves.len() {
                 break;
             }

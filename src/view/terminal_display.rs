@@ -5,11 +5,11 @@ use std::io::{stdin, stdout, Write};
 use super::super::model::game::*;
 use super::super::model::moves::*;
 
-pub struct TerminalChessViewModelModel<'a> {
+pub struct TerminalChessView<'a> {
     game: &'a mut ChessGame
 }
 
-impl<'a> TerminalChessViewModelModel<'a> {
+impl<'a> TerminalChessView<'a> {
     pub fn new(_game: &'a mut ChessGame) -> Self {
         Self {
             game: _game
@@ -38,29 +38,30 @@ impl<'a> TerminalChessViewModelModel<'a> {
                 }
             }
         } else {
-            " ".to_string()
+            "  ".to_string()
         }
     }
 
     pub fn display(&'a self) {
-        print!("\n    |-------------------------------| \n");
+        print!("\n    |---------------------------------------| \n");
         for i in (0..8).rev() {
             print!("    | ");
-            for j in 0..8 {
+            for j in (0..8) {
                 let s = self.get_char_at(j,i); 
                 print!("{s}"); 
                 print!(" | ")
             }
-            print!("\n    |-------------------------------|");
+            // print!("\n    |-------------------------------|");
             print!("\n");
         }
+        print!("\n    |---------------------------------------| \n");
     }
 
 }
 
 
 
-impl<'a> TerminalChessViewModelModel<'a> {
+impl<'a> TerminalChessView<'a> {
     pub fn play(&mut self) {
         // Read the input
         let mut s = String::new();

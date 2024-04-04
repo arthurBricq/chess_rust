@@ -6,11 +6,8 @@ mod tests {
     use crate::model::moves::Move;
     #[test]
     fn test_wrong_knigt_move() {
-
         let mut game = ChessGame::new();
-
     }
-
 
     #[test]
     fn test_simple_motions() {
