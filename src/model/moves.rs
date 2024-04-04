@@ -1,5 +1,6 @@
-use super::game::{Type, }; 
+use super::game::{index_to_chesspos, Type}; 
 use std::fmt;
+use std::fmt::{Debug, Formatter};
 
 pub const PAWN_MOVES: [i8;8] = [
     8, 9, 7,
@@ -40,7 +41,7 @@ pub const KING_SPECIAL_MOVES: [i8; 2] = [
     2, -2 
 ];
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum MoveQuality {
     Capture, 
     Motion,
@@ -51,6 +52,12 @@ pub struct Move {
     pub from: i8,  // start position
     pub to: i8,    // end position
     pub quality: MoveQuality,
+}
+
+impl Debug for Move {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}->{}", index_to_chesspos(self.from), index_to_chesspos(self.to))
+    }
 }
 
 

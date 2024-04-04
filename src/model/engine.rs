@@ -109,6 +109,8 @@ impl Engine {
         // get the list of available moves
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
+        
+        // println!("{moves:?}");
 
         // A small state machine is used to pass through moves in a specific order
         // This is why the code is quite hard to read. 
@@ -122,6 +124,10 @@ impl Engine {
         loop {
             if !visited_moves.contains(&move_index) && move_state.accepts(&moves[move_index]) {
                 visited_moves.insert(move_index);
+
+                if depth == 0 {
+                    println!("move = {:?}", moves[move_index]);
+                }
 
                 // TODO maybe these two functions can be squashed into a single one
                 let mut new_game = game.clone();
@@ -139,6 +145,10 @@ impl Engine {
                                      beta,
                                      moves[move_index].is_capture())
                 };
+                
+                if depth == 0 {
+                    println!("   score = {:?}", result.0);
+                }
 
                 // Alpha beta prunning
                 if white_to_play {

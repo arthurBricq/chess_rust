@@ -651,15 +651,16 @@ impl ChessGame {
         }
 
         // The bigger this ratio is, the less the engine will favor attacking positions.
-        score *= 100;
+        // score *= 100;
 
         // Castling : we want to favor the castle, which secures the king
-        if is_set!(self.flags, FLAG_WK_CASTLED) {
-            score += 30;
-        }
-        if is_set!(self.flags, FLAG_BK_CASTLED) {
-            score -= 30;
-        }
+        // if is_set!(self.flags, FLAG_WK_CASTLED) {
+        //     score += 30;
+        // }
+        
+        // if is_set!(self.flags, FLAG_BK_CASTLED) {
+        //     score -= 30;
+        // }
 
         // This is really the problem: the number of attacked squres takes a lot of time to be found
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
