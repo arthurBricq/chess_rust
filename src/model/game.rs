@@ -318,23 +318,23 @@ impl ChessGame {
 
         fn is_bishop_valid(motion: &i8, x1: &i8, y1: &i8, x2: &i8, y2: &i8) -> bool {
             if motion % 7 == 0 {
-                if *motion > 0 {
+                return if *motion > 0 {
                     // upper left diagonal
-                    return x1 > x2 && y1 < y2;
+                    x1 > x2 && y1 < y2
                 } else {
                     // lower right diagonal
-                    return x1 < x2 && y1 > y2;
+                    x1 < x2 && y1 > y2
                 }
             } else if motion % 9 == 0 {
-                if *motion > 0 {
+                return if *motion > 0 {
                     // upper right diagonal
-                    return x1 < x2 && y1 < y2;
+                    x1 < x2 && y1 < y2
                 } else {
                     // lower left diagonal
-                    return x1 > x2 && y1 > y2;
+                    x1 > x2 && y1 > y2
                 }
             }
-            return false;
+            false
         }
 
         fn is_rook_valid(motion: &i8, m: &Move) -> bool {
@@ -342,11 +342,11 @@ impl ChessGame {
             let remain = m.from % 8;
             let min = m.from - remain;
             let max = m.from + (7 - remain);
-            if m.to >= min && m.to <= max {
-                return true;
+            return if m.to >= min && m.to <= max {
+                true
             } else {
                 // Then look up and down
-                return motion % 8 == 0;
+                motion % 8 == 0
             }
         }
 
@@ -388,9 +388,9 @@ impl ChessGame {
         }
     }
 
-    fn is_pawn_move_valid(&self, m: &Move, is_white: bool) -> bool {
+    fn is_pawn_move_valid(&self, m: &Move) -> bool {
         // Direction of the move must be valid 
-        if (is_white && (m.from / 8) > (m.to / 8)) || (!is_white && (m.from / 8) < (m.to / 8)) {
+        if (m.is_white && (m.from / 8) > (m.to / 8)) || (!m.is_white && (m.from / 8) < (m.to / 8)) {
             return false;
         }
 
@@ -413,13 +413,13 @@ impl ChessGame {
         return true;
     }
 
-    fn is_king_move_valid(&self, m: &Move, is_white: bool) -> bool {
+    fn is_king_move_valid(&self, m: &Move) -> bool {
         // First, check if it is one of the casling move.
         let motion = m.to - m.from;
         if motion == 2 || motion == -2 {
             // 1. check that the king did not move or castled
             // using the flag for white or black
-            if (is_white && is_set!(self.flags, FLAG_WK_MOVED)) || (!is_white && is_set!(self.flags, FLAG_BK_MOVED)) {
+            if (m.is_white && is_set!(self.flags, FLAG_WK_MOVED)) || (!m.is_white && is_set!(self.flags, FLAG_BK_MOVED)) {
                 return false;
             }
 
@@ -443,12 +443,9 @@ impl ChessGame {
         // Check that there is a piece to move at the destination
         if let Some(t) = self.type_at_index(m.from) {
             
-            // TODO can this be removed ? You often know if it is white's turn to play.
-            let is_white = is_set!(self.whites, m.from);
-
             if match t {
-                Type::Pawn => !self.is_pawn_move_valid(&m, is_white),
-                Type::King => !self.is_king_move_valid(&m, is_white),
+                Type::Pawn => !self.is_pawn_move_valid(&m),
+                Type::King => !self.is_king_move_valid(&m),
                 _ => false
             } {
                 return false
@@ -477,10 +474,6 @@ impl ChessGame {
 
             // Eventually apply the capture
             self.apply_capture(&m);
-
-            /// TODO create a function `apply_move_unsafe_colored` which knows the color and does not have to check
-            /// color. The engine knows the color already, it is not necessary to duplicate the information.
-            let is_white = is_set!(self.whites, m.from);
 
             // Apply the move
             match t {
@@ -515,7 +508,7 @@ impl ChessGame {
 
                     // Flags update : king moved
                     // TODO OPT: check if setting the flag only at the first is worth it 
-                    if is_white {
+                    if m.is_white {
                         set_at!(self.flags, FLAG_WK_MOVED);
                     } else {
                         set_at!(self.flags, FLAG_BK_MOVED);
@@ -524,7 +517,7 @@ impl ChessGame {
                     // Handle castling move here
                     let motion = m.to - m.from;
                     if motion == 2 || motion == -2 {
-                        if is_white {
+                        if m.is_white {
                             set_at!(self.flags, FLAG_WK_CASTLED);
                         } else {
                             set_at!(self.flags, FLAG_BK_CASTLED);
@@ -534,11 +527,13 @@ impl ChessGame {
                         } else {
                             (m.from - 4, m.from - 1)
                         };
+                        
                         // apply the move rook 
                         clear_at!(self.rooks, rook_from);
                         set_at!(self.rooks, rook_to);
+                        
                         // apply the change of colors for the rook
-                        if is_white {
+                        if m.is_white {
                             clear_at!(self.whites, rook_from);
                             set_at!(self.whites, rook_to);
                         }
@@ -547,7 +542,7 @@ impl ChessGame {
             }
 
             // Apply the color to the new square
-            if is_white {
+            if m.is_white {
                 clear_at!(self.whites, m.from);
                 set_at!(self.whites, m.to);
             }
@@ -595,11 +590,12 @@ impl ChessGame {
 // Functions for the solver
 
 impl ChessGame {
-    fn fill_moves(&self, to_fill: &mut Vec<Move>, from: i8, motions: &[i8]) {
+    /// Fills the provided list of moves, by iterating over the provided possible motions.
+    fn fill_moves(&self, to_fill: &mut Vec<Move>, from: i8, motions: &[i8], is_white: bool) {
         for motion in motions {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
-                let mut m = Move::new(from, des);
+                let mut m = Move::new(from, des, is_white);
                 if self.is_move_valid(&m) {
                     // Optionally mark the move as a capture move
                     if self.has_piece_at(m.to) {
@@ -612,18 +608,24 @@ impl ChessGame {
     }
 
     /// Fills the vector of moves with all the valid moves starting from the given position
-    pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8) {
+    pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8, is_white: bool) {
         if let Some(t) = self.type_at_index(from) {
             match t {
-                Type::Pawn => self.fill_moves(&mut moves, from, &PAWN_MOVES),
-                Type::Bishop => self.fill_moves(&mut moves, from, &BISHOP_MOVES),
-                Type::Rook => self.fill_moves(&mut moves, from, &ROOK_MOVES),
-                Type::Knight => self.fill_moves(&mut moves, from, &KNIGHT_MOVES),
-                Type::King => {
-                    self.fill_moves(&mut moves, from, &KING_MOVES);
-                    self.fill_moves(&mut moves, from, &KING_SPECIAL_MOVES);
+                Type::Pawn => {
+                    if is_white {
+                        self.fill_moves(&mut moves, from, &WHITE_PAWN_MOVES, is_white);
+                    } else {
+                        self.fill_moves(&mut moves, from, &BLACK_PAWN_MOVES, is_white);
+                    }
                 }
-                Type::Queen => self.fill_moves(&mut moves, from, &QUEEN_MOVES),
+                Type::Bishop => self.fill_moves(&mut moves, from, &BISHOP_MOVES, is_white),
+                Type::Rook => self.fill_moves(&mut moves, from, &ROOK_MOVES, is_white),
+                Type::Knight => self.fill_moves(&mut moves, from, &KNIGHT_MOVES, is_white),
+                Type::King => {
+                    self.fill_moves(&mut moves, from, &KING_MOVES, is_white);
+                    self.fill_moves(&mut moves, from, &KING_SPECIAL_MOVES, is_white);
+                }
+                Type::Queen => self.fill_moves(&mut moves, from, &QUEEN_MOVES, is_white),
             }
         }
     }
@@ -642,10 +644,11 @@ impl ChessGame {
         };
 
         // fill possibles moves from each of the pieces taken in consideration.
+        // This is really the downside of this technique: iterating over the pieces is difficult.
         for i in 0..64 {
             if pieces & (1 << i) != 0 {
                 // it means that 'i'-th bit contains a piece of the desired color
-                self.fill_possible_moves_from(&mut moves, i);
+                self.fill_possible_moves_from(&mut moves, i, is_white_playing);
             }
         }
 
@@ -707,15 +710,13 @@ impl ChessGame {
 
 #[cfg(test)]
 mod tests {
-    use std::hash::Hash;
-
     use crate::model::game::ChessGame;
     use crate::model::moves::Move;
 
     #[test]
     fn test_wrong_knigt_move() {
         let game = ChessGame::standard_game();
-        let mut invalid_move = Move::new(6, 31);
+        let mut invalid_move = Move::new(6, 31, true);
         assert!(!game.is_move_valid(&mut invalid_move))
     }
 
@@ -741,7 +742,7 @@ mod tests {
 
         // this is castle
         // it is valid
-        let mut move1 = Move::new(4, 6);
+        let mut move1 = Move::new(4, 6, true);
         assert!(game.is_move_valid(&mut move1))
     }
     

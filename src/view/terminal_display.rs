@@ -79,7 +79,7 @@ impl<'a> TerminalChessView<'a> {
                 let x2 = i8::from_str(&cap[3]).unwrap(); 
                 let y2 = i8::from_str(&cap[4]).unwrap(); 
 
-                let m = Move::new(pos_to_index(x1, y1), pos_to_index(x2, y2));
+                let m = Move::new(pos_to_index(x1, y1), pos_to_index(x2, y2), true);
 
                 let success = self.game.apply_move_safe(
                     m

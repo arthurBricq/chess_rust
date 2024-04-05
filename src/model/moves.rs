@@ -2,11 +2,15 @@ use super::game::{index_to_chesspos, Type};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
-pub const PAWN_MOVES: [i8;8] = [
-    8, 9, 7,
-    -8, -9, -7,
-    16, -16,
-    ]; 
+// pub const PAWN_MOVES: [i8;8] = [
+//     8, 9, 7,
+//     -8, -9, -7,
+//     16, -16,
+//     ]; 
+
+pub const WHITE_PAWN_MOVES: [i8;4] = [8, 9, 7, 16];
+pub const BLACK_PAWN_MOVES: [i8;4] = [-8, -9, -7, -16];
+
 pub const ROOK_MOVES: [i8;28] = [
     1,2,3,4,5,6,7,
     -1,-2,-3,-4,-5,-6,-7,
@@ -49,8 +53,9 @@ pub enum MoveQuality {
 
 #[derive(Copy, Clone)]
 pub struct Move {
-    pub from: i8,  // start position
-    pub to: i8,    // end position
+    pub from: i8,
+    pub to: i8,
+    pub is_white: bool,
     pub quality: MoveQuality,
 }
 
@@ -73,8 +78,8 @@ impl fmt::Display for Move {
 }
 
 impl Move {
-    pub fn new(from: i8, to: i8) -> Self {
-        Self {from, to, quality: MoveQuality::Motion}
+    pub fn new(from: i8, to: i8, is_white: bool) -> Self {
+        Self {from, to, is_white, quality: MoveQuality::Motion}
     }
 
     pub fn set_as_capture(&mut self) {
@@ -95,41 +100,6 @@ impl Move {
             // Then look up and down
             return [0,0]; 
         }
-    }
-    
-    /// Returns true if the move respect the most basic rules of chess: is it a valid move for the given type.
-    /// 
-    /// TODO: evaluate the impact of which method is used. Indeed, two methods are possible during runtime
-    /// - Using the contains method to check if the diff vector is in the list of allowed mode
-    /// - Using arithmetic operations to do the same but with modulo operation. I think this could be better actually.
-    pub fn is_legal(&self, t: &Type) -> bool {
-        // Boundary conditions
-        if self.to >= 64 {
-            return false; 
-        }
-
-        // The piece has to move
-        // NOTE: maybe this may be stupid 
-        if self.to == self.from {
-            return false; 
-        }
-
-        // Compute the vector between the two positions.
-        // It has to be of type i16 to handle the case where the piece goes down.
-        let diff = self.to - self.from ; 
-
-        // Check if this vector is part of the valid moves for this piece
-        match t {
-            Type::Pawn => PAWN_MOVES.contains(&diff),
-            Type::Rook => ROOK_MOVES.contains(&diff),
-            Type::Bishop => BISHOP_MOVES.contains(&diff),
-            Type::Knight => KNIGHT_MOVES.contains(&diff),
-            Type::Queen => {
-                BISHOP_MOVES.contains(&diff) || ROOK_MOVES.contains(&diff)
-            },
-            Type::King => KING_MOVES.contains(&diff),
-        }
-    
     }
 
     /// Returns the increment that represents the direction of the given move

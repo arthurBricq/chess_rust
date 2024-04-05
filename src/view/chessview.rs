@@ -19,6 +19,7 @@ pub struct ChessViewModel {
     game: ChessGame,
     solver: Engine,
     selected_pos: Option<i8>,
+    attacked_positions: Vec<i8>,
     engine_move: Option<(i8, i8)>,
 }
 
@@ -33,10 +34,10 @@ impl ChessViewModel
 {
     pub fn new() -> Self {
         Self {
-            game: ChessGame::new(402712575, 71494648782186240, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0)
-            ,
+            game: ChessGame::standard_game(),
             solver: Engine::new(),
             selected_pos: None,
+            attacked_positions: vec![],
             engine_move: None,
         }
     }
@@ -94,16 +95,10 @@ impl ChessViewModel
     }
 
     pub fn is_attacked_at(&self, i: i8, j: i8) -> bool {
-        if let Some(pos) = self.selected_pos {
-            let mut moves: Vec<Move> = Vec::new();
-            self.game.fill_possible_moves_from(&mut moves, pos);
-            let attacked: Vec<i8> = moves.iter().map(|m| m.to).collect();
-            let to_check = pos_to_index(i, j);
-            if attacked.contains(&to_check) {
-                return true;
-            }
-        }
-        return false;
+        // TODO update attacked position
+        self.attacked_positions.contains(&pos_to_index(i,j))
+        
+        // return false;
     }
 
     pub fn get_class_name(&self, i: i8, j: i8) -> String {
@@ -134,12 +129,21 @@ impl ChessViewModel
             // Save the move
             self.engine_move = Some((best_move.from, best_move.to));
             // Apply the move
+            // TODO use best_move instead of creating a new move, no ?
             let success = self.game.apply_move_safe(
-                Move::new(best_move.from, best_move.to)
+                Move::new(best_move.from, best_move.to, false)
             );
             return success;
         } else {
             return false;
+        }
+    }
+
+    fn compute_attacked_positions(&mut self) {
+        if let Some(pos) = self.selected_pos {
+            let mut moves: Vec<Move> = Vec::new();
+            self.game.fill_possible_moves_from(&mut moves, pos, true);
+            self.attacked_positions = moves.iter().map(|m| m.to).collect();
         }
     }
 
@@ -155,16 +159,17 @@ impl ChessViewModel
 
                 if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;
-                    if self.game.apply_move_safe(Move::new(previous_pos, *pos)) {
+                    if self.game.apply_move_safe(Move::new(previous_pos, *pos, true)) {
                         self.selected_pos = None;
-                        self.game.print_game_integers();
+                        self.attacked_positions = vec![];
                         self.play_with_engine();
                     } else {
                         self.selected_pos = Some(*pos);
+                        self.compute_attacked_positions();
                     }
                 } else {
-                    println!("Invalid move");
-                    self.selected_pos = Some(*pos)
+                    self.selected_pos = Some(*pos);
+                    self.compute_attacked_positions();
                 }
 
                 return true;

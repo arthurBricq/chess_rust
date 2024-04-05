@@ -53,7 +53,7 @@ impl Engine {
         self.extra_depth = extra;
     }
 
-    /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
+    /// For a given chess game, finds the solver's best move and returns it as an Option of a move. 
     /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
     pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (Option<Move>, u128) {
         self.iter = 0;
@@ -162,7 +162,7 @@ impl Engine {
                     println!("   score = {:?}, move = {:?}, moves = {:?}", result.score, result.best_move, result.moves);
                 }
 
-                // Alpha beta prunning
+                // Alpha beta pruning
                 if white_to_play {
                     // Keep the maximum score
                     if result.score > current_score {

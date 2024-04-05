@@ -56,14 +56,12 @@ fn play() {
 fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut solver = Engine::new();
-    let n = 20;
+    let n = 10;
 
     for _i in 0..n {
         let mut game = ChessGame::standard_game();
         if let (Some(best_move), nps) = solver.find_best_move(game, false) {
-            let _success = game.apply_move_safe(
-                Move::new(best_move.from, best_move.to)
-            );
+            let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, false));
             nodes_per_seconds.push(nps);
         }
     }

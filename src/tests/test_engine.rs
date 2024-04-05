@@ -2,8 +2,8 @@
 /// This module tests several starting positions that are easy.
 mod tests {
     use crate::model::engine::Engine;
-    use crate::model::game::{ChessGame, chesspos_to_index, index_to_chesspos, pos_to_index};
-    use crate::model::game::Type::{Bishop, King, Knight, Pawn, Rook};
+    use crate::model::game::{ChessGame, chesspos_to_index, index_to_chesspos};
+    use crate::model::game::Type::{King, Knight, Pawn, Rook};
     use crate::model::moves::Move;
     use crate::view::terminal_display::TerminalChessView;
 
@@ -177,7 +177,7 @@ mod tests {
         
         // Now we wonder, what is the best move for white, given there is one less depth ?
         let mut pos2 = pos1.clone();
-        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4")));
+        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4"), false));
         engine.set_engine_depth(3, 4);
         if let (Some(m), _) = engine.find_best_move(pos2.clone(), true) {
             println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
@@ -186,7 +186,7 @@ mod tests {
         
         // let's understand why is the move that attacks a4 is not seen as strong
         let mut pos3 = pos2.clone();
-        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
+        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5"), true));
         engine.set_engine_depth(2, 4);
         if let (Some(m), _) = engine.find_best_move(pos3.clone(), false) {
             println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
