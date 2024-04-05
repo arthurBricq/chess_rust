@@ -32,7 +32,6 @@ impl MoveOrderState {
 pub struct SearchResult {
     score: ScoreType,
     best_move: Option<Move>,
-    moves: Vec<Move>
 }
 
 pub struct Engine {
@@ -45,7 +44,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { depth: 5, extra_depth: 4, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { depth: 6, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
     
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
@@ -111,7 +110,6 @@ impl Engine {
             return SearchResult {
                 score,
                 best_move: None,
-                moves: vec![]
             };
         }
 
@@ -127,7 +125,6 @@ impl Engine {
         
         // The best move is initialized with the first one
         let mut best_move = 0;
-        let mut best_future_moves: Vec<Move> = vec![];
 
         // A small state machine is used to pass through moves in a specific order
         // This is why the code is quite hard to read. 
@@ -159,17 +156,15 @@ impl Engine {
                                               moves[move_index].is_capture());
 
                 if depth == 0 {
-                    println!("   score = {:?}, move = {:?}, moves = {:?}", result.score, result.best_move, result.moves);
+                    println!("   score = {:?}, move = {:?}", result.score, result.best_move);
                 }
 
                 // Alpha beta pruning
                 if white_to_play {
                     // Keep the maximum score
                     if result.score > current_score {
-                        // TODO keep track of the search result...
                         best_move = move_index;
                         current_score = result.score;
-                        best_future_moves = result.moves;
                     }
                     // beta cutoff
                     if current_score > beta {
@@ -184,7 +179,6 @@ impl Engine {
                     if result.score < current_score {
                         best_move = move_index;
                         current_score = result.score;
-                        best_future_moves = result.moves;
                     }
                     // alpha cutoff
                     if current_score < alpha {
@@ -215,11 +209,9 @@ impl Engine {
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
-        best_future_moves.push(moves[best_move]);
         return SearchResult {
             score: current_score, 
             best_move: Some(moves[best_move]),
-            moves: best_future_moves
         };
 
         // return if depth == 0 {
