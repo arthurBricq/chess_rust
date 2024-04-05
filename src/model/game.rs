@@ -733,4 +733,5 @@ mod tests {
         let mut move1 = Move::new(4, 6);
         assert!(game.is_move_valid(&mut move1))
     }
+    
 }

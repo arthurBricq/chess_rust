@@ -4,10 +4,7 @@ mod tests {
     use std::hash::Hash;
     use crate::model::game::{ChessGame, ScoreType};
     use crate::model::moves::Move;
-    #[test]
-    fn test_wrong_knigt_move() {
-        let mut game = ChessGame::new();
-    }
+
 
     #[test]
     fn test_simple_motions() {
@@ -64,6 +61,12 @@ mod tests {
         // Assert that g3 needs a score computation
         g3.apply_move_safe(Move::new(11, 27));
         assert!(!map.contains_key(&g3));
+    }
+    
+    #[test]
+    fn test_score_at_beggining() {
+        let game = ChessGame::new();
+        assert_eq!(0, game.score());
     }
 
 }

@@ -4,7 +4,7 @@ use super::super::model::moves::*;
 use std::time::Instant;
 use crate::model::engine::MoveOrderState::{AcceptsOnlyCapture, Finished, AcceptsAllMove};
 
-const ENGINE_DEPTH: i8 = 6;
+const ENGINE_DEPTH: i8 = 4;
 const EXTRA_CAPTURE_MOVE: i8 = 4;
 
 enum MoveOrderState {
@@ -43,7 +43,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: false }
+        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
@@ -56,6 +56,7 @@ impl Engine {
         let end = start.elapsed().as_millis() as f64 / 1000.;
         let nps = (self.iter as f64) / end;
         println!("\n\nSolver finished after evaluating {} positions", self.iter);
+        println!("    score = {} [points]", result.0);
         println!("    time = {end} [second]");
         println!("    nps = {nps} [moves/second]");
         println!("    transposition table contains {} positions", self.transposition_table.keys().len());
@@ -109,7 +110,7 @@ impl Engine {
         // get the list of available moves
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
-        
+
         // A small state machine is used to pass through moves in a specific order
         // This is why the code is quite hard to read. 
         // This state machine allows to avoid sorting moves, but I am not sure if this was a good decision.
@@ -132,18 +133,13 @@ impl Engine {
                 new_game.apply_move_unsafe(&moves[move_index]);
 
                 // call the recursion
-                // with the check in the transposition table
-                let result = if self.use_transposition && self.transposition_table.contains_key(&new_game) {
-                    (*self.transposition_table.get(&new_game).unwrap(), None)
-                } else {
-                    self.tree_search(new_game,
-                                     !white_to_play,
-                                     depth + 1,
-                                     alpha,
-                                     beta,
-                                     moves[move_index].is_capture())
-                };
-                
+                let result = self.tree_search(new_game,
+                                              !white_to_play,
+                                              depth + 1,
+                                              alpha,
+                                              beta,
+                                              moves[move_index].is_capture());
+
                 if depth == 0 {
                     println!("   score = {:?}", result.0);
                     println!("   move = {:?}", result.1);
@@ -201,7 +197,7 @@ impl Engine {
         // ==> we know which is the best move
 
         return (current_score, Some(moves[best_move]));
-        
+
         // return if depth == 0 {
         //     (current_score, Some(moves[best_move]))
         // } else {
