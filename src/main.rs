@@ -2,6 +2,7 @@ pub mod model {
     pub mod game;
     pub mod moves;
     pub mod engine;
+    pub mod moves_container;
 }
 
 pub mod view {
@@ -39,7 +40,7 @@ fn play() {
     let mut solver = Engine::new();
     if let (Some(best_move), _nps) = solver.find_best_move(game, false) {
         let _success = game.apply_move_safe(
-            Move::new(best_move.from, best_move.to)
+            Move::new(best_move.from, best_move.to, false)
         );
     }
 
