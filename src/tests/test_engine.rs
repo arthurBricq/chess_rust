@@ -4,6 +4,7 @@ mod tests {
     use crate::model::engine::Engine;
     use crate::model::game::{ChessGame, chesspos_to_index, index_to_chesspos, pos_to_index};
     use crate::model::game::Type::{Bishop, King, Knight, Pawn, Rook};
+    use crate::model::moves::Move;
     use crate::view::terminal_display::TerminalChessView;
 
 
@@ -156,5 +157,38 @@ mod tests {
         } else {
             panic!("Error")
         }
+    }
+
+    #[test]
+    /// A test in which if black moves the left most pawn down, it will lose it.
+    /// We want to make sure that black sees this treat.
+    fn test_simple_engine5() {
+        // This position is the one where black is not supposed to play a5->a4
+        let mut pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
+        
+        let mut pos2 = pos1.clone();
+        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4")));
+        
+        let mut pos3 = pos2.clone();
+        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
+        
+        // This position is achieved after black plays a5->a4
+        // let mut pos2 = ChessGame::new(402973695, 71494644504257280, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
+
+        // let display = TerminalChessView::new(&mut pos1);
+        // display.display();
+
+        let mut engine = Engine::new();
+        
+        println!("Evaluating pos2");
+        if let (Some(m), _) = engine.find_best_move(pos2.clone(), true) {
+            println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+        }
+
+        // If it is white to play, it should move the pawn up and not capture anything
+        println!("Evaluating pos3");
+        if let (Some(m), _) = engine.find_best_move(pos3.clone(), false) {
+            println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+        } 
     }
 }

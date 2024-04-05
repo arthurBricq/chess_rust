@@ -32,8 +32,10 @@ impl MoveOrderState {
     }
 }
 
-
-type SearchResult = (ScoreType, Option<Move>);
+pub struct SearchResult {
+    score: ScoreType,
+    best_move: Option<Move>
+}
 
 pub struct Engine {
     iter: u64,
@@ -56,11 +58,11 @@ impl Engine {
         let end = start.elapsed().as_millis() as f64 / 1000.;
         let nps = (self.iter as f64) / end;
         println!("\n\nSolver finished after evaluating {} positions", self.iter);
-        println!("    score = {} [points]", result.0);
+        println!("    score = {} [points]", result.score);
         println!("    time = {end} [second]");
         println!("    nps = {nps} [moves/second]");
         println!("    transposition table contains {} positions", self.transposition_table.keys().len());
-        return (result.1, nps as u128);
+        return (result.best_move, nps as u128);
     }
 
     /// Chess engine tree search
@@ -81,21 +83,30 @@ impl Engine {
                    mut beta: ScoreType,
                    last_move_captured: bool,
     ) -> SearchResult {
+        // Ending criteria
         if (!last_move_captured && depth >= ENGINE_DEPTH) ||
             (last_move_captured && depth >= ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) ||
             (game.is_finished())
         {
             self.iter += 1;
+            
             // Compute score only if it was not computed before
-            if self.use_transposition && self.transposition_table.contains_key(&game) {
-                return (*self.transposition_table.get(&game).unwrap(), None);
-            } else {
-                let s = game.score();
-                if self.use_transposition {
+            let score = if self.use_transposition {
+                if self.transposition_table.contains_key(&game) {
+                    *self.transposition_table.get(&game).unwrap()
+                } else {
+                    let s = game.score();
                     self.transposition_table.insert(game, s);
+                    s
                 }
-                return (s, None);
-            }
+            } else {
+               game.score() 
+            };
+            
+            return SearchResult {
+                score,
+                best_move: None
+            };
         }
 
         let mut current_score = if white_to_play {
@@ -141,16 +152,15 @@ impl Engine {
                                               moves[move_index].is_capture());
 
                 if depth == 0 {
-                    println!("   score = {:?}", result.0);
-                    println!("   move = {:?}", result.1);
+                    println!("   score = {:?}, move = {:?}", result.score, result.best_move);
                 }
 
                 // Alpha beta prunning
                 if white_to_play {
                     // Keep the maximum score
-                    if result.0 > current_score {
+                    if result.score > current_score {
                         best_move = move_index;
-                        current_score = result.0;
+                        current_score = result.score;
                     }
                     // beta cutoff
                     if current_score > beta {
@@ -158,20 +168,20 @@ impl Engine {
                     }
                     // Update alpha: eg, the minimum score that white is guaranteed
                     // alpha becomes the max of the score
-                    if result.0 > alpha {
-                        alpha = result.0;
+                    if result.score > alpha {
+                        alpha = result.score;
                     }
                 } else {
-                    if result.0 < current_score {
+                    if result.score < current_score {
                         best_move = move_index;
-                        current_score = result.0;
+                        current_score = result.score;
                     }
                     // alpha cutoff
                     if current_score < alpha {
                         break;
                     }
-                    if result.0 < beta {
-                        beta = result.0;
+                    if result.score < beta {
+                        beta = result.score;
                     }
                 }
             }
@@ -195,8 +205,10 @@ impl Engine {
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
-
-        return (current_score, Some(moves[best_move]));
+        return SearchResult {
+            score: current_score, 
+            best_move: Some(moves[best_move])
+        };
 
         // return if depth == 0 {
         //     (current_score, Some(moves[best_move]))

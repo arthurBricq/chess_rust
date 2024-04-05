@@ -6,6 +6,7 @@ use crate::model::game::{ChessGame, Type, pos_to_index};
 pub enum Msg {
     RestartGame,
     SquareTapped(i8),
+    KeyPressed(char)
 }
 
 pub enum SquareType {
@@ -32,7 +33,7 @@ impl ChessViewModel
 {
     pub fn new() -> Self {
         Self {
-            game: ChessGame::new(),
+            game: ChessGame::standard_game(),
             solver: Engine::new(),
             selected_pos: None,
             engine_move: None,
@@ -144,7 +145,7 @@ impl ChessViewModel
     pub fn message_received(&mut self, msg: &Msg) -> bool {
         match msg {
             Msg::RestartGame => {
-                self.game = ChessGame::new();
+                self.game = ChessGame::standard_game();
                 return true;
             }
 
@@ -155,7 +156,7 @@ impl ChessViewModel
                     self.engine_move = None;
                     if self.game.apply_move_safe(Move::new(previous_pos, *pos)) {
                         self.selected_pos = None;
-
+                        self.game.print_game_integers();
                         self.play_with_engine();
                     } else {
                         self.selected_pos = Some(*pos);
@@ -165,6 +166,15 @@ impl ChessViewModel
                     self.selected_pos = Some(*pos)
                 }
 
+                return true;
+            }
+            
+            Msg::KeyPressed(key) => {
+                println!("Key tapped: {key:?}");
+                match key {
+                    'p' => self.game.print_game_integers(),
+                    _ => {}
+                }
                 return true;
             }
         }

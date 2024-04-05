@@ -137,9 +137,14 @@ impl ChessGame {
         }
     }
 
+    /// Construct a chess game from the integers
+    pub fn new(whites: u64, pawns: u64, bishops: u64, knights: u64, rooks: u64, queens: u64, kings: u64, flags: u64) -> Self {
+        Self { whites, pawns, bishops, knights, rooks, queens, kings, flags }
+    }
+
     /// Constructor for a normal chess game.
     /// The pieces are set like on a normal chess set.
-    pub fn new() -> Self {
+    pub fn standard_game() -> Self {
         let mut whites = 0;
         let mut pawns = 0;
         let mut bishops = 0;
@@ -472,6 +477,8 @@ impl ChessGame {
             // Eventually apply the capture
             self.apply_capture(&m);
 
+            /// TODO create a function `apply_move_unsafe_colored` which knows the color and does not have to check
+            /// color. The engine knows the color already, it is not necessary to duplicate the information.
             let is_white = is_set!(self.whites, m.from);
 
             // Apply the move
@@ -581,6 +588,7 @@ impl ChessGame {
             flags: 0,
         };
     }
+    
 }
 
 // Functions for the solver
@@ -681,14 +689,16 @@ impl ChessGame {
 
     pub fn print_game_integers(&self) {
         println!("\n----");
-        println!("whites:  {}", self.whites);
-        println!("pawns:   {}", self.pawns);
-        println!("bishops: {}", self.bishops);
-        println!("knights: {}", self.knights);
-        println!("rooks:   {}", self.rooks);
-        println!("queens:  {}", self.queens);
-        println!("kings:   {}", self.kings);
+        println!("whites:  {},", self.whites);
+        println!("pawns:   {},", self.pawns);
+        println!("bishops: {},", self.bishops);
+        println!("knights: {},", self.knights);
+        println!("rooks:   {},", self.rooks);
+        println!("queens:  {},", self.queens);
+        println!("kings:   {},", self.kings);
         println!("flags:   {}", self.flags);
+        println!("----");
+        println!("({}, {}, {}, {}, {}, {}, {}, {})", self.whites, self.pawns, self.bishops, self.knights, self.rooks, self.queens, self.kings, self.flags);
         println!("----");
     }
 
@@ -703,7 +713,7 @@ mod tests {
 
     #[test]
     fn test_wrong_knigt_move() {
-        let game = ChessGame::new();
+        let game = ChessGame::standard_game();
         let mut invalid_move = Move::new(6, 31);
         assert!(!game.is_move_valid(&mut invalid_move))
     }

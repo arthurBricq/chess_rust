@@ -20,16 +20,16 @@ impl<'a> TerminalChessView<'a> {
         if let Some(t) = self.game.type_at(i, j) {
             if self.game.is_white_at(i,j) {
                 match t {
-                    Type::Pawn => {"♙".to_string()}, 
-                    Type::Bishop => {"♗".to_string()}, 
-                    Type::Knight => {"♘".to_string()}, 
-                    Type::Rook => {"♖".to_string()}, 
-                    Type::Queen => {"♕".to_string()}, 
-                    Type::King => {"♔".to_string()}, 
+                    Type::Pawn => {"♙".to_string()},
+                    Type::Bishop => {"♗".to_string()},
+                    Type::Knight => {"♘".to_string()},
+                    Type::Rook => {"♖".to_string()},
+                    Type::Queen => {"♕".to_string()},
+                    Type::King => {"♔".to_string()},
                 }
             } else {
                 match t {
-                    Type::Pawn => {"♟︎".to_string()}, 
+                    Type::Pawn => {"♙".to_string()}, 
                     Type::Bishop => {"♝".to_string()}, 
                     Type::Knight => {"♞".to_string()}, 
                     Type::Rook => {"♜".to_string()}, 
@@ -38,7 +38,7 @@ impl<'a> TerminalChessView<'a> {
                 }
             }
         } else {
-            "  ".to_string()
+            " ".to_string()
         }
     }
 

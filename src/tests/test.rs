@@ -9,7 +9,7 @@ mod tests {
     #[test]
     fn test_simple_motions() {
         // Create a new chess game
-        let mut game = ChessGame::new();
+        let mut game = ChessGame::standard_game();
 
         // A stupid move should not pass
         let m = Move::new(10, 11);
@@ -47,9 +47,9 @@ mod tests {
     fn test_transposition_table() {
         let mut map: HashMap<ChessGame, ScoreType> = HashMap::new();
         // Create some games
-        let mut g1 = ChessGame::new();
-        let mut g2 = ChessGame::new();
-        let mut g3 = ChessGame::new();
+        let mut g1 = ChessGame::standard_game();
+        let mut g2 = ChessGame::standard_game();
+        let mut g3 = ChessGame::standard_game();
         g1.apply_move_safe(Move::new(12, 28));
         g3.apply_move_safe(Move::new(12, 28));
         // Fill the transposition table with two positions
@@ -65,7 +65,7 @@ mod tests {
     
     #[test]
     fn test_score_at_beggining() {
-        let game = ChessGame::new();
+        let game = ChessGame::standard_game();
         assert_eq!(0, game.score());
     }
 

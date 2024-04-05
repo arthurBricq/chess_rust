@@ -1,15 +1,15 @@
 use fltk::{*, prelude::*, window::Window};
-use fltk::{button::Button, frame::Frame, prelude::*};
-
-use super::super::view::chessview::*;
-use super::chessview;
-use crate::model::game::{ChessGame, Type, pos_to_index};
-use fltk::enums::Color;
-use fltk::app::Sender;
+use fltk::{button::Button, prelude::*};
+use fltk::app::{event_text, Sender};
+use fltk::enums::{Color, Event};
 use fltk::image::*;
 
+use crate::model::game::pos_to_index;
+
+use super::super::view::chessview::*;
+
 pub struct GTKView {
-    chessview: ChessViewModel,
+    chess_view: ChessViewModel,
 }
 
 const BUTTON_WIDTH: i32 = 50;
@@ -19,7 +19,7 @@ const LEFT: i32 = 10;
 impl GTKView {
     pub fn new() -> Self {
         Self {
-            chessview: ChessViewModel::new()
+            chess_view: ChessViewModel::new()
         }
     }
 
@@ -28,7 +28,7 @@ impl GTKView {
         button.set_label("");
         button.set_label_size(0);
 
-        if let Some(name) = self.chessview.get_image_name_at(i, j) {
+        if let Some(name) = self.chess_view.get_image_name_at(i, j) {
             let path = format!("src/images/{name}");
             let img = SvgImage::load(path).unwrap();
             button.set_image(Some(img));
@@ -40,7 +40,7 @@ impl GTKView {
 
         // let index = pos_to_index(i as i8, j as i8); 
         let index = i + j;
-        match (self.chessview.get_square_type(i as i8, j as i8), index % 2) {
+        match (self.chess_view.get_square_type(i as i8, j as i8), index % 2) {
             (SquareType::Attacked, _) => button.set_color(Color::from_hex(0xFF9933)),
             (SquareType::LastEngineMove, _) => button.set_color(Color::from_hex(0xf5f58c)),
             (SquareType::Idle, 1) => button.set_color(Color::from_hex(0xeeeed2)),
@@ -51,17 +51,15 @@ impl GTKView {
         button.set_frame(enums::FrameType::FlatBox);
     }
 
-    fn draw(&self, app: &app::App, s: &Sender<Msg>) -> Vec<Vec<Button>> {
+    fn draw_window(&self, app: &app::App, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
         let mut buttons: Vec<Vec<Button>> = Vec::new();
 
-        let mut win = window::Window::default()
+        let mut win = Window::default()
             .with_size(8 * BUTTON_WIDTH + 2 * LEFT, 8 * BUTTON_WIDTH + 2 * TOP)
             .with_label("Chess Engine by Arthur Bricq")
             ;
 
         win.set_color(Color::White);
-
-        println!("Color of window: {:?}", win.color());
 
         for i in 0..8 {
             let mut row: Vec<Button> = Vec::new();
@@ -86,18 +84,32 @@ impl GTKView {
         win.end();
         win.show();
 
-        return buttons;
+        return (win, buttons);
     }
 
     pub fn run_app(&mut self) {
         let app = app::App::default();
         let (s, r) = app::channel();
-        let mut buttons = self.draw(&app, &s);
+        let (mut win, mut buttons) = self.draw_window(&app, &s);
+
+        // Handle when pressing some keys
+        win.handle(move |_, event| -> bool {
+            match event {
+                Event::KeyDown => {
+                    if let Some(ch) = event_text().chars().next() {
+                        s.send(Msg::KeyPressed(ch));
+                    }
+                    return true
+                }
+                _ => {}
+            }
+            false
+        });
 
         while app.wait() {
             if let Some(msg) = r.recv() {
                 // Call the chessview to run the logic
-                self.chessview.message_received(&msg);
+                self.chess_view.message_received(&msg);
 
                 for i in 0..8 {
                     for j in 0..8 {
