@@ -4,9 +4,6 @@ use super::super::model::moves::*;
 use std::time::Instant;
 use crate::model::engine::MoveOrderState::{AcceptsOnlyCapture, Finished, AcceptsAllMove};
 
-const ENGINE_DEPTH: i8 = 4;
-const EXTRA_CAPTURE_MOVE: i8 = 4;
-
 enum MoveOrderState {
     AcceptsOnlyCapture,
     AcceptsAllMove,
@@ -34,10 +31,13 @@ impl MoveOrderState {
 
 pub struct SearchResult {
     score: ScoreType,
-    best_move: Option<Move>
+    best_move: Option<Move>,
+    moves: Vec<Move>
 }
 
 pub struct Engine {
+    depth: usize, 
+    extra_depth: usize,
     iter: u64,
     transposition_table: HashMap<ChessGame, ScoreType>,
     use_transposition: bool,
@@ -45,7 +45,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { depth: 4, extra_depth: 4, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 
@@ -78,14 +78,14 @@ impl Engine {
     fn tree_search(&mut self,
                    game: ChessGame,
                    white_to_play: bool,
-                   depth: i8,
+                   depth: usize,
                    mut alpha: ScoreType,
                    mut beta: ScoreType,
                    last_move_captured: bool,
     ) -> SearchResult {
         // Ending criteria
-        if (!last_move_captured && depth >= ENGINE_DEPTH) ||
-            (last_move_captured && depth >= ENGINE_DEPTH + EXTRA_CAPTURE_MOVE) ||
+        if (!last_move_captured && depth >= self.depth) ||
+            (last_move_captured && depth >= self.depth + self.extra_depth) ||
             (game.is_finished())
         {
             self.iter += 1;
@@ -105,7 +105,8 @@ impl Engine {
             
             return SearchResult {
                 score,
-                best_move: None
+                best_move: None,
+                moves: vec![]
             };
         }
 
@@ -115,12 +116,13 @@ impl Engine {
             ScoreType::MAX
         };
 
-        // The best move is initialized with the first one
-        let mut best_move = 0;
-
         // get the list of available moves
         // this is the only time that the function is called
         let moves = game.get_available_moves(white_to_play);
+        
+        // The best move is initialized with the first one
+        let mut best_move = 0;
+        let mut best_future_moves: Vec<Move> = vec![];
 
         // A small state machine is used to pass through moves in a specific order
         // This is why the code is quite hard to read. 
@@ -152,15 +154,17 @@ impl Engine {
                                               moves[move_index].is_capture());
 
                 if depth == 0 {
-                    println!("   score = {:?}, move = {:?}", result.score, result.best_move);
+                    println!("   score = {:?}, move = {:?}, moves = {:?}", result.score, result.best_move, result.moves);
                 }
 
                 // Alpha beta prunning
                 if white_to_play {
                     // Keep the maximum score
                     if result.score > current_score {
+                        // TODO keep track of the search result...
                         best_move = move_index;
                         current_score = result.score;
+                        best_future_moves = result.moves;
                     }
                     // beta cutoff
                     if current_score > beta {
@@ -175,6 +179,7 @@ impl Engine {
                     if result.score < current_score {
                         best_move = move_index;
                         current_score = result.score;
+                        best_future_moves = result.moves;
                     }
                     // alpha cutoff
                     if current_score < alpha {
@@ -205,9 +210,11 @@ impl Engine {
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
+        best_future_moves.push(moves[best_move]);
         return SearchResult {
             score: current_score, 
-            best_move: Some(moves[best_move])
+            best_move: Some(moves[best_move]),
+            moves: best_future_moves
         };
 
         // return if depth == 0 {

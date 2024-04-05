@@ -7,7 +7,6 @@ mod tests {
     use crate::model::moves::Move;
     use crate::view::terminal_display::TerminalChessView;
 
-
     #[test]
     /// A test in which white or black can take a pawn
     fn test_simple_engine1() {
@@ -169,8 +168,8 @@ mod tests {
         let mut pos2 = pos1.clone();
         pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4")));
         
-        let mut pos3 = pos2.clone();
-        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
+        // let mut pos3 = pos2.clone();
+        // pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
         
         // This position is achieved after black plays a5->a4
         // let mut pos2 = ChessGame::new(402973695, 71494644504257280, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
@@ -186,9 +185,9 @@ mod tests {
         }
 
         // If it is white to play, it should move the pawn up and not capture anything
-        println!("Evaluating pos3");
-        if let (Some(m), _) = engine.find_best_move(pos3.clone(), false) {
-            println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
-        } 
+        // println!("Evaluating pos3");
+        // if let (Some(m), _) = engine.find_best_move(pos3.clone(), false) {
+        //     println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+        // } 
     }
 }
