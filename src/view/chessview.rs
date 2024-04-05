@@ -33,7 +33,8 @@ impl ChessViewModel
 {
     pub fn new() -> Self {
         Self {
-            game: ChessGame::standard_game(),
+            game: ChessGame::new(402712575, 71494648782186240, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0)
+            ,
             solver: Engine::new(),
             selected_pos: None,
             engine_move: None,

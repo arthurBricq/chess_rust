@@ -45,7 +45,12 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { depth: 4, extra_depth: 4, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { depth: 5, extra_depth: 4, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+    }
+    
+    pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
+        self.depth = depth;
+        self.extra_depth = extra;
     }
 
     /// For a given chessgame, finds the solver's best move and returns it as an Option of a move. 

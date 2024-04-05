@@ -240,7 +240,6 @@ impl ChessGame {
 
     /// Returns true if there is a piece at this position
     fn has_piece_at(&self, at: i8) -> bool {
-        // TODO why is this fucking i8 ???
         is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
     }
 
@@ -443,6 +442,8 @@ impl ChessGame {
     fn is_move_valid(&self, m: &Move) -> bool {
         // Check that there is a piece to move at the destination
         if let Some(t) = self.type_at_index(m.from) {
+            
+            // TODO can this be removed ? You often know if it is white's turn to play.
             let is_white = is_set!(self.whites, m.from);
 
             if match t {

@@ -165,24 +165,34 @@ mod tests {
         // This position is the one where black is not supposed to play a5->a4
         let mut pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
         
+        let mut engine = Engine::new();
+        engine.set_engine_depth(4,4);
+        
+        // What is the best move for black ?
+        if let (Some(m), _) = engine.find_best_move(pos1.clone(), false) {
+            println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+            println!("-----------\n")
+        }
+        
+        
+        // Now we wonder, what is the best move for white, given there is one less depth ?
         let mut pos2 = pos1.clone();
         pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4")));
-        
-        // let mut pos3 = pos2.clone();
-        // pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
-        
-        // This position is achieved after black plays a5->a4
-        // let mut pos2 = ChessGame::new(402973695, 71494644504257280, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
-
-        // let display = TerminalChessView::new(&mut pos1);
-        // display.display();
-
-        let mut engine = Engine::new();
-        
-        println!("Evaluating pos2");
+        engine.set_engine_depth(3, 4);
         if let (Some(m), _) = engine.find_best_move(pos2.clone(), true) {
             println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+            println!("-----------\n")
         }
+        
+        // let's understand why is the move that attacks a4 is not seen as strong
+        let mut pos3 = pos2.clone();
+        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5")));
+        engine.set_engine_depth(2, 4);
+        if let (Some(m), _) = engine.find_best_move(pos3.clone(), false) {
+            println!("{} {}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+            println!("-----------\n")
+        }
+        
 
         // If it is white to play, it should move the pawn up and not capture anything
         // println!("Evaluating pos3");
