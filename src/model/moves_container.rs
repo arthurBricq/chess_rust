@@ -6,6 +6,7 @@ pub trait MovesContainer {
     fn add(&mut self, m: Move);
     fn has_next(&self) -> bool;
     fn get_next(&mut self) -> Move;
+    fn reset(&mut self);
 }
 
 pub struct SimpleMovesContainer {
@@ -33,14 +34,22 @@ impl MovesContainer for SimpleMovesContainer {
         self.index += 1;
         self.moves[i]
     }
+
+    fn reset(&mut self) {
+        self.moves.clear();
+        self.index = 0;
+    }
 }
 
 
 pub struct SortedMovesContainer {
-    /// The different containers
-    containers: Vec<Vec<Move>>,
+    /// The different containers.
+    /// We use arrays and not vectors to be more efficient
+    containers: [[Move; 128]; 2],
+    /// size of each containers
+    lens: [usize; 2],
     /// index inside each container
-    indices: Vec<usize>,
+    indices: [usize; 2],
     /// The current container
     container_index: usize,
 }
@@ -48,8 +57,9 @@ pub struct SortedMovesContainer {
 impl SortedMovesContainer {
     pub fn new() -> Self {
         Self {
-            containers: vec![vec![], vec![]],
-            indices: vec![0, 0],
+            containers: [[Move::new(0,0, true); 128]; 2],
+            lens: [0; 2],
+            indices: [0; 2],
             container_index: 0
         }
     }
@@ -57,29 +67,31 @@ impl SortedMovesContainer {
 
 impl MovesContainer for SortedMovesContainer {
     fn add(&mut self, m: Move) {
-        match m.quality {
-            MoveQuality::Capture => self.containers[0].push(m),
-            MoveQuality::Motion => self.containers[1].push(m)
-        }
+        let index = match m.quality {
+            MoveQuality::Capture => 0,
+            MoveQuality::Motion => 1
+        };
+        self.containers[index][self.lens[index]] = m;
+        self.lens[index] += 1;
     }
 
     fn has_next(&self) -> bool {
-        // println!("{:?}", self.index < self.containers[self.container].len());
-        // println!("{:?}", (self.container < self.containers.len()));
-        // println!("{:?}", (self.containers[self.container + 1].len() > 0));
-
-        false
+        self.indices[0] < self.lens[0] || self.indices[1] < self.lens[1]
     }
 
     fn get_next(&mut self) -> Move {
-        let i = self.indices[self.container_index];
-        if i < self.containers[self.container_index].len() {
-            self.indices[self.container_index] += 1;
-            self.containers[self.container_index][i]
+        let index = if self.indices[0] < self.lens[0] {
+            0
         } else {
-            self.container_index += 1;
-            self.containers[self.container_index][0]
-        }
+            1
+        };
+        self.indices[index] += 1;
+        self.containers[index][self.indices[index] - 1]
+    }
+
+    fn reset(&mut self) {
+        self.lens = [0; 2];
+        self.indices = [0; 2];
     }
 }
 
