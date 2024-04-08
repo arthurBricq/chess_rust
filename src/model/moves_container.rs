@@ -1,6 +1,7 @@
 use crate::model::moves::{Move, MoveQuality};
 
 /// Stores a list of moves and retrieve them in an order that implementation can define
+/// This allows to not have to sort a list of move based on an order.
 pub trait MovesContainer {
     fn add(&mut self, m: Move);
     fn has_next(&self) -> bool;
@@ -34,15 +35,23 @@ impl MovesContainer for SimpleMovesContainer {
     }
 }
 
+
 pub struct SortedMovesContainer {
+    /// The different containers
     containers: Vec<Vec<Move>>,
-    index: usize,
-    container: usize,
+    /// index inside each container
+    indices: Vec<usize>,
+    /// The current container
+    container_index: usize,
 }
 
 impl SortedMovesContainer {
     pub fn new() -> Self {
-        Self { containers: vec![vec![], vec![]], index: 0, container: 0 }
+        Self {
+            containers: vec![vec![], vec![]],
+            indices: vec![0, 0],
+            container_index: 0
+        }
     }
 }
 
@@ -55,26 +64,21 @@ impl MovesContainer for SortedMovesContainer {
     }
 
     fn has_next(&self) -> bool {
-        println!("{}, {}", self.index, self.container);
-        println!("{:?}", self.containers);
         // println!("{:?}", self.index < self.containers[self.container].len());
         // println!("{:?}", (self.container < self.containers.len()));
         // println!("{:?}", (self.containers[self.container + 1].len() > 0));
-        // TODO this will not work with three category
 
-
-        self.index < self.containers[self.container].len() || (self.container < self.containers.len() && self.containers[self.container + 1].len() > 0)
+        false
     }
 
     fn get_next(&mut self) -> Move {
-        let i = self.index;
-        self.index += 1;
-        if i < self.containers[self.container].len() {
-            self.containers[self.container][i]
+        let i = self.indices[self.container_index];
+        if i < self.containers[self.container_index].len() {
+            self.indices[self.container_index] += 1;
+            self.containers[self.container_index][i]
         } else {
-            self.container += 1;
-            self.index = 1;
-            self.containers[self.container][0]
+            self.container_index += 1;
+            self.containers[self.container_index][0]
         }
     }
 }
