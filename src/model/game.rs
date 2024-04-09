@@ -1,3 +1,4 @@
+use crate::model::moves_container::MovesContainer;
 use super::moves::*;
 
 // transforms a position (x,y) into a bit index
@@ -653,6 +654,58 @@ impl ChessGame {
         }
 
         return moves;
+    }
+    
+    fn fill_moves_container(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
+        for motion in motions {
+            let des: i8 = from + motion;
+            if des >= 0 && des < 64 {
+                let mut m = Move::new(from, des, is_white);
+                if self.is_move_valid(&m) {
+                    // Optionally mark the move as a capture move
+                    if self.has_piece_at(m.to) {
+                        m.set_as_capture();
+                    }
+                    to_fill.push(m);
+                }
+            }
+        }
+    }
+    
+    pub fn update_move_container(&self, container: &mut dyn MovesContainer, is_white: bool) {
+        container.reset();
+        
+        let pieces = if is_white {
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & self.whites
+        } else {
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & !self.whites
+        };
+        
+        for i in 0..64 {
+            if !is_set!(pieces, i) {
+                continue
+            }
+            
+            match self.type_at_index(i).unwrap() {
+                Type::Pawn => {
+                    if is_white {
+                        self.fill_moves_container(container, i, &WHITE_PAWN_MOVES, is_white);
+                    } else {
+                        self.fill_moves_container(container, i, &BLACK_PAWN_MOVES, is_white);
+                    }
+                }
+                Type::Bishop => self.fill_moves_container(container, i, &BISHOP_MOVES, is_white),
+                Type::Rook => self.fill_moves_container(container, i, &ROOK_MOVES, is_white),
+                Type::Knight => self.fill_moves_container(container, i, &KNIGHT_MOVES, is_white),
+                Type::King => {
+                    self.fill_moves_container(container, i, &KING_MOVES, is_white);
+                    self.fill_moves_container(container, i, &KING_SPECIAL_MOVES, is_white);
+                }
+                Type::Queen => self.fill_moves_container(container, i, &QUEEN_MOVES, is_white),
+            }
+
+        }
+        
     }
 
     pub fn score(&self) -> ScoreType {

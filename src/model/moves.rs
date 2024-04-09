@@ -2,13 +2,8 @@ use super::game::{index_to_chesspos, Type};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
-// pub const PAWN_MOVES: [i8;8] = [
-//     8, 9, 7,
-//     -8, -9, -7,
-//     16, -16,
-//     ]; 
-
 pub const WHITE_PAWN_MOVES: [i8;4] = [8, 9, 7, 16];
+
 pub const BLACK_PAWN_MOVES: [i8;4] = [-8, -9, -7, -16];
 
 pub const ROOK_MOVES: [i8;28] = [

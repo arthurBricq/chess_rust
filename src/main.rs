@@ -16,6 +16,7 @@ pub mod view {
 pub mod tests {
     pub mod test;
     pub mod test_engine;
+    pub mod test_game_api;
 }
 
 use model::game::*;

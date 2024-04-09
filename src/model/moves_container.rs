@@ -3,10 +3,11 @@ use crate::model::moves::{Move, MoveQuality};
 /// Stores a list of moves and retrieve them in an order that implementation can define
 /// This allows to not have to sort a list of move based on an order.
 pub trait MovesContainer {
-    fn add(&mut self, m: Move);
+    fn push(&mut self, m: Move);
     fn has_next(&self) -> bool;
     fn get_next(&mut self) -> Move;
     fn reset(&mut self);
+    fn count(&self) -> usize;
 }
 
 pub struct SimpleMovesContainer {
@@ -21,7 +22,7 @@ impl SimpleMovesContainer {
 }
 
 impl MovesContainer for SimpleMovesContainer {
-    fn add(&mut self, m: Move) {
+    fn push(&mut self, m: Move) {
         self.moves.push(m)
     }
 
@@ -38,6 +39,10 @@ impl MovesContainer for SimpleMovesContainer {
     fn reset(&mut self) {
         self.moves.clear();
         self.index = 0;
+    }
+
+    fn count(&self) -> usize {
+        self.moves.len()
     }
 }
 
@@ -66,7 +71,7 @@ impl SortedMovesContainer {
 }
 
 impl MovesContainer for SortedMovesContainer {
-    fn add(&mut self, m: Move) {
+    fn push(&mut self, m: Move) {
         let index = match m.quality {
             MoveQuality::Capture => 0,
             MoveQuality::Motion => 1
@@ -93,6 +98,10 @@ impl MovesContainer for SortedMovesContainer {
         self.lens = [0; 2];
         self.indices = [0; 2];
     }
+
+    fn count(&self) -> usize {
+        self.lens.iter().sum()
+    }
 }
 
 #[cfg(test)]
@@ -110,11 +119,12 @@ mod tests {
         let mut m3 = Move::new(4, 5, true);
         m3.set_as_capture();
 
-        container.add(m1);
-        container.add(m2);
-        container.add(m3);
+        container.push(m1);
+        container.push(m2);
+        container.push(m3);
 
         assert!(container.has_next());
+        assert_eq!(3, container.count());
 
         // The first value (m3) is supposed to be a capture
         assert!(container.get_next().is_capture());
