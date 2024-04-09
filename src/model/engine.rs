@@ -135,9 +135,9 @@ impl Engine {
         while container.has_next() {
             let m = container.get_next();
 
-            if depth == 0 {
-                println!("move = {:?}", m);
-            }
+            // if depth == 0 {
+            //     println!("move = {:?}", m);
+            // }
 
             // TODO maybe these two functions can be squashed into a single one
             let mut new_game = game.clone();
@@ -150,10 +150,10 @@ impl Engine {
                                           alpha,
                                           beta,
                                           m.is_capture());
-
-            if depth == 0 {
-                println!("   score = {:?}, move = {:?}", result.score, result.best_move);
-            }
+            
+            // if depth == 0 {
+            //     println!("   score = {:?}, move = {:?}", result.score, result.best_move);
+            // }
 
             // Alpha beta pruning
             if white_to_play {
@@ -184,7 +184,6 @@ impl Engine {
                     beta = result.score;
                 }
             }
-            
         }
 
 
