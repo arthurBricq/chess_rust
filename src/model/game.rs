@@ -559,39 +559,6 @@ impl ChessGame {
         return false;
     }
 
-    pub fn new_test1() -> Self {
-        let mut whites = 0;
-        let mut pawns = 0;
-        let mut bishops = 0;
-        let knights = 0;
-        let mut rooks = 0;
-        let queens = 0;
-        let kings = 0;
-
-        // Set some pieces here
-        set_at!(rooks, pos_to_index(3,3));
-        set_at!(rooks, pos_to_index(1,3));
-        set_at!(whites, pos_to_index(1,3));
-        set_at!(pawns, pos_to_index(3,1));
-        set_at!(whites, pos_to_index(3,1));
-
-        return Self {
-            whites,
-            pawns,
-            bishops,
-            knights,
-            rooks,
-            queens,
-            kings,
-            flags: 0,
-        };
-    }
-    
-}
-
-// Functions for the solver
-
-impl ChessGame {
     /// Helper method that applies all the provided motions from the given position
     fn fill_moves_container(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
         for motion in motions {
@@ -658,16 +625,17 @@ impl ChessGame {
     pub fn score(&self) -> ScoreType {
         let mut score = 0;
 
-        // Value of pieces
-        for i in 0..64 {
-            if let Some(t) = self.type_at_index(i) {
-                if is_set!(self.whites, i) {
-                    score += t.score();
-                } else {
-                    score -= t.score();
-                }
-            }
-        }
+        score += (self.pawns & self.whites).count_ones() as i32 * 1;
+        score += ((self.bishops | self.knights) & self.whites).count_ones() as i32 * 3i32;
+        score += (self.rooks & self.whites).count_ones() as i32 * 5;
+        score += (self.queens & self.whites).count_ones() as i32 * 10;
+        score += (self.kings & self.whites).count_ones() as i32 * 1000;
+
+        score -= ((self.bishops | self.knights) & !self.whites).count_ones() as i32 * 3;
+        score -= (self.pawns & !self.whites).count_ones() as i32 * 1;
+        score -= (self.rooks & !self.whites).count_ones() as i32 * 5;
+        score -= (self.queens & !self.whites).count_ones() as i32 * 10;
+        score -= (self.kings & !self.whites).count_ones() as i32 * 1000;
 
         // The bigger this ratio is, the less the engine will favor attacking positions.
         // score *= 100;

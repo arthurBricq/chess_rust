@@ -4,6 +4,8 @@ This repo contains the code of a **chess engine** fully written in Rust, from sc
 
 This is one of my many personal projects in Rust. And it is my second chess engine (*I had done the first in [C++](https://github.com/arthurBricq/chess_cpp)*)
 
+This engine runs at about 10 million moves per seconds on my machine.
+
 ![](screenshot.png)
 
 The engine features :
