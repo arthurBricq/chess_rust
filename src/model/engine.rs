@@ -15,8 +15,6 @@ pub struct Engine {
     depth: usize, 
     extra_depth: usize,
     iter: u64,
-    use_transposition: bool,
-    transposition_table: HashMap<ChessGame, ScoreType>,
 }
 
 impl Engine {
@@ -25,8 +23,6 @@ impl Engine {
             depth: 5,
             extra_depth: 2,
             iter: 0,
-            transposition_table: HashMap::new(),
-            use_transposition: false
         }
     }
     
@@ -39,10 +35,7 @@ impl Engine {
     /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
     pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (Option<Move>, u128) {
         self.iter = 0;
-        
-        self.transposition_table.clear();
-        
-        
+
         let start = Instant::now();
         let result = self.tree_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
         let end = start.elapsed().as_millis() as f64 / 1000.;
@@ -53,7 +46,6 @@ impl Engine {
         println!("    score = {} [points]", result.score);
         println!("    time = {end} [second]");
         println!("    nps = {nps} [moves/second]");
-        println!("    transposition table contains {} positions", self.transposition_table.keys().len());
         return (result.best_move, nps as u128);
     }
 
@@ -81,22 +73,9 @@ impl Engine {
             (game.is_finished())
         {
             self.iter += 1;
-            
-            // Compute score only if it was not computed before
-            let score = if self.use_transposition {
-                if self.transposition_table.contains_key(&game) {
-                    *self.transposition_table.get(&game).unwrap()
-                } else {
-                    let s = game.score();
-                    self.transposition_table.insert(game, s);
-                    s
-                }
-            } else {
-               game.score() 
-            };
-            
+
             return SearchResult {
-                score,
+                score: game.score(),
                 best_move: None,
             };
         }
