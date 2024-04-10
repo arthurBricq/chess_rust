@@ -55,8 +55,6 @@ pub struct SortedMovesContainer {
     lens: [usize; 4],
     /// index inside each container
     indices: [usize; 4],
-    /// The current container
-    container_index: usize,
 }
 
 impl SortedMovesContainer {
@@ -65,7 +63,6 @@ impl SortedMovesContainer {
             containers: [[Move::new(0, 0, true); 128]; 4],
             lens: [0; 4],
             indices: [0; 4],
-            container_index: 0,
         }
     }
 }

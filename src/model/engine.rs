@@ -1,34 +1,10 @@
-use std::collections::{HashMap, HashSet};
-use super::super::model::game::*;
-use super::super::model::moves::*;
+use std::collections::HashMap;
 use std::time::Instant;
-use crate::model::engine::MoveOrderState::{AcceptsOnlyCapture, Finished, AcceptsAllMove};
+
 use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
 
-enum MoveOrderState {
-    AcceptsOnlyCapture,
-    AcceptsAllMove,
-    Finished,
-}
-
-impl MoveOrderState {
-    fn next(&mut self) {
-        match self {
-            AcceptsOnlyCapture => *self = AcceptsAllMove,
-            AcceptsAllMove => *self = Finished,
-            _ => panic!("We must not arrive here")
-        }
-    }
-
-    /// Returns true if the move is accepted at this stage of the looping through moves
-    fn accepts(&self, m: &Move) -> bool {
-        match self {
-            AcceptsOnlyCapture => m.is_capture(),
-            AcceptsAllMove => true,
-            _ => panic!("We must not arrive here")
-        }
-    }
-}
+use super::super::model::game::*;
+use super::super::model::moves::*;
 
 pub struct SearchResult {
     score: ScoreType,
@@ -45,7 +21,13 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { depth: 6, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self {
+            depth: 5,
+            extra_depth: 2,
+            iter: 0,
+            transposition_table: HashMap::new(),
+            use_transposition: false
+        }
     }
     
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
@@ -133,10 +115,8 @@ impl Engine {
         let mut best_move = None;
         
         while container.has_next() {
-            let m = container.get_next();
-            
-            // TODO maybe these two functions can be squashed into a single one
             let mut new_game = game.clone();
+            let m = container.get_next();
             new_game.apply_move_unsafe(&m);
 
             // call the recursion
