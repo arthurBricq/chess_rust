@@ -1,6 +1,7 @@
 use super::super::model::engine::Engine;
 use super::super::model::moves::Move;
 use crate::model::game::{ChessGame, Type, pos_to_index};
+use crate::model::moves_container::SimpleMovesContainer;
 
 #[derive(Copy, Clone)]
 pub enum Msg {
@@ -141,9 +142,9 @@ impl ChessViewModel
 
     fn compute_attacked_positions(&mut self) {
         if let Some(pos) = self.selected_pos {
-            let mut moves: Vec<Move> = Vec::new();
-            self.game.fill_possible_moves_from(&mut moves, pos, true);
-            self.attacked_positions = moves.iter().map(|m| m.to).collect();
+            let mut container = SimpleMovesContainer::new();
+            self.game.update_move_container(&mut container, true);
+            self.attacked_positions = container.moves.iter().filter(|m| m.from == pos).map(|m| m.to).collect();
         }
     }
 

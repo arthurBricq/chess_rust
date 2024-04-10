@@ -11,7 +11,7 @@ pub trait MovesContainer {
 }
 
 pub struct SimpleMovesContainer {
-    moves: Vec<Move>,
+    pub moves: Vec<Move>,
     index: usize,
 }
 

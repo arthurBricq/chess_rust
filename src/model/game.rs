@@ -591,76 +591,14 @@ impl ChessGame {
 // Functions for the solver
 
 impl ChessGame {
-    /// Fills the provided list of moves, by iterating over the provided possible motions.
-    fn fill_moves(&self, to_fill: &mut Vec<Move>, from: i8, motions: &[i8], is_white: bool) {
-        for motion in motions {
-            let des: i8 = from + motion;
-            if des >= 0 && des < 64 {
-                let mut m = Move::new(from, des, is_white);
-                if self.is_move_valid(&m) {
-                    // Optionally mark the move as a capture move
-                    if self.has_piece_at(m.to) {
-                        m.set_as_capture();
-                    }
-                    to_fill.push(m);
-                }
-            }
-        }
-    }
-
-    /// Fills the vector of moves with all the valid moves starting from the given position
-    pub fn fill_possible_moves_from(&self, mut moves: &mut Vec<Move>, from: i8, is_white: bool) {
-        if let Some(t) = self.type_at_index(from) {
-            match t {
-                Type::Pawn => {
-                    if is_white {
-                        self.fill_moves(&mut moves, from, &WHITE_PAWN_MOVES, is_white);
-                    } else {
-                        self.fill_moves(&mut moves, from, &BLACK_PAWN_MOVES, is_white);
-                    }
-                }
-                Type::Bishop => self.fill_moves(&mut moves, from, &BISHOP_MOVES, is_white),
-                Type::Rook => self.fill_moves(&mut moves, from, &ROOK_MOVES, is_white),
-                Type::Knight => self.fill_moves(&mut moves, from, &KNIGHT_MOVES, is_white),
-                Type::King => {
-                    self.fill_moves(&mut moves, from, &KING_MOVES, is_white);
-                    self.fill_moves(&mut moves, from, &KING_SPECIAL_MOVES, is_white);
-                }
-                Type::Queen => self.fill_moves(&mut moves, from, &QUEEN_MOVES, is_white),
-            }
-        }
-    }
-
-    /**
-     * Returns the list of possible moves for the requested player.
-     */
-    pub fn get_available_moves(&self, is_white_playing: bool) -> Vec<Move> {
-        let mut moves: Vec<Move> = Vec::with_capacity(32);
-
-        // Get the pieces at the given color
-        let pieces = if is_white_playing {
-            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & self.whites
-        } else {
-            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & !self.whites
-        };
-
-        // fill possibles moves from each of the pieces taken in consideration.
-        // This is really the downside of this technique: iterating over the pieces is difficult.
-        for i in 0..64 {
-            if pieces & (1 << i) != 0 {
-                // it means that 'i'-th bit contains a piece of the desired color
-                self.fill_possible_moves_from(&mut moves, i, is_white_playing);
-            }
-        }
-
-        return moves;
-    }
-    
+    /// Helper method that applies all the provided motions from the given position
     fn fill_moves_container(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
         for motion in motions {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
                 let mut m = Move::new(from, des, is_white);
+                // TODO potentially we can avoid to compute the type, as the caller of this function knows the type
+                //      Let's see what this involves.
                 if self.is_move_valid(&m) {
                     // Optionally mark the move as a capture move
                     if self.has_piece_at(m.to) {
@@ -672,6 +610,9 @@ impl ChessGame {
         }
     }
     
+    /// Fills the provided container with all the available moves at the current position.
+    /// 
+    /// This function also resets the move container before running anything.
     pub fn update_move_container(&self, container: &mut dyn MovesContainer, is_white: bool) {
         container.reset();
         
@@ -703,9 +644,7 @@ impl ChessGame {
                 }
                 Type::Queen => self.fill_moves_container(container, i, &QUEEN_MOVES, is_white),
             }
-
         }
-        
     }
 
     pub fn score(&self) -> ScoreType {

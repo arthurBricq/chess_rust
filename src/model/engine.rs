@@ -45,7 +45,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { depth: 4, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { depth: 5, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
     
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
@@ -134,11 +134,7 @@ impl Engine {
         
         while container.has_next() {
             let m = container.get_next();
-
-            // if depth == 0 {
-            //     println!("move = {:?}", m);
-            // }
-
+            
             // TODO maybe these two functions can be squashed into a single one
             let mut new_game = game.clone();
             new_game.apply_move_unsafe(&m);
@@ -151,10 +147,6 @@ impl Engine {
                                           beta,
                                           m.is_capture());
             
-            // if depth == 0 {
-            //     println!("   score = {:?}, move = {:?}", result.score, result.best_move);
-            // }
-
             // Alpha beta pruning
             if white_to_play {
                 // Keep the maximum score

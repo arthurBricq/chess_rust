@@ -58,7 +58,7 @@ fn play() {
 fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut solver = Engine::new();
-    let n = 10;
+    let n = 20;
 
     for _i in 0..n {
         let mut game = ChessGame::standard_game();
