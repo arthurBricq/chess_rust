@@ -70,7 +70,7 @@ impl Engine {
         // Ending criteria
         if (!last_move_captured && depth >= self.depth) ||
             (last_move_captured && depth >= self.depth + self.extra_depth) ||
-            (game.is_finished())
+            game.is_finished()
         {
             self.iter += 1;
 
