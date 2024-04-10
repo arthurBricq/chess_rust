@@ -45,7 +45,7 @@ pub struct Engine {
 
 impl Engine {
     pub fn new() -> Self {
-        Self { depth: 5, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
+        Self { depth: 6, extra_depth: 2, iter: 0, transposition_table: HashMap::new(), use_transposition: true }
     }
     
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {

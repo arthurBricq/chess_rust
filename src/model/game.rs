@@ -1,3 +1,4 @@
+use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture};
 use crate::model::moves_container::MovesContainer;
 use super::moves::*;
 
@@ -597,12 +598,19 @@ impl ChessGame {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
                 let mut m = Move::new(from, des, is_white);
-                // TODO potentially we can avoid to compute the type, as the caller of this function knows the type
-                //      Let's see what this involves.
                 if self.is_move_valid(&m) {
-                    // Optionally mark the move as a capture move
-                    if self.has_piece_at(m.to) {
-                        m.set_as_capture();
+                    // rank the quality of the move
+                    if let Some(captured) = self.type_at_index(m.to) {
+                        let piece = self.type_at_index(m.from).unwrap();
+                        let s0 = piece.score();
+                        let s1 = captured.score();
+                        if s0 < s1 {
+                            m.set_quality(GoodCapture);
+                        } else if s0 == s1 { 
+                            m.set_quality(EqualCapture)
+                        } else { 
+                            m.set_quality(LowCapture)
+                        }
                     }
                     to_fill.push(m);
                 }

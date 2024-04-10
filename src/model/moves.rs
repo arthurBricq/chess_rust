@@ -42,7 +42,9 @@ pub const KING_SPECIAL_MOVES: [i8; 2] = [
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum MoveQuality {
-    Capture, 
+    GoodCapture,
+    EqualCapture, 
+    LowCapture,
     Motion,
 }
 
@@ -76,13 +78,15 @@ impl Move {
     pub fn new(from: i8, to: i8, is_white: bool) -> Self {
         Self {from, to, is_white, quality: MoveQuality::Motion}
     }
-
-    pub fn set_as_capture(&mut self) {
-        self.quality = MoveQuality::Capture;
+    
+    pub fn set_quality(&mut self, q: MoveQuality) {
+        self.quality = q;
     }
 
     pub fn is_capture(&self) -> bool {
-        self.quality == MoveQuality::Capture
+        self.quality == MoveQuality::GoodCapture || 
+            self.quality == MoveQuality::EqualCapture || 
+            self.quality == MoveQuality::LowCapture
     }
 
     pub fn get_vector(&self) -> [i8; 2] {

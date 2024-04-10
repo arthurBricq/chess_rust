@@ -50,11 +50,11 @@ impl MovesContainer for SimpleMovesContainer {
 pub struct SortedMovesContainer {
     /// The different containers.
     /// We use arrays and not vectors to be more efficient
-    containers: [[Move; 128]; 2],
+    containers: [[Move; 128]; 4],
     /// size of each containers
-    lens: [usize; 2],
+    lens: [usize; 4],
     /// index inside each container
-    indices: [usize; 2],
+    indices: [usize; 4],
     /// The current container
     container_index: usize,
 }
@@ -62,10 +62,10 @@ pub struct SortedMovesContainer {
 impl SortedMovesContainer {
     pub fn new() -> Self {
         Self {
-            containers: [[Move::new(0,0, true); 128]; 2],
-            lens: [0; 2],
-            indices: [0; 2],
-            container_index: 0
+            containers: [[Move::new(0, 0, true); 128]; 4],
+            lens: [0; 4],
+            indices: [0; 4],
+            container_index: 0,
         }
     }
 }
@@ -73,30 +73,39 @@ impl SortedMovesContainer {
 impl MovesContainer for SortedMovesContainer {
     fn push(&mut self, m: Move) {
         let index = match m.quality {
-            MoveQuality::Capture => 0,
-            MoveQuality::Motion => 1
+            MoveQuality::GoodCapture => 0,
+            MoveQuality::EqualCapture => 1,
+            MoveQuality::LowCapture => 2,
+            MoveQuality::Motion => 3,
         };
         self.containers[index][self.lens[index]] = m;
         self.lens[index] += 1;
     }
 
     fn has_next(&self) -> bool {
-        self.indices[0] < self.lens[0] || self.indices[1] < self.lens[1]
+        self.indices[0] < self.lens[0]
+            || self.indices[1] < self.lens[1]
+            || self.indices[2] < self.lens[2]
+            || self.indices[3] < self.lens[3]
     }
 
     fn get_next(&mut self) -> Move {
         let index = if self.indices[0] < self.lens[0] {
             0
-        } else {
+        } else if self.indices[1] < self.lens[1] {
             1
+        } else if self.indices[2] < self.lens[2] {
+            2
+        } else {
+            3
         };
         self.indices[index] += 1;
         self.containers[index][self.indices[index] - 1]
     }
 
     fn reset(&mut self) {
-        self.lens = [0; 2];
-        self.indices = [0; 2];
+        self.lens = [0; 4];
+        self.indices = [0; 4];
     }
 
     fn count(&self) -> usize {
@@ -107,6 +116,7 @@ impl MovesContainer for SortedMovesContainer {
 #[cfg(test)]
 mod tests {
     use crate::model::moves::Move;
+    use crate::model::moves::MoveQuality::GoodCapture;
     use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
 
     #[test]
@@ -117,7 +127,7 @@ mod tests {
         let m1 = Move::new(0, 1, true);
         let m2 = Move::new(2, 3, true);
         let mut m3 = Move::new(4, 5, true);
-        m3.set_as_capture();
+        m3.set_quality(GoodCapture);
 
         container.push(m1);
         container.push(m2);
