@@ -588,7 +588,7 @@ impl ChessGame {
     /// Fills the provided container with all the available moves at the current position.
     /// 
     /// This function also resets the move container before running anything.
-    pub fn update_move_container(&self, container: &mut dyn MovesContainer, is_white: bool) {
+    pub fn update_move_container<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
         
         let pieces = if is_white {

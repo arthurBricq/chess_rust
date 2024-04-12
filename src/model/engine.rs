@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+use crate::model::moves_container::{MovesContainer, SimpleMovesContainer, SortedMovesContainer};
 
 use super::super::model::game::*;
 use super::super::model::moves::*;
@@ -107,6 +107,9 @@ impl Engine {
                                           m.is_capture());
             
             // Alpha beta pruning
+            
+            
+            
             if white_to_play {
                 // Keep the maximum score
                 if result.score > current_score {
