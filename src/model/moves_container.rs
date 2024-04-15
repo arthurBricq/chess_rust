@@ -17,7 +17,7 @@ pub struct SimpleMovesContainer {
 
 impl SimpleMovesContainer {
     pub fn new() -> Self {
-        Self { moves: Vec::with_capacity(64), index: 0 }
+        Self { moves: Vec::with_capacity(128), index: 0 }
     }
 }
 

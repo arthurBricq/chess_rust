@@ -1,5 +1,5 @@
 use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture};
-use crate::model::moves_container::MovesContainer;
+use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
 use super::moves::*;
 
 // transforms a position (x,y) into a bit index
@@ -638,7 +638,7 @@ impl ChessGame {
         score -= (self.kings & !self.whites).count_ones() as i32 * 1000;
 
         // The bigger this ratio is, the less the engine will favor attacking positions.
-        // score *= 100;
+        score *= 10;
 
         // Castling : we want to favor the castle, which secures the king
         // if is_set!(self.flags, FLAG_WK_CASTLED) {
@@ -653,8 +653,11 @@ impl ChessGame {
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
 
         // Number of attacked squares: this is added to favor an attacking position
-        // score += self.get_available_moves(true).len() as ScoreType;
-        // score -= self.get_available_moves(false).len() as ScoreType;
+        let mut container = SimpleMovesContainer::new();
+        self.update_move_container(&mut container, true);
+        score += container.count() as ScoreType;
+        self.update_move_container(&mut container, false);
+        score -= container.count() as ScoreType;
 
         return score;
     }
