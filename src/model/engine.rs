@@ -20,7 +20,7 @@ pub struct Engine {
 impl Engine {
     pub fn new() -> Self {
         Self {
-            depth: 5,
+            depth: 4,
             extra_depth: 2,
             iter: 0,
         }
@@ -37,9 +37,8 @@ impl Engine {
         self.iter = 0;
 
         let start = Instant::now();
-        let result = self.tree_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
+        let result = self.alpha_beta_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
         let end = start.elapsed().as_millis() as f64 / 1000.;
-        
         
         let nps = (self.iter as f64) / end;
         println!("\n\nSolver finished after evaluating {} positions", self.iter);
@@ -107,9 +106,7 @@ impl Engine {
                                           m.is_capture());
             
             // Alpha beta pruning
-            
-            
-            
+
             if white_to_play {
                 // Keep the maximum score
                 if result.score > current_score {
@@ -148,5 +145,75 @@ impl Engine {
             best_move,
         };
 
+    }
+
+    fn alpha_beta_search(&mut self,
+                         game: ChessGame,
+                         white_to_play: bool,
+                         depth: usize,
+                         mut alpha: ScoreType,
+                         beta: ScoreType,
+                         last_move_capture: bool
+    ) ->  SearchResult {
+        // Ending criteria
+        if (!last_move_capture && depth >= self.depth) ||
+            (last_move_capture && depth >= self.depth + self.extra_depth) ||
+            game.is_finished()
+        {
+            self.iter += 1;
+
+            return SearchResult {
+                score: game.score(),
+                best_move: None,
+            };
+        }
+
+        // get the list of available moves
+        let mut container = SortedMovesContainer::new();
+        game.update_move_container(&mut container, white_to_play);
+
+        // The best move is initialized with the first one
+        let mut current_score = ScoreType::MIN;
+        let mut best_move = None;
+        
+        while container.has_next() {
+            let mut new_game = game.clone();
+            let m = container.get_next();
+            new_game.apply_move_unsafe(&m);
+            
+            // call the recursion
+            let result = self.alpha_beta_search(new_game,
+                                          !white_to_play,
+                                          depth + 1,
+                                          - beta,
+                                          - alpha,
+                                          m.is_capture());
+            
+            let s = - result.score;
+            
+            if s >= beta {
+                return SearchResult {
+                    score: s,
+                    best_move: Some(m),
+                };
+            }
+            
+            if s > alpha {
+                alpha = s;
+            }
+            
+            if s > current_score {
+                current_score = s;
+                best_move = Some(m);
+            }
+            
+        }
+
+        // Once we reach this point, we have explored all the possible moves of this branch
+        // ==> we know which is the best move
+        return SearchResult {
+            score: current_score,
+            best_move,
+        };
     }
 }
