@@ -65,7 +65,7 @@ pub enum Type {
     King,
 }
 
-pub type ScoreType = i32;
+pub type ScoreType = i64;
 
 impl Type {
     pub fn score(&self) -> ScoreType {
@@ -625,33 +625,28 @@ impl ChessGame {
     pub fn score(&self) -> ScoreType {
         let mut score = 0;
 
-        score += (self.pawns & self.whites).count_ones() as i32 * 1;
-        score += ((self.bishops | self.knights) & self.whites).count_ones() as i32 * 3i32;
-        score += (self.rooks & self.whites).count_ones() as i32 * 5;
-        score += (self.queens & self.whites).count_ones() as i32 * 10;
-        score += (self.kings & self.whites).count_ones() as i32 * 1000;
+        score += (self.pawns & self.whites).count_ones() as ScoreType * 1;
+        score += ((self.bishops | self.knights) & self.whites).count_ones() as ScoreType * 3;
+        score += (self.rooks & self.whites).count_ones() as ScoreType * 5;
+        score += (self.queens & self.whites).count_ones() as ScoreType * 10;
+        score += (self.kings & self.whites).count_ones() as ScoreType * 1000;
 
-        score -= ((self.bishops | self.knights) & !self.whites).count_ones() as i32 * 3;
-        score -= (self.pawns & !self.whites).count_ones() as i32 * 1;
-        score -= (self.rooks & !self.whites).count_ones() as i32 * 5;
-        score -= (self.queens & !self.whites).count_ones() as i32 * 10;
-        score -= (self.kings & !self.whites).count_ones() as i32 * 1000;
+        score -= ((self.bishops | self.knights) & !self.whites).count_ones() as ScoreType * 3;
+        score -= (self.pawns & !self.whites).count_ones() as ScoreType * 1;
+        score -= (self.rooks & !self.whites).count_ones() as ScoreType * 5;
+        score -= (self.queens & !self.whites).count_ones() as ScoreType * 10;
+        score -= (self.kings & !self.whites).count_ones() as ScoreType * 1000;
 
-        // The bigger this ratio is, the less the engine will favor attacking positions.
 
         // Castling : we want to favor the castle, which secures the king
-        // if is_set!(self.flags, FLAG_WK_CASTLED) {
-        //     score += 30;
-        // }
-        
-        // if is_set!(self.flags, FLAG_BK_CASTLED) {
-        //     score -= 30;
-        // }
+        if is_set!(self.flags, FLAG_WK_CASTLED) { score += 3; }
+        if is_set!(self.flags, FLAG_BK_CASTLED) { score -= 3; }
 
         // This is really the problem: the number of attacked squres takes a lot of time to be found
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 
 
-        // Number of attacked squares: this is added to favor an attacking position
+        // Number of attacked squares
+        // The bigger this ratio is, the less the engine will favor attacking positions.
         // score *= 10;
         // let mut container = SimpleMovesContainer::new();
         // self.update_move_container(&mut container, true);

@@ -42,6 +42,19 @@ mod tests {
             panic!("Error")
         }
     }
+    
+    #[test]
+    fn test_integers_operation() {
+        let a = i32::MIN as i64;
+        let b = i32::MAX as i64;
+        let c = -a;
+        let d = -b;
+        
+        println!("{a}");
+        println!("{d}");
+        println!("{b}");
+        println!("{c}");
+    }
 
 
     #[test]
@@ -49,15 +62,16 @@ mod tests {
     fn test_simple_engine2() {
         let mut game = ChessGame::empty();
 
+        // The game needs to have kings alive
+        game.set_piece(King, true, chesspos_to_index("a2") as u8);
+        game.set_piece(King, false, chesspos_to_index("a7") as u8);
+
         // White has one pawn
         game.set_piece(Pawn, true, chesspos_to_index("e4") as u8);
 
         game.set_piece(Pawn, false, chesspos_to_index("d5") as u8);
         game.set_piece(Knight, false, chesspos_to_index("f5") as u8);
 
-        // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("a2") as u8);
-        game.set_piece(King, false, chesspos_to_index("a7") as u8);
 
         let display = TerminalChessView::new(&mut game);
         display.display();

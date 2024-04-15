@@ -20,7 +20,7 @@ pub struct Engine {
 impl Engine {
     pub fn new() -> Self {
         Self {
-            depth: 4,
+            depth: 6,
             extra_depth: 2,
             iter: 0,
         }
@@ -37,7 +37,7 @@ impl Engine {
         self.iter = 0;
 
         let start = Instant::now();
-        let result = self.alpha_beta_search(game, white_to_play, 0, ScoreType::MIN, ScoreType::MAX, false);
+        let result = self.alpha_beta_search(game, white_to_play, 0, i32::MIN as ScoreType, i32::MAX as ScoreType, false);
         let end = start.elapsed().as_millis() as f64 / 1000.;
         
         let nps = (self.iter as f64) / end;
@@ -163,7 +163,7 @@ impl Engine {
             self.iter += 1;
 
             return SearchResult {
-                score: game.score(),
+                score: if white_to_play {game.score()} else { -game.score() },
                 best_move: None,
             };
         }
@@ -173,7 +173,7 @@ impl Engine {
         game.update_move_container(&mut container, white_to_play);
 
         // The best move is initialized with the first one
-        let mut current_score = ScoreType::MIN;
+        let mut current_score = i32::MIN as ScoreType;
         let mut best_move = None;
         
         while container.has_next() {
@@ -188,23 +188,20 @@ impl Engine {
                                           - beta,
                                           - alpha,
                                           m.is_capture());
-            
+
             let s = - result.score;
-            
-            if s >= beta {
-                return SearchResult {
-                    score: s,
-                    best_move: Some(m),
-                };
-            }
-            
-            if s > alpha {
-                alpha = s;
-            }
-            
+
             if s > current_score {
-                current_score = s;
                 best_move = Some(m);
+                current_score = s;
+            }
+
+            if current_score > alpha {
+                alpha = current_score;
+            }
+
+            if alpha >= beta {
+                break;
             }
             
         }
