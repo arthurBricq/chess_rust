@@ -126,17 +126,19 @@ impl ChessViewModel
 
     pub fn play_with_engine(&mut self) -> bool {
         // Make the engine play
-        if let (Some(best_move), _nps) = self.solver.find_best_move(self.game, false) {
-            // Save the move
-            self.engine_move = Some((best_move.from, best_move.to));
-            // Apply the move
-            // TODO use best_move instead of creating a new move, no ?
-            let success = self.game.apply_move_safe(
-                Move::new(best_move.from, best_move.to, false)
-            );
-            return success;
+        if let (search_result, _nps) = self.solver.find_best_move(self.game, false) {
+            if let Some(best_move) = search_result.best_move {
+                // Save the move
+                self.engine_move = Some((best_move.from, best_move.to));
+                // Apply the move
+                self.game.apply_move_safe(
+                    Move::new(best_move.from, best_move.to, false)
+                )
+            } else { 
+                false
+            }
         } else {
-            return false;
+            false
         }
     }
 

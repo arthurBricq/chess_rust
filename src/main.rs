@@ -40,10 +40,12 @@ fn play() {
 
     let mut game = ChessGame::standard_game();
     let mut solver = Engine::new();
-    if let (Some(best_move), _nps) = solver.find_best_move(game, false) {
-        let _success = game.apply_move_safe(
-            Move::new(best_move.from, best_move.to, false)
-        );
+    if let (result, _nps) = solver.find_best_move(game, false) {
+        if let Some(best_move) = result.best_move {
+            game.apply_move_safe(
+                Move::new(best_move.from, best_move.to, false)
+            );
+        }
     }
 
     let mut view = TerminalChessView::new(&mut game);
@@ -60,7 +62,7 @@ fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut times: Vec<f64> = Vec::new();
     let mut solver = Engine::new();
-    let n = 10;
+    let n = 1;
     
 
     for _i in 0..n {
@@ -74,7 +76,8 @@ fn benchmark() {
         game.apply_move_unsafe(&Move::new(chesspos_to_index("d2"), chesspos_to_index("d4"), true));
         
         let start = Instant::now();
-        if let (Some(best_move), nps) = solver.find_best_move(game, false) {
+        if let (result, nps) = solver.find_best_move(game, false) {
+            let best_move = result.best_move.unwrap();
             let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, false));
             nodes_per_seconds.push(nps);
         }

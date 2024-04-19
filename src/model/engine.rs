@@ -7,8 +7,8 @@ use super::super::model::game::*;
 use super::super::model::moves::*;
 
 pub struct SearchResult {
-    score: ScoreType,
-    best_move: Option<Move>,
+    pub score: ScoreType,
+    pub best_move: Option<Move>,
 }
 
 pub struct Engine {
@@ -20,8 +20,8 @@ pub struct Engine {
 impl Engine {
     pub fn new() -> Self {
         Self {
-            depth: 6,
-            extra_depth: 2,
+            depth: 4,
+            extra_depth: 0,
             iter: 0,
         }
     }
@@ -33,7 +33,7 @@ impl Engine {
 
     /// For a given chess game, finds the solver's best move and returns it as an Option of a move. 
     /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
-    pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (Option<Move>, u128) {
+    pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
         self.iter = 0;
 
         let start = Instant::now();
@@ -45,7 +45,7 @@ impl Engine {
         println!("    score = {} [points]", result.score);
         println!("    time = {end} [second]");
         println!("    nps = {nps} [moves/second]");
-        return (result.best_move, nps as u128);
+        (result, nps as u128)
     }
 
     /// Chess engine tree search
@@ -164,6 +164,8 @@ impl Engine {
 
             return SearchResult {
                 score: if white_to_play {game.score()} else { -game.score() },
+                // score: if white_to_play {-game.score()} else { game.score() },
+                // score: -game.score(),
                 best_move: None,
             };
         }
@@ -176,6 +178,10 @@ impl Engine {
         let mut current_score = i32::MIN as ScoreType;
         let mut best_move = None;
         
+        if depth == 0 {
+            println!("current = {current_score}")
+        }
+        
         while container.has_next() {
             let mut new_game = game.clone();
             let m = container.get_next();
@@ -185,8 +191,8 @@ impl Engine {
             let result = self.alpha_beta_search(new_game,
                                           !white_to_play,
                                           depth + 1,
-                                          - beta,
-                                          - alpha,
+                                          -beta,
+                                          -alpha,
                                           m.is_capture());
 
             let s = - result.score;
@@ -199,8 +205,15 @@ impl Engine {
             if current_score > alpha {
                 alpha = current_score;
             }
+            
+            if depth == 0 {
+                println!("move = {m:?}, s = {s}, current = {current_score}")
+            }
 
             if alpha >= beta {
+                if depth == 0 {
+                    println!("Cutoff")
+                }
                 break;
             }
             

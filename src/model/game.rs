@@ -667,6 +667,7 @@ impl ChessGame {
         println!("queens:  {},", self.queens);
         println!("kings:   {},", self.kings);
         println!("flags:   {}", self.flags);
+        println!("score = {}", self.score());
         println!("----");
         println!("({}, {}, {}, {}, {}, {}, {}, {})", self.whites, self.pawns, self.bishops, self.knights, self.rooks, self.queens, self.kings, self.flags);
         println!("----");
