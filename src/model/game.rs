@@ -638,8 +638,8 @@ impl ChessGame {
         score -= (self.kings & !self.whites).count_ones() as ScoreType * 1000;
 
         // Castling : we want to favor the castle, which secures the king
-        if is_set!(self.flags, FLAG_WK_CASTLED) { score += 3; }
-        if is_set!(self.flags, FLAG_BK_CASTLED) { score -= 3; }
+        // if is_set!(self.flags, FLAG_WK_CASTLED) { score += 3; }
+        // if is_set!(self.flags, FLAG_BK_CASTLED) { score -= 3; }
 
         // This is really the problem: the number of attacked squres takes a lot of time to be found
         // and reduces the performs by a factor of 28. Is there a better way to do this ? 

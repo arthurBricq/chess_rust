@@ -48,7 +48,7 @@ pub enum MoveQuality {
     Motion,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Move {
     pub from: i8,
     pub to: i8,
