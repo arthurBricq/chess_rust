@@ -1,9 +1,7 @@
 use std::time::Instant;
-
+use crate::model::game::{ChessGame, ScoreType};
+use crate::model::moves::Move;
 use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
-
-use super::super::model::game::*;
-use super::super::model::moves::*;
 
 pub struct SearchResult {
     pub score: ScoreType,
@@ -19,7 +17,7 @@ pub struct Engine {
 impl Engine {
     pub fn new() -> Self {
         Self {
-            depth: 4,
+            depth: 6,
             extra_depth: 0,
             iter: 0,
         }
@@ -36,7 +34,8 @@ impl Engine {
         self.iter = 0;
 
         let start = Instant::now();
-        let result = self.alpha_beta_search(game, white_to_play, 0, i32::MIN as ScoreType, i32::MAX as ScoreType, false);
+        // let result = self.alpha_beta_search(game, white_to_play, 0, i32::MIN as ScoreType, i32::MAX as ScoreType, false);
+        let result = self.tree_search(game, white_to_play, 0, i32::MIN as ScoreType, i32::MAX as ScoreType, false);
         let end = start.elapsed().as_millis() as f64 / 1000.;
         
         let nps = (self.iter as f64) / end;
@@ -139,10 +138,10 @@ impl Engine {
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
-        return SearchResult {
-            score: current_score, 
+        SearchResult {
+            score: current_score,
             best_move,
-        };
+        }
 
     }
 
@@ -220,9 +219,9 @@ impl Engine {
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
-        return SearchResult {
+        SearchResult {
             score: current_score,
             best_move,
-        };
+        }
     }
 }

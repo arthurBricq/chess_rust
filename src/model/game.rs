@@ -637,7 +637,6 @@ impl ChessGame {
         score -= (self.queens & !self.whites).count_ones() as ScoreType * 10;
         score -= (self.kings & !self.whites).count_ones() as ScoreType * 1000;
 
-
         // Castling : we want to favor the castle, which secures the king
         if is_set!(self.flags, FLAG_WK_CASTLED) { score += 3; }
         if is_set!(self.flags, FLAG_BK_CASTLED) { score -= 3; }
@@ -654,7 +653,7 @@ impl ChessGame {
         // self.update_move_container(&mut container, false);
         // score -= container.count() as ScoreType;
 
-        return score;
+        score
     }
 
     pub fn print_game_integers(&self) {

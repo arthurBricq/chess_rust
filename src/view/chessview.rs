@@ -96,10 +96,7 @@ impl ChessViewModel
     }
 
     pub fn is_attacked_at(&self, i: i8, j: i8) -> bool {
-        // TODO update attacked position
         self.attacked_positions.contains(&pos_to_index(i,j))
-        
-        // return false;
     }
 
     pub fn get_class_name(&self, i: i8, j: i8) -> String {
@@ -121,7 +118,7 @@ impl ChessViewModel
                 }
             }
         }
-        return SquareType::Idle;
+        SquareType::Idle
     }
 
     pub fn play_with_engine(&mut self) -> bool {
