@@ -53,7 +53,7 @@ Feel free to try it out and let me know !
 ```bash
 git clone <...>
 cd chess_rust
-cargo run --release --features fltk
+cargo run --bin chess --release
 ```
 
 The flag `--release` tells rust to optimize the code (this is absolutely required), and `--features fltk` specify that you want to compile the UI and to run with the UI. 
