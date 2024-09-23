@@ -1,7 +1,6 @@
-use std::collections::HashMap;
 use std::time::Instant;
 
-use crate::model::moves_container::{MovesContainer, SimpleMovesContainer, SortedMovesContainer};
+use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
 
 use super::super::model::game::*;
 use super::super::model::moves::*;

@@ -1,8 +1,8 @@
 use fltk::{*, prelude::*, window::Window};
 use fltk::{button::Button, prelude::*};
-use fltk::app::{event_text, Sender};
+use fltk::app::{App, event_text, Sender};
 use fltk::enums::{Color, Event};
-use fltk::image::*;
+use fltk::image::SvgImage;
 
 use crate::model::game::pos_to_index;
 
@@ -51,7 +51,7 @@ impl GTKView {
         button.set_frame(enums::FrameType::FlatBox);
     }
 
-    fn draw_window(&self, app: &app::App, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
+    fn draw_window(&self, app: &App, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
         let mut buttons: Vec<Vec<Button>> = Vec::new();
 
         let mut win = Window::default()
@@ -88,8 +88,8 @@ impl GTKView {
     }
 
     pub fn run_app(&mut self) {
-        let app = app::App::default();
-        let (s, r) = app::channel();
+        let app = App::default();
+        let (s, r) = fltk::app::channel();
         let (mut win, mut buttons) = self.draw_window(&app, &s);
 
         // Handle when pressing some keys
