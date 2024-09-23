@@ -633,7 +633,7 @@ impl ChessGame {
 
         // Number of attacked squares
         // The bigger this ratio is, the less the engine will favor attacking positions.
-        score *= 10;
+        score *= 20;
         let mut container = SimpleMovesContainer::new();
         self.update_move_container(&mut container, true);
         score += container.count() as ScoreType;
