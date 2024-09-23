@@ -73,8 +73,6 @@ impl Engine {
 
             return SearchResult {
                 score: if white_to_play {game.score()} else { -game.score() },
-                // score: if white_to_play {-game.score()} else { game.score() },
-                // score: -game.score(),
                 best_move: None,
             };
         }

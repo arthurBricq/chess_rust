@@ -42,19 +42,6 @@ pub fn index_to_chesspos(index: i8) -> String {
     s + format!("{y}").as_str()
 }
 
-/// Returns the position of ones in the provided int
-pub fn find_ones(num: u64) -> Vec<i8> {
-    let mut indices = Vec::new();
-
-    for i in 0..64 {
-        if num & (1 << i) != 0 {
-            indices.push(i);
-        }
-    }
-
-    indices
-}
-
 #[derive(PartialEq, Eq)]
 pub enum Type {
     Pawn,
@@ -344,7 +331,7 @@ impl ChessGame {
             let remain = m.from % 8;
             let min = m.from - remain;
             let max = m.from + (7 - remain);
-            return if m.to >= min && m.to <= max {
+            if m.to >= min && m.to <= max {
                 true
             } else {
                 // Then look up and down
@@ -352,7 +339,7 @@ impl ChessGame {
             }
         }
 
-        return match t {
+        match t {
             Type::Pawn => {
                 (x2 - x1).abs() <= 1
             }
@@ -412,7 +399,7 @@ impl ChessGame {
         }
 
         // If you end up here, it means that the pawn move is valid
-        return true;
+        true
     }
 
     fn is_king_move_valid(&self, m: &Move) -> bool {
@@ -436,7 +423,7 @@ impl ChessGame {
                 }
             }
         }
-        return true;
+        true
     }
 
     /// Returns true if the move respect the rules of check
@@ -467,7 +454,7 @@ impl ChessGame {
             return true;
         }
 
-        return false;
+        false
     }
 
     /// Apply the move without any kind of safety check
@@ -556,7 +543,7 @@ impl ChessGame {
             self.apply_move_unsafe(&m);
             return true;
         }
-        return false;
+        false
     }
 
     /// Helper method that applies all the provided motions from the given position

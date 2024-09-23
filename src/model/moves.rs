@@ -1,4 +1,4 @@
-use super::game::{index_to_chesspos, Type}; 
+use super::game::index_to_chesspos;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
@@ -12,20 +12,24 @@ pub const ROOK_MOVES: [i8;28] = [
     8,8*2,8*3,8*4,8*5,8*6,8*7,
     -8,-8*2,-8*3,-8*4,-8*5,-8*6,-8*7,
     ];
+
 pub const BISHOP_MOVES: [i8; 28] = [
     7,7*2,7*3,7*4,7*5,7*6,7*7,
     -7,-7*2,-7*3,-7*4,-7*5,-7*6,-7*7,
     9,9*2,9*3,9*4,9*5,9*6,9*7,
     -9,-9*2,-9*3,-9*4,-9*5,-9*6,-9*7,
-]; 
+];
+
 pub const KNIGHT_MOVES: [i8; 8] = [
     17, 15, -15, -17,
     10, -6, 6, -10
-]; 
+];
+
 pub const KING_MOVES: [i8; 8] = [
     1, -1, 8, -8,
     9, 7, -9, -7
 ];
+
 pub const QUEEN_MOVES: [i8;56] = [
     1,2,3,4,5,6,7,
     -1,-2,-3,-4,-5,-6,-7,
@@ -35,7 +39,8 @@ pub const QUEEN_MOVES: [i8;56] = [
     -7,-7*2,-7*3,-7*4,-7*5,-7*6,-7*7,
     9,9*2,9*3,9*4,9*5,9*6,9*7,
     -9,-9*2,-9*3,-9*4,-9*5,-9*6,-9*7,
-]; 
+];
+
 pub const KING_SPECIAL_MOVES: [i8; 2] = [
     2, -2 
 ];
@@ -61,7 +66,6 @@ impl Debug for Move {
         write!(f, "{}->{}", index_to_chesspos(self.from), index_to_chesspos(self.to))
     }
 }
-
 
 impl fmt::Display for Move {
     // This trait requires `fmt` with this exact signature.
@@ -94,10 +98,10 @@ impl Move {
         let min = self.from - remain ; 
         let max = self.from + (7-remain) ; 
         if self.to >= min && self.to <= max {
-            return [self.to-self.from,0]; 
+            [self.to-self.from,0]
         } else {
             // Then look up and down
-            return [0,0]; 
+            [0,0]
         }
     }
 
@@ -114,12 +118,12 @@ impl Move {
         if self.to >= min && self.to <= max {
             // Horizontal moves
             if diff > 0 {
-                return 1; 
+                1
             } else {
-                return -1; 
+                -1
             }
         } else {
-            // Non horizontal moves are divided in two cases
+            // Non-horizontal moves are divided in two cases
             if diff % 8 == 0 {
                 // Vertical moves
                 if diff > 0 {
