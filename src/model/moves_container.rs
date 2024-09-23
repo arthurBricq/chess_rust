@@ -46,7 +46,6 @@ impl MovesContainer for SimpleMovesContainer {
     }
 }
 
-
 pub struct SortedMovesContainer {
     /// The different containers.
     /// We use arrays and not vectors to be more efficient
