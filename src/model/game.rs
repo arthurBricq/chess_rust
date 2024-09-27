@@ -185,7 +185,7 @@ impl ChessGame {
         set_at!(knights, pos_to_index(1,7));
         set_at!(knights, pos_to_index(6,7));
 
-        return Self {
+        Self {
             whites,
             pawns,
             bishops,
@@ -194,7 +194,7 @@ impl ChessGame {
             queens,
             kings,
             flags: 0,
-        };
+        }
     }
 
     /// Returns the type of the provided position.
@@ -287,15 +287,6 @@ impl ChessGame {
                 return false;
             }
             current_pos += direction;
-        }
-        return true;
-    }
-
-    /// Returns true if the final square does not have the same color as the origin color
-    fn valid_destination(&self, m: &Move) -> bool {
-        // In the case where there is a piece at the last position, check that it has a different color
-        if self.has_piece_at(m.to) {
-            return is_set!(self.whites, m.to) != is_set!(self.whites, m.from)
         }
         return true;
     }
@@ -430,6 +421,7 @@ impl ChessGame {
     /// This function eventually edits the `quality` property of a move
     fn is_move_valid(&self, m: &Move) -> bool {
         // Check that there is a piece to move at the destination
+        // TODO when calling from the score function, we know the type...
         if let Some(t) = self.type_at_index(m.from) {
             
             if match t {
@@ -440,8 +432,14 @@ impl ChessGame {
                 return false
             }
 
+            // In the case where there is a piece at the last position, check that it has a different color
+            if self.has_piece_at(m.to) && is_set!(self.whites, m.to) == is_set!(self.whites, m.from) {
+                return false;
+            }
+
             // Check that the destination is valid and that the moves remains within the chess board
-            if !self.valid_destination(&m) || !self.is_in_bound(&m, &t) {
+            // TODO when calling from `score`, we know that the rules are respected
+            if !self.is_in_bound(&m, &t) {
                 return false;
             }
 
