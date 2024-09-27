@@ -1,18 +1,9 @@
 use crate::model::game::{ChessGame, Type};
 use crate::model::moves::Move;
-use crate::model::moves_container::MovesContainer;
 
-macro_rules! is_set {
-    ($a: expr, $at: expr) => {
-        (($a >> $at) & 1u64) == 1
-    };
-}
-
-
-
-pub trait MotionIterator {
-    fn next(&mut self, game: &ChessGame) -> Option<Move>;
-}
+// pub trait MotionIterator {
+//     fn next(&mut self, game: &ChessGame) -> Option<Move>;
+// }
 
 pub struct StepMotionIterator {
     /// Origin of the iterator
@@ -42,8 +33,8 @@ impl StepMotionIterator {
     }
 }
 
-impl MotionIterator for StepMotionIterator {
-    fn next(&mut self, game: &ChessGame) -> Option<Move> {
+impl StepMotionIterator {
+    pub fn next(&mut self, game: &ChessGame) -> Option<Move> {
         if self.found_capture {
             return None;
         }
