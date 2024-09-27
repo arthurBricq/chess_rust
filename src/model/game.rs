@@ -1,3 +1,4 @@
+use crate::model::motion_iterator::MotionIterator;
 use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture};
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
 use super::moves::*;
@@ -209,7 +210,7 @@ impl ChessGame {
 
     /// Returns the type of the provided index. 
     /// If no type is present, returns None.
-    fn type_at_index(&self, at: i8) -> Option<Type> {
+    pub fn type_at_index(&self, at: i8) -> Option<Type> {
         if is_set!(self.pawns, at) {
             Some(Type::Pawn)
         } else if is_set!(self.bishops, at) {
@@ -228,7 +229,7 @@ impl ChessGame {
     }
 
     /// Returns true if there is a piece at this position
-    fn has_piece_at(&self, at: i8) -> bool {
+    pub(crate) fn has_piece_at(&self, at: i8) -> bool {
         is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
     }
 
@@ -292,7 +293,7 @@ impl ChessGame {
     }
 
     /// Returns true if the destination is in bound
-    fn is_in_bound(&self, m: &Move, t: &Type) -> bool {
+    pub(crate) fn is_in_bound(&self, m: &Move, t: &Type) -> bool {
         let motion = m.to - m.from;
         let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
 
@@ -433,7 +434,7 @@ impl ChessGame {
             }
 
             // In the case where there is a piece at the last position, check that it has a different color
-            if self.has_piece_at(m.to) && is_set!(self.whites, m.to) == is_set!(self.whites, m.from) {
+            if self.is_destination_of_incorrect_color(&m) {
                 return false;
             }
 
@@ -448,11 +449,16 @@ impl ChessGame {
                 return false;
             }
 
-            // If we reach this point, it mean the move is valid
+            // If we reach this point, it means the move is valid
             return true;
         }
 
         false
+    }
+
+    /// Returns true if the destination
+    pub(crate) fn is_destination_of_incorrect_color(&self, m: &Move) -> bool {
+        self.has_piece_at(m.to) && is_set!(self.whites, m.to) == is_set!(self.whites, m.from)
     }
 
     /// Apply the move without any kind of safety check
@@ -544,6 +550,14 @@ impl ChessGame {
         false
     }
 
+    fn fill_moves_container_iterator<T: MotionIterator>(&self, to_fill: &mut dyn MovesContainer, iterators: &mut [T]) {
+        for iter in iterators {
+            while let Some(m) = iter.next(self) {
+                to_fill.push(m)
+            }
+        }
+    }
+
     /// Helper method that applies all the provided motions from the given position
     fn fill_moves_container(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
         for motion in motions {
@@ -554,15 +568,7 @@ impl ChessGame {
                     // rank the quality of the move
                     if let Some(captured) = self.type_at_index(m.to) {
                         let piece = self.type_at_index(m.from).unwrap();
-                        let s0 = piece.score();
-                        let s1 = captured.score();
-                        if s0 < s1 {
-                            m.set_quality(GoodCapture);
-                        } else if s0 == s1 { 
-                            m.set_quality(EqualCapture)
-                        } else { 
-                            m.set_quality(LowCapture)
-                        }
+                        m.set_quality_from_scores(piece.score(), captured.score());
                     }
                     to_fill.push(m);
                 }

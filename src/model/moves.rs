@@ -1,6 +1,7 @@
-use super::game::index_to_chesspos;
+use super::game::{index_to_chesspos, ScoreType};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture};
 
 pub const WHITE_PAWN_MOVES: [i8;4] = [8, 9, 7, 16];
 
@@ -85,6 +86,16 @@ impl Move {
     
     pub fn set_quality(&mut self, q: MoveQuality) {
         self.quality = q;
+    }
+
+    pub fn set_quality_from_scores(&mut self, piece: ScoreType, captured: ScoreType) {
+        if piece < captured {
+            self.set_quality(GoodCapture);
+        } else if piece == captured {
+            self.set_quality(EqualCapture)
+        } else {
+            self.set_quality(LowCapture)
+        }
     }
 
     pub fn is_capture(&self) -> bool {
