@@ -414,7 +414,12 @@ impl ChessGame {
                 }
             }
         }
-        true
+
+        // Otherwise, only a set of moves are accepted
+        motion == 1 || motion == -1
+            || motion == 8 || motion == -8
+            || motion == 7 || motion == -7
+            || motion == 9 || motion == -9
     }
 
     /// Returns true if the move respect the rules of check
@@ -423,7 +428,6 @@ impl ChessGame {
         // Check that there is a piece to move at the destination
         // TODO when calling from the score function, we know the type...
         if let Some(t) = self.type_at_index(m.from) {
-            
             if match t {
                 Type::Pawn => !self.is_pawn_move_valid(&m),
                 Type::King => !self.is_king_move_valid(&m),

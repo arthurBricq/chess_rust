@@ -33,6 +33,19 @@ mod tests {
         result = game.apply_move_safe(Move::new(52, 44, false));
         assert_eq!(result, true);
     }
+    
+    #[test]
+    fn test_king_cant_go_everywhere() {
+        // Create a new chess game
+        let mut game = ChessGame::standard_game();
+
+        // Try moving the king from e1 to e4
+        let m = Move::new(4, 28, true);
+        let result = game.apply_move_safe(m);
+
+        // Assert that the move is not allowed
+        assert_eq!(result, false);
+    }
 
     #[test]
     fn test_simple_hash_map() {
