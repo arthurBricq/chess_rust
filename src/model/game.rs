@@ -1,3 +1,4 @@
+use crate::model::game::Type::{King, Knight, Pawn};
 use super::moves::*;
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
@@ -42,7 +43,7 @@ pub fn index_to_chesspos(index: i8) -> String {
     s + format!("{y}").as_str()
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Type {
     Pawn,
     Bishop,
@@ -247,7 +248,7 @@ impl ChessGame {
             set_at!(self.whites, at)
         }
     }
-    
+
     pub fn block_castling(&mut self) {
         set_at!(self.flags, FLAG_BK_CASTLED);
         set_at!(self.flags, FLAG_WK_CASTLED);
@@ -304,7 +305,7 @@ impl ChessGame {
                 } else {
                     // lower right diagonal
                     x1 < x2 && y1 > y2
-                }
+                };
             } else if motion % 9 == 0 {
                 return if *motion > 0 {
                     // upper right diagonal
@@ -422,41 +423,40 @@ impl ChessGame {
             || motion == 9 || motion == -9
     }
 
+    fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
+        if match t {
+            Type::Pawn => !self.is_pawn_move_valid(&m),
+            Type::King => !self.is_king_move_valid(&m),
+            _ => false
+        } {
+            return false;
+        }
+
+        // In the case where there is a piece at the last position, check that it has a different color
+        if self.is_destination_of_incorrect_color(&m) {
+            return false;
+        }
+
+        // Check that the destination is valid and that the moves remains within the chess board
+        // TODO when calling from `score`, we know that the rules are respected
+        if !self.is_in_bound(&m, &t) {
+            return false;
+        }
+
+        // Check if the move is not going over another piece
+        if !(t == Type::Knight || t == Type::King || self.is_move_over_free_squares(&m)) {
+            return false;
+        }
+
+        true
+    }
+
     /// Returns true if the move respect the rules of check
     /// This function eventually edits the `quality` property of a move
     fn is_move_valid(&self, m: &Move) -> bool {
-        // Check that there is a piece to move at the destination
-        // TODO when calling from the score function, we know the type...
-        if let Some(t) = self.type_at_index(m.from) {
-            if match t {
-                Type::Pawn => !self.is_pawn_move_valid(&m),
-                Type::King => !self.is_king_move_valid(&m),
-                _ => false
-            } {
-                return false
-            }
-
-            // In the case where there is a piece at the last position, check that it has a different color
-            if self.is_destination_of_incorrect_color(&m) {
-                return false;
-            }
-
-            // Check that the destination is valid and that the moves remains within the chess board
-            // TODO when calling from `score`, we know that the rules are respected
-            if !self.is_in_bound(&m, &t) {
-                return false;
-            }
-
-            // Check if the move is not going over another piece
-            if !(t == Type::Knight || t == Type::King || self.is_move_over_free_squares(&m)) {
-                return false;
-            }
-
-            // If we reach this point, it means the move is valid
-            return true;
-        }
-
-        false
+        self.type_at_index(m.from)
+            .map(|t| self.is_move_valid_for_type(m, t))
+            .unwrap_or(false)
     }
 
     /// Returns true if the destination
@@ -523,11 +523,11 @@ impl ChessGame {
                         } else {
                             (m.from - 4, m.from - 1)
                         };
-                        
+
                         // apply the move rook 
                         clear_at!(self.rooks, rook_from);
                         set_at!(self.rooks, rook_to);
-                        
+
                         // apply the change of colors for the rook
                         if m.is_white {
                             clear_at!(self.whites, rook_from);
@@ -565,12 +565,18 @@ impl ChessGame {
 
     /// Push valid moves in the `MovesContainer`, by trying all the possible moves given
     /// in `motions`
-    fn fill_moves_container_with_list_of_moves(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
+    fn fill_moves_container_with_list_of_moves(&self,
+                                               to_fill: &mut dyn MovesContainer,
+                                               from: i8,
+                                               motions: &[i8],
+                                               is_white: bool,
+                                               t: Type
+    ) {
         for motion in motions {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
                 let mut m = Move::new(from, des, is_white);
-                if self.is_move_valid(&m) {
+                if self.is_move_valid_for_type(&m, t) {
                     if let Some(captured) = self.type_at_index(m.to) {
                         let piece = self.type_at_index(m.from).unwrap();
                         m.set_quality_from_scores(piece.score(), captured.score());
@@ -580,38 +586,38 @@ impl ChessGame {
             }
         }
     }
-    
+
     /// Fills the provided container with all the available moves at the current position.
-    /// 
+    ///
     /// This function also resets the move container before running anything.
     pub fn update_move_container<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
-        
+
         let pieces = if is_white {
             (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & self.whites
         } else {
             (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & !self.whites
         };
-        
+
         for i in 0..64 {
             if !is_set!(pieces, i) {
-                continue
+                continue;
             }
-            
+
             match self.type_at_index(i).unwrap() {
                 Type::Pawn => {
                     if is_white {
-                        self.fill_moves_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white);
+                        self.fill_moves_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white, Pawn);
                     } else {
-                        self.fill_moves_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white);
+                        self.fill_moves_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white, Pawn);
                     }
                 }
                 Type::Knight => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white)
+                    self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white, Knight)
                 }
                 Type::King => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white);
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white);
+                    self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white, King);
+                    self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white, King);
                 }
                 Type::Bishop => {
                     self.fill_move_container_with_iterator(container, &mut [
@@ -628,7 +634,7 @@ impl ChessGame {
                         StepMotionIterator::new(i, 8, is_white, Type::Rook),
                         StepMotionIterator::new(i, -8, is_white, Type::Rook),
                     ])
-                },
+                }
                 Type::Queen => {
                     self.fill_move_container_with_iterator(container, &mut [
                         StepMotionIterator::new(i, 9, is_white, Type::Queen),
@@ -643,7 +649,6 @@ impl ChessGame {
                         StepMotionIterator::new(i, -8, is_white, Type::Queen),
                     ]);
                 }
-
             }
         }
     }
@@ -697,7 +702,6 @@ impl ChessGame {
         println!("({}, {}, {}, {}, {}, {}, {}, {})", self.whites, self.pawns, self.bishops, self.knights, self.rooks, self.queens, self.kings, self.flags);
         println!("----");
     }
-
 }
 
 #[cfg(test)]
@@ -722,14 +726,14 @@ mod tests {
         // It is white's turn
         // White can castle or move the king up
         let game = ChessGame {
-            whites:  337702815,
-            pawns:   67272588421820160,
+            whites: 337702815,
+            pawns: 67272588421820160,
             bishops: 2594073385432514564,
             knights: 4755801206505340930,
-            rooks:   9295429630892703873,
-            queens:  536870920,
-            kings:   1152921504606846992,
-            flags:   0
+            rooks: 9295429630892703873,
+            queens: 536870920,
+            kings: 1152921504606846992,
+            flags: 0,
         };
 
         // this is castle
@@ -737,5 +741,4 @@ mod tests {
         let mut move1 = Move::new(4, 6, true);
         assert!(game.is_move_valid(&mut move1))
     }
-    
 }
