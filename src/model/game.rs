@@ -1,4 +1,4 @@
-use crate::model::game::Type::{King, Knight, Pawn};
+use crate::model::game::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use super::moves::*;
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
@@ -58,11 +58,11 @@ pub type ScoreType = i64;
 impl Type {
     pub fn score(&self) -> ScoreType {
         match self {
-            Type::Pawn => 1,
-            Type::Bishop | Type::Knight => 3,
-            Type::Rook => 5,
-            Type::Queen => 10,
-            Type::King => 10000
+            Pawn => 1,
+            Bishop | Knight => 3,
+            Rook => 5,
+            Queen => 10,
+            King => 10000
         }
     }
 }
@@ -212,17 +212,17 @@ impl ChessGame {
     /// If no type is present, returns None.
     pub fn type_at_index(&self, at: i8) -> Option<Type> {
         if is_set!(self.pawns, at) {
-            Some(Type::Pawn)
+            Some(Pawn)
         } else if is_set!(self.bishops, at) {
-            Some(Type::Bishop)
+            Some(Bishop)
         } else if is_set!(self.knights, at) {
-            Some(Type::Knight)
+            Some(Knight)
         } else if is_set!(self.rooks, at) {
-            Some(Type::Rook)
+            Some(Rook)
         } else if is_set!(self.kings, at) {
-            Some(Type::King)
+            Some(King)
         } else if is_set!(self.queens, at) {
-            Some(Type::Queen)
+            Some(Queen)
         } else {
             None
         }
@@ -237,12 +237,12 @@ impl ChessGame {
     /// Can be used to create custom boards.
     pub fn set_piece(&mut self, piece: Type, white: bool, at: u8) {
         match piece {
-            Type::Pawn => set_at!(self.pawns, at),
-            Type::Bishop => set_at!(self.bishops, at),
-            Type::Knight => set_at!(self.knights, at),
-            Type::Rook => set_at!(self.rooks, at),
-            Type::Queen => set_at!(self.queens, at),
-            Type::King => set_at!(self.kings, at),
+            Pawn => set_at!(self.pawns, at),
+            Bishop => set_at!(self.bishops, at),
+            Knight => set_at!(self.knights, at),
+            Rook => set_at!(self.rooks, at),
+            Queen => set_at!(self.queens, at),
+            King => set_at!(self.kings, at),
         }
         if white {
             set_at!(self.whites, at)
@@ -289,7 +289,7 @@ impl ChessGame {
             }
             current_pos += direction;
         }
-        return true;
+        true
     }
 
     /// Returns true if the destination is in bound
@@ -332,19 +332,19 @@ impl ChessGame {
         }
 
         match t {
-            Type::Pawn => {
+            Pawn => {
                 (x2 - x1).abs() <= 1
             }
-            Type::Bishop => {
+            Bishop => {
                 is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
             }
-            Type::Rook => {
+            Rook => {
                 is_rook_valid(&motion, &m)
             }
-            Type::Queen => {
+            Queen => {
                 is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || is_rook_valid(&motion, &m)
             }
-            Type::Knight => {
+            Knight => {
                 match motion {
                     17 | 10 => x2 > x1 && y2 > y1,
                     15 | 6 => x2 < x1 && y2 > y1,
@@ -353,7 +353,7 @@ impl ChessGame {
                     _ => false
                 }
             }
-            Type::King => {
+            King => {
                 match motion {
                     7 | 8 | 9 => if !(y2 > y1) { return false; },
                     -7 | -8 | -9 => if !(y2 < y1) { return false; },
@@ -425,8 +425,8 @@ impl ChessGame {
 
     fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
         if match t {
-            Type::Pawn => !self.is_pawn_move_valid(&m),
-            Type::King => !self.is_king_move_valid(&m),
+            Pawn => !self.is_pawn_move_valid(&m),
+            King => !self.is_king_move_valid(&m),
             _ => false
         } {
             return false;
@@ -444,7 +444,7 @@ impl ChessGame {
         }
 
         // Check if the move is not going over another piece
-        if !(t == Type::Knight || t == Type::King || self.is_move_over_free_squares(&m)) {
+        if !(t == Knight || t == King || self.is_move_over_free_squares(&m)) {
             return false;
         }
 
@@ -473,7 +473,7 @@ impl ChessGame {
 
             // Apply the move
             match t {
-                Type::Pawn => {
+                Pawn => {
                     clear_at!(self.pawns, m.from);
                     // handle the promotion directly here
                     if m.to / 8 == 7 || m.to / 8 == 0 {
@@ -482,23 +482,23 @@ impl ChessGame {
                         set_at!(self.pawns, m.to);
                     }
                 }
-                Type::Bishop => {
+                Bishop => {
                     clear_at!(self.bishops, m.from);
                     set_at!(self.bishops, m.to);
                 }
-                Type::Knight => {
+                Knight => {
                     clear_at!(self.knights, m.from);
                     set_at!(self.knights, m.to);
                 }
-                Type::Rook => {
+                Rook => {
                     clear_at!(self.rooks, m.from);
                     set_at!(self.rooks, m.to);
                 }
-                Type::Queen => {
+                Queen => {
                     clear_at!(self.queens, m.from);
                     set_at!(self.queens, m.to);
                 }
-                Type::King => {
+                King => {
                     clear_at!(self.kings, m.from);
                     set_at!(self.kings, m.to);
 
@@ -570,7 +570,7 @@ impl ChessGame {
                                                from: i8,
                                                motions: &[i8],
                                                is_white: bool,
-                                               t: Type
+                                               t: Type,
     ) {
         for motion in motions {
             let des: i8 = from + motion;
@@ -605,48 +605,48 @@ impl ChessGame {
             }
 
             match self.type_at_index(i).unwrap() {
-                Type::Pawn => {
+                Pawn => {
                     if is_white {
                         self.fill_moves_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white, Pawn);
                     } else {
                         self.fill_moves_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white, Pawn);
                     }
                 }
-                Type::Knight => {
+                Knight => {
                     self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white, Knight)
                 }
-                Type::King => {
+                King => {
                     self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white, King);
                     self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white, King);
                 }
-                Type::Bishop => {
+                Bishop => {
                     self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 9, is_white, Type::Bishop),
-                        StepMotionIterator::new(i, -9, is_white, Type::Bishop),
-                        StepMotionIterator::new(i, 7, is_white, Type::Bishop),
-                        StepMotionIterator::new(i, -7, is_white, Type::Bishop),
+                        StepMotionIterator::new(i, 9, is_white, Bishop),
+                        StepMotionIterator::new(i, -9, is_white, Bishop),
+                        StepMotionIterator::new(i, 7, is_white, Bishop),
+                        StepMotionIterator::new(i, -7, is_white, Bishop),
                     ])
                 }
-                Type::Rook => {
+                Rook => {
                     self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 1, is_white, Type::Rook),
-                        StepMotionIterator::new(i, -1, is_white, Type::Rook),
-                        StepMotionIterator::new(i, 8, is_white, Type::Rook),
-                        StepMotionIterator::new(i, -8, is_white, Type::Rook),
+                        StepMotionIterator::new(i, 1, is_white, Rook),
+                        StepMotionIterator::new(i, -1, is_white, Rook),
+                        StepMotionIterator::new(i, 8, is_white, Rook),
+                        StepMotionIterator::new(i, -8, is_white, Rook),
                     ])
                 }
-                Type::Queen => {
+                Queen => {
                     self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 9, is_white, Type::Queen),
-                        StepMotionIterator::new(i, -9, is_white, Type::Queen),
-                        StepMotionIterator::new(i, 7, is_white, Type::Queen),
-                        StepMotionIterator::new(i, -7, is_white, Type::Queen),
+                        StepMotionIterator::new(i, 9, is_white, Queen),
+                        StepMotionIterator::new(i, -9, is_white, Queen),
+                        StepMotionIterator::new(i, 7, is_white, Queen),
+                        StepMotionIterator::new(i, -7, is_white, Queen),
                     ]);
                     self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 1, is_white, Type::Queen),
-                        StepMotionIterator::new(i, -1, is_white, Type::Queen),
-                        StepMotionIterator::new(i, 8, is_white, Type::Queen),
-                        StepMotionIterator::new(i, -8, is_white, Type::Queen),
+                        StepMotionIterator::new(i, 1, is_white, Queen),
+                        StepMotionIterator::new(i, -1, is_white, Queen),
+                        StepMotionIterator::new(i, 8, is_white, Queen),
+                        StepMotionIterator::new(i, -8, is_white, Queen),
                     ]);
                 }
             }
