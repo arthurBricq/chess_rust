@@ -553,6 +553,8 @@ impl ChessGame {
         false
     }
 
+    /// Push valid moves in the `MovesContainer`, while going in the direction of the motion
+    /// iterator.
     fn fill_move_container_with_iterator(&self, to_fill: &mut dyn MovesContainer, iterators: &mut [StepMotionIterator]) {
         for iter in iterators {
             while let Some(m) = iter.next(self) {
@@ -561,14 +563,14 @@ impl ChessGame {
         }
     }
 
-    /// Helper method that applies all the provided motions from the given position
+    /// Push valid moves in the `MovesContainer`, by trying all the possible moves given
+    /// in `motions`
     fn fill_moves_container_with_list_of_moves(&self, to_fill: &mut dyn MovesContainer, from: i8, motions: &[i8], is_white: bool) {
         for motion in motions {
             let des: i8 = from + motion;
             if des >= 0 && des < 64 {
                 let mut m = Move::new(from, des, is_white);
                 if self.is_move_valid(&m) {
-                    // rank the quality of the move
                     if let Some(captured) = self.type_at_index(m.to) {
                         let piece = self.type_at_index(m.from).unwrap();
                         m.set_quality_from_scores(piece.score(), captured.score());
@@ -604,6 +606,13 @@ impl ChessGame {
                         self.fill_moves_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white);
                     }
                 }
+                Type::Knight => {
+                    self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white)
+                }
+                Type::King => {
+                    self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white);
+                    self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white);
+                }
                 Type::Bishop => {
                     self.fill_move_container_with_iterator(container, &mut [
                         StepMotionIterator::new(i, 9, is_white, Type::Bishop),
@@ -634,13 +643,7 @@ impl ChessGame {
                         StepMotionIterator::new(i, -8, is_white, Type::Queen),
                     ]);
                 }
-                Type::Knight => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white)
-                }
-                Type::King => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white);
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white);
-                }
+
             }
         }
     }
