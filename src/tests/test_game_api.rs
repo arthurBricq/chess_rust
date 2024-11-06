@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use crate::model::game::{ChessGame};
     use crate::model::chess_type::Type::Pawn;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
@@ -23,7 +22,7 @@ mod tests {
 
     #[test]
     fn test_moves_container_with_standard_position() {
-        let mut game = GameConstructor::standard_game();
+        let game = GameConstructor::standard_game();
 
         let mut container = SortedMovesContainer::new();
 
@@ -37,7 +36,7 @@ mod tests {
 
     #[test]
     fn test_initial_score() {
-        let mut game = GameConstructor::standard_game();
+        let game = GameConstructor::standard_game();
         assert_eq!(0, game.score());
     }
 

@@ -47,7 +47,7 @@ impl<'a> TerminalChessView<'a> {
         print!("\n    |---------------------------------------| \n");
         for i in (0..8).rev() {
             print!("    | ");
-            for j in (0..8) {
+            for j in 0..8 {
                 let s = self.get_char_at(j, i);
                 print!("{s}");
                 print!(" | ")

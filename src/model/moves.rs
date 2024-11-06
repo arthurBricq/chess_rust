@@ -8,20 +8,6 @@ pub const WHITE_PAWN_MOVES: [i8; 4] = [8, 9, 7, 16];
 
 pub const BLACK_PAWN_MOVES: [i8; 4] = [-8, -9, -7, -16];
 
-pub const ROOK_MOVES: [i8; 28] = [
-    1, 2, 3, 4, 5, 6, 7,
-    -1, -2, -3, -4, -5, -6, -7,
-    8, 8 * 2, 8 * 3, 8 * 4, 8 * 5, 8 * 6, 8 * 7,
-    -8, -8 * 2, -8 * 3, -8 * 4, -8 * 5, -8 * 6, -8 * 7,
-];
-
-pub const BISHOP_MOVES: [i8; 28] = [
-    7, 7 * 2, 7 * 3, 7 * 4, 7 * 5, 7 * 6, 7 * 7,
-    -7, -7 * 2, -7 * 3, -7 * 4, -7 * 5, -7 * 6, -7 * 7,
-    9, 9 * 2, 9 * 3, 9 * 4, 9 * 5, 9 * 6, 9 * 7,
-    -9, -9 * 2, -9 * 3, -9 * 4, -9 * 5, -9 * 6, -9 * 7,
-];
-
 pub const KNIGHT_MOVES: [i8; 8] = [
     17, 15, -15, -17,
     10, -6, 6, -10
@@ -30,17 +16,6 @@ pub const KNIGHT_MOVES: [i8; 8] = [
 pub const KING_MOVES: [i8; 8] = [
     1, -1, 8, -8,
     9, 7, -9, -7
-];
-
-pub const QUEEN_MOVES: [i8; 56] = [
-    1, 2, 3, 4, 5, 6, 7,
-    -1, -2, -3, -4, -5, -6, -7,
-    8, 8 * 2, 8 * 3, 8 * 4, 8 * 5, 8 * 6, 8 * 7,
-    -8, -8 * 2, -8 * 3, -8 * 4, -8 * 5, -8 * 6, -8 * 7,
-    7, 7 * 2, 7 * 3, 7 * 4, 7 * 5, 7 * 6, 7 * 7,
-    -7, -7 * 2, -7 * 3, -7 * 4, -7 * 5, -7 * 6, -7 * 7,
-    9, 9 * 2, 9 * 3, 9 * 4, 9 * 5, 9 * 6, 9 * 7,
-    -9, -9 * 2, -9 * 3, -9 * 4, -9 * 5, -9 * 6, -9 * 7,
 ];
 
 pub const KING_SPECIAL_MOVES: [i8; 2] = [
@@ -103,18 +78,6 @@ impl Move {
         self.quality == MoveQuality::GoodCapture ||
             self.quality == MoveQuality::EqualCapture ||
             self.quality == MoveQuality::LowCapture
-    }
-
-    pub fn get_vector(&self) -> [i8; 2] {
-        let remain = self.from % 8;
-        let min = self.from - remain;
-        let max = self.from + (7 - remain);
-        if self.to >= min && self.to <= max {
-            [self.to - self.from, 0]
-        } else {
-            // Then look up and down
-            [0, 0]
-        }
     }
 
     /// Returns the increment that represents the direction of the given move

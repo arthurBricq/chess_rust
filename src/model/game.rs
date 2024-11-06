@@ -34,6 +34,7 @@ const FLAG_BK_CASTLED: i8 = 3;
 
 impl ChessGame {
     /// Construct a chess game from the integers
+    #[cfg(test)]
     pub fn new(whites: u64, pawns: u64, bishops: u64, knights: u64, rooks: u64, queens: u64, kings: u64, flags: u64) -> Self {
         Self { whites, pawns, bishops, knights, rooks, queens, kings, flags }
     }

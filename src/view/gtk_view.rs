@@ -4,7 +4,7 @@ use fltk::app::{event_text, App, Sender};
 use fltk::enums::{Color, Event};
 use fltk::image::SvgImage;
 use fltk::{button::Button, prelude::*};
-use fltk::{prelude::*, window::Window, *};
+use fltk::{window::Window, *};
 
 pub struct GTKView {
     chess_view: ChessViewModel,
@@ -49,7 +49,7 @@ impl GTKView {
         button.set_frame(enums::FrameType::FlatBox);
     }
 
-    fn draw_window(&self, app: &App, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
+    fn draw_window(&self, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
         let mut buttons: Vec<Vec<Button>> = Vec::new();
 
         let mut win = Window::default()
@@ -88,7 +88,7 @@ impl GTKView {
     pub fn run_app(&mut self) {
         let app = App::default();
         let (s, r) = fltk::app::channel();
-        let (mut win, mut buttons) = self.draw_window(&app, &s);
+        let (mut win, mut buttons) = self.draw_window(&s);
 
         // Handle when pressing some keys
         win.handle(move |_, event| -> bool {

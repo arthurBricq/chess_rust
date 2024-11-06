@@ -111,12 +111,9 @@ impl MovesContainer for SortedMovesContainer {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::chess_type::Type::Pawn;
-    use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
     use crate::model::moves::MoveQuality::GoodCapture;
     use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
-    use crate::model::tools::chesspos_to_index;
 
     #[test]
     fn test_sorted_container() {
@@ -149,11 +146,5 @@ mod tests {
         assert!(!container.has_next());
     }
 
-    fn test_sorted_container_from_board() {
-        let mut game = GameConstructor::empty();
-        // white has 2 pawn --> 4 moves
-        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("a2").unwrap() as u8);
-    }
 }
 

@@ -25,11 +25,10 @@ fn benchmark() {
         game.apply_move_unsafe(&Move::new(chesspos_to_index("d2").unwrap(), chesspos_to_index("d4").unwrap(), true));
 
         let start = Instant::now();
-        if let (result, nps) = solver.find_best_move(game, false) {
-            let best_move = result.best_move.unwrap();
-            let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, false));
-            nodes_per_seconds.push(nps);
-        }
+        let (result, nps) = solver.find_best_move(game, false);
+        let best_move = result.best_move.unwrap();
+        let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, false));
+        nodes_per_seconds.push(nps);
         let end = start.elapsed().as_millis() as f64;
         times.push(end);
     }

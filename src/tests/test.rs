@@ -1,11 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use std::hash::Hash;
     use crate::model::chess_type::ScoreType;
-    use crate::model::game::{ChessGame};
+    use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
+    use std::collections::HashMap;
 
 
     #[test]
@@ -63,7 +62,7 @@ mod tests {
         let mut map: HashMap<ChessGame, ScoreType> = HashMap::new();
         // Create some games
         let mut g1 = GameConstructor::standard_game();
-        let mut g2 = GameConstructor::standard_game();
+        let g2 = GameConstructor::standard_game();
         let mut g3 = GameConstructor::standard_game();
         g1.apply_move_safe(Move::new(12, 28, true));
         g3.apply_move_safe(Move::new(12, 28, true));

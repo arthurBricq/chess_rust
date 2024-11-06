@@ -29,20 +29,14 @@ mod tests {
         let mut engine = Engine::new();
 
         // If it is white to play, white captures the pawn
-        if let (result, score) = engine.find_best_move(game.clone(), true) {
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("d5").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, _) = engine.find_best_move(game.clone(), true);
+        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("d5").unwrap());
 
         // Same if it is for black
-        if let (result, score) = engine.find_best_move(game.clone(), false) {
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, _) = engine.find_best_move(game.clone(), false);
+        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
     }
 
     #[test]
@@ -79,22 +73,16 @@ mod tests {
         let mut engine = Engine::new();
 
         // If it is white to play, it should capture the bishop
-        if let (result, score) = engine.find_best_move(game.clone(), true) {
-            println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("f5").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, score) = engine.find_best_move(game.clone(), true);
+        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("f5").unwrap());
 
         // If black is playing, it should capture the pawn
-        if let (result, score) = engine.find_best_move(game.clone(), false) {
-            println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, score) = engine.find_best_move(game.clone(), false);
+        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
     }
 
     #[test]
@@ -128,20 +116,14 @@ mod tests {
         ];
 
         // If it is white to play, it should move the pawn up and not capture anything
-        if let (result, score) = engine.find_best_move(game.clone(), true) {
-            println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert!(valid_white_moves.contains(&result.best_move.unwrap()));
-        } else {
-            panic!("Error")
-        }
+        let (result, score) = engine.find_best_move(game.clone(), true);
+        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        assert!(valid_white_moves.contains(&result.best_move.unwrap()));
 
         // If black is playing, it should capture the pawn with a piece
-        if let (result, score) = engine.find_best_move(game.clone(), false) {
-            println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, score) = engine.find_best_move(game.clone(), false);
+        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
     }
 
     #[test]
@@ -169,13 +151,10 @@ mod tests {
         let mut engine = Engine::new();
 
         // If it is white to play, it should move the pawn up and not capture anything
-        if let (result, score) = engine.find_best_move(game.clone(), true) {
-            println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e2").unwrap());
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
-        } else {
-            panic!("Error")
-        }
+        let (result, score) = engine.find_best_move(game.clone(), true);
+        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e2").unwrap());
+        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
     }
 
     #[test]
@@ -183,42 +162,25 @@ mod tests {
     /// We want to make sure that black sees this treat.
     fn test_simple_engine5() {
         // This position is the one where black is not supposed to play a5->a4
-        let mut pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
+        let pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
 
         let mut engine = Engine::new();
         engine.set_engine_depth(4, 4);
 
         // What is the best move for black ?
-        if let (result, _) = engine.find_best_move(pos1.clone(), false) {
-            println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            println!("-----------\n")
-        }
-
+        let (_, _) = engine.find_best_move(pos1.clone(), false);
 
         // Now we wonder, what is the best move for white, given there is one less depth ?
         let mut pos2 = pos1.clone();
         pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5").unwrap(), chesspos_to_index("a4").unwrap(), false));
         engine.set_engine_depth(3, 4);
-        if let (result, _) = engine.find_best_move(pos2.clone(), true) {
-            println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            println!("-----------\n")
-        }
+        let (_, _) = engine.find_best_move(pos2.clone(), true);
 
         // let's understand why is the move that attacks a4 is not seen as strong
         let mut pos3 = pos2.clone();
         pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1").unwrap(), chesspos_to_index("b5").unwrap(), true));
         engine.set_engine_depth(2, 4);
-        if let (result, _) = engine.find_best_move(pos3.clone(), false) {
-            println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            println!("-----------\n")
-        }
-
-
-        // If it is white to play, it should move the pawn up and not capture anything
-        // println!("Evaluating pos3");
-        // if let (Some(result.best_move.unwrap()), _) = engine.find_best_move(pos3.clone(), false) {
-        //     println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-        // } 
+        let (_, _) = engine.find_best_move(pos3.clone(), false);
     }
 
     #[test]
@@ -237,11 +199,9 @@ mod tests {
         let mut engine = Engine::new();
         engine.set_engine_depth(1, 0);
 
+        // The result must be zero after white capture
         let pos1 = game.clone();
-        if let (result, _) = engine.find_best_move(pos1.clone(), true) {
-            println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            // The result must be zero after white capture
-            assert_eq!(0, result.score);
-        }
+        let (result, _) = engine.find_best_move(pos1.clone(), true);
+        assert_eq!(0, result.score);
     }
 }
