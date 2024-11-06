@@ -9,12 +9,6 @@ pub mod view {
     pub mod gtk_view;
 }
 
-pub mod tests {
-    pub mod test;
-    pub mod test_engine;
-    pub mod test_game_api;
-}
-
 fn play() {
     // Hierarchy problem:
     // At the moment, the view instantiate the view model which itself instantiate the game.

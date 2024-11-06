@@ -548,9 +548,14 @@ impl ChessGame {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+    use crate::model::chess_type::ScoreType;
+    use crate::model::chess_type::Type::Pawn;
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
+    use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+    use crate::model::tools::chesspos_to_index;
 
     #[test]
     fn test_wrong_knigt_move() {
@@ -584,4 +589,125 @@ mod tests {
         let mut move1 = Move::new(4, 6, true);
         assert!(game.is_move_valid(&mut move1))
     }
+
+    #[test]
+    fn test_simple_motions() {
+        // Create a new chess game
+        let mut game = GameConstructor::standard_game();
+
+        // A stupid move should not pass
+        let m = Move::new(10, 11, false);
+        let mut result = game.apply_move_safe(m);
+        assert_eq!(result, false);
+
+        // e4 is a valid move
+        result = game.apply_move_safe(Move::new(12, 28, true));
+        assert_eq!(result, true);
+
+        // my chess representation does not keep track of who is the current player
+        // e5 for white is a valid move
+        result = game.apply_move_safe(Move::new(28, 36, true));
+        assert_eq!(result, true);
+
+        // e5 for black is not valid
+        result = game.apply_move_safe(Move::new(52, 36, false));
+        assert_eq!(result, false);
+
+        // e6 for black is valid
+        result = game.apply_move_safe(Move::new(52, 44, false));
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn test_king_cant_go_everywhere() {
+        // Create a new chess game
+        let mut game = GameConstructor::standard_game();
+
+        // Try moving the king from e1 to e4
+        let m = Move::new(4, 28, true);
+        let result = game.apply_move_safe(m);
+
+        // Assert that the move is not allowed
+        assert_eq!(result, false);
+    }
+
+    #[test]
+    fn test_simple_hash_map() {
+        let mut map: HashMap<i8, i8> = HashMap::new();
+        map.insert(1, 12);
+        assert_eq!(map.contains_key(&1), true);
+        assert_eq!(map.contains_key(&2), false);
+        println!("{:?}", map);
+    }
+
+    #[test]
+    fn test_transposition_table() {
+        let mut map: HashMap<ChessGame, ScoreType> = HashMap::new();
+        // Create some games
+        let mut g1 = GameConstructor::standard_game();
+        let g2 = GameConstructor::standard_game();
+        let mut g3 = GameConstructor::standard_game();
+        g1.apply_move_safe(Move::new(12, 28, true));
+        g3.apply_move_safe(Move::new(12, 28, true));
+        // Fill the transposition table with two positions
+        map.insert(g1, g1.score());
+        map.insert(g2, g2.score());
+        // Assert that g3 does not need a score computation
+        assert!(map.contains_key(&g1));
+        assert!(map.contains_key(&g3));
+        // Assert that g3 needs a score computation
+        g3.apply_move_safe(Move::new(11, 27, true));
+        assert!(!map.contains_key(&g3));
+    }
+
+    #[test]
+    fn test_score_at_beggining() {
+        let game = GameConstructor::standard_game();
+        assert_eq!(0, game.score());
+    }
+
+    #[test]
+    fn test_moves_container_with_basic_position() {
+        let mut game = GameConstructor::empty();
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+
+        let mut container = SortedMovesContainer::new();
+        game.update_move_container(&mut container, true);
+        let count = container.count();
+        assert_eq!(2, count);
+
+        game.update_move_container(&mut container, false);
+        let count = container.count();
+        assert_eq!(2, count);
+    }
+
+    #[test]
+    fn test_moves_container_with_standard_position() {
+        let game = GameConstructor::standard_game();
+
+        let mut container = SortedMovesContainer::new();
+
+        // there are twenty possible positions
+        game.update_move_container(&mut container, true);
+        assert_eq!(20, container.count());
+
+        game.update_move_container(&mut container, false);
+        assert_eq!(20, container.count());
+    }
+
+    #[test]
+    fn test_initial_score() {
+        let game = GameConstructor::standard_game();
+        assert_eq!(0, game.score());
+    }
+
+    #[test]
+    fn test_score1() {
+        let mut game = GameConstructor::empty();
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+        assert_eq!(0, game.score());
+    }
+
 }
