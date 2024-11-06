@@ -10,6 +10,7 @@ pub struct TerminalChessView<'a> {
     game: &'a mut ChessGame,
 }
 
+#[allow(dead_code)]
 impl<'a> TerminalChessView<'a> {
     pub fn new(_game: &'a mut ChessGame) -> Self {
         Self {

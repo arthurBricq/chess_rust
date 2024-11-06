@@ -1,13 +1,8 @@
 use crate::view::gtk_view::GTKView;
 
 mod model;
+mod view;
 
-pub mod view {
-    pub mod chessview;
-    // pub mod web_display; 
-    pub mod terminal_display;
-    pub mod gtk_view;
-}
 
 fn play() {
     // Hierarchy problem:
