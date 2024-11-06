@@ -27,7 +27,7 @@ impl Engine {
         }
     }
 
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
         self.depth = depth;
         self.extra_depth = extra;

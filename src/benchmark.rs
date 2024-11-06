@@ -3,15 +3,15 @@ mod model;
 use crate::model::engine::Engine;
 use crate::model::game_constructor::GameConstructor;
 use crate::model::moves::Move;
-use crate::model::tools::chesspos_to_index;
 use std::time::Instant;
+use crate::model::tools::chesspos_to_index;
 
 /// This function runs a benchmarking of the chess game
 fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut times: Vec<f64> = Vec::new();
     let mut solver = Engine::new();
-    solver.set_engine_depth(6, 2);
+    solver.set_engine_depth(7, 2);
     let n = 10;
 
     for _i in 0..n {
@@ -39,7 +39,7 @@ fn benchmark() {
     println!("Nodes per seconds: {nodes_per_seconds:?}");
     println!("Number of iterations: {n}");
     println!("Mean                : {} [k-nps]", nodes_per_seconds.iter().sum::<u128>() as f64 / nodes_per_seconds.len() as f64);
-    println!("Mean time           : {} [ms]", times.iter().sum::<f64>() as f64 / times.len() as f64);
+    println!("Mean time           : {} [ms]", times.iter().sum::<f64>() / times.len() as f64);
 }
 
 fn main() {

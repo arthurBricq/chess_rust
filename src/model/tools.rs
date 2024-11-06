@@ -27,7 +27,7 @@ pub fn pos_to_index(x: i8, y: i8) -> i8 {
 }
 
 /// Convert an algebraic chess position to an integer
-#[cfg(test)]
+#[allow(dead_code)]
 pub fn chesspos_to_index(text: &str) -> Option<i8> {
     let mut iter = text.chars();
     let first_char = iter.next()?;
