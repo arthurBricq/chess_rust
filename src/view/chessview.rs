@@ -1,13 +1,16 @@
 use super::super::model::engine::Engine;
 use super::super::model::moves::Move;
-use crate::model::game::{ChessGame, Type, pos_to_index};
+use crate::model::chess_type::Type;
+use crate::model::game::ChessGame;
+use crate::model::game_constructor::GameConstructor;
 use crate::model::moves_container::SimpleMovesContainer;
+use crate::model::tools::pos_to_index;
 
 #[derive(Copy, Clone)]
 pub enum Msg {
     RestartGame,
     SquareTapped(i8),
-    KeyPressed(char)
+    KeyPressed(char),
 }
 
 pub enum SquareType {
@@ -35,7 +38,7 @@ impl ChessViewModel
 {
     pub fn new() -> Self {
         Self {
-            game: ChessGame::standard_game(),
+            game: GameConstructor::standard_game(),
             solver: Engine::new(),
             selected_pos: None,
             attacked_positions: vec![],
@@ -96,7 +99,7 @@ impl ChessViewModel
     }
 
     pub fn is_attacked_at(&self, i: i8, j: i8) -> bool {
-        self.attacked_positions.contains(&pos_to_index(i,j))
+        self.attacked_positions.contains(&pos_to_index(i, j))
     }
 
     pub fn get_class_name(&self, i: i8, j: i8) -> String {
@@ -131,7 +134,7 @@ impl ChessViewModel
                 self.game.apply_move_safe(
                     Move::new(best_move.from, best_move.to, false)
                 )
-            } else { 
+            } else {
                 false
             }
         } else {
@@ -150,7 +153,7 @@ impl ChessViewModel
     pub fn message_received(&mut self, msg: &Msg) -> bool {
         match msg {
             Msg::RestartGame => {
-                self.game = ChessGame::standard_game();
+                self.game = GameConstructor::standard_game();
                 return true;
             }
 
@@ -174,7 +177,7 @@ impl ChessViewModel
 
                 return true;
             }
-            
+
             Msg::KeyPressed(key) => {
                 println!("Key tapped: {key:?}");
                 match key {

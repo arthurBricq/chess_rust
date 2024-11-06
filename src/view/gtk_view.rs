@@ -1,12 +1,10 @@
-use fltk::{*, prelude::*, window::Window};
-use fltk::{button::Button, prelude::*};
-use fltk::app::{App, event_text, Sender};
+use super::super::view::chessview::*;
+use crate::model::tools::pos_to_index;
+use fltk::app::{event_text, App, Sender};
 use fltk::enums::{Color, Event};
 use fltk::image::SvgImage;
-
-use crate::model::game::pos_to_index;
-
-use super::super::view::chessview::*;
+use fltk::{button::Button, prelude::*};
+use fltk::{prelude::*, window::Window, *};
 
 pub struct GTKView {
     chess_view: ChessViewModel,
@@ -99,7 +97,7 @@ impl GTKView {
                     if let Some(ch) = event_text().chars().next() {
                         s.send(Msg::KeyPressed(ch));
                     }
-                    return true
+                    return true;
                 }
                 _ => {}
             }

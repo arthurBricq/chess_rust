@@ -1,9 +1,10 @@
 mod model;
 
-use std::time::Instant;
 use crate::model::engine::Engine;
-use crate::model::game::{chesspos_to_index, ChessGame};
+use crate::model::game_constructor::GameConstructor;
 use crate::model::moves::Move;
+use crate::model::tools::chesspos_to_index;
+use std::time::Instant;
 
 /// This function runs a benchmarking of the chess game
 fn benchmark() {
@@ -14,7 +15,7 @@ fn benchmark() {
     let n = 10;
 
     for _i in 0..n {
-        let mut game = ChessGame::standard_game();
+        let mut game = GameConstructor::standard_game();
 
         // Start the game after e4, e5, Kf3, Kc6, d4
         game.apply_move_unsafe(&Move::new(chesspos_to_index("e2"), chesspos_to_index("e4"), true));

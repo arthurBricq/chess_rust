@@ -1,8 +1,9 @@
-use std::collections::HashMap;
-use std::time::Instant;
-use crate::model::game::{ChessGame, ScoreType};
+use crate::model::chess_type::ScoreType;
+use crate::model::game::ChessGame;
 use crate::model::moves::Move;
 use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+use std::collections::HashMap;
+use std::time::Instant;
 
 pub struct SearchResult {
     pub score: ScoreType,
@@ -13,7 +14,7 @@ pub struct Engine {
     depth: usize,
     extra_depth: usize,
     iter: u64,
-    transposition_table: HashMap<ChessGame, ScoreType>
+    transposition_table: HashMap<ChessGame, ScoreType>,
 }
 
 impl Engine {
@@ -75,10 +76,9 @@ impl Engine {
 
             let s = *self.transposition_table.entry(game).or_insert_with(|| game.score());
             return SearchResult {
-                score: if white_to_play {s} else { -s },
+                score: if white_to_play { s } else { -s },
                 best_move: None,
             };
-
         }
 
         // get the list of available moves

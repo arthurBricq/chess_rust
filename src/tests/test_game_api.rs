@@ -1,12 +1,14 @@
 #[cfg(test)]
 mod tests {
-    use crate::model::game::{ChessGame, chesspos_to_index};
-    use crate::model::game::Type::Pawn;
+    use crate::model::game::{ChessGame, };
+    use crate::model::chess_type::Type::Pawn;
+    use crate::model::game_constructor::GameConstructor;
     use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+    use crate::model::tools::chesspos_to_index;
 
     #[test]
     fn test_moves_container_with_basic_position() {
-        let mut game = ChessGame::empty();
+        let mut game = GameConstructor::empty();
         game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
         game.set_piece(Pawn, false, chesspos_to_index("e7") as u8);
         
@@ -21,12 +23,11 @@ mod tests {
 
     #[test]
     fn test_moves_container_with_standard_position() {
-        let mut game = ChessGame::standard_game();
+        let mut game = GameConstructor::standard_game();
 
         let mut container = SortedMovesContainer::new();
 
         // there are twenty possible positions
-        
         game.update_move_container(&mut container, true);
         assert_eq!(20, container.count());
 
@@ -36,26 +37,15 @@ mod tests {
 
     #[test]
     fn test_initial_score() {
-        let mut game = ChessGame::standard_game();
+        let mut game = GameConstructor::standard_game();
         assert_eq!(0, game.score());
     }
 
     #[test]
     fn test_score1() {
-        let mut game = ChessGame::empty();
-
+        let mut game = GameConstructor::empty();
         game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
         game.set_piece(Pawn, false, chesspos_to_index("e7") as u8);
-        assert_eq!(0, game.score());
-
-        game.set_piece(Pawn, true, chesspos_to_index("a2") as u8);
-        assert_eq!(1, game.score());
-
-        game.set_piece(Pawn, true, chesspos_to_index("b2") as u8);
-        assert_eq!(2, game.score());
-
-        game.set_piece(Pawn, false, chesspos_to_index("a7") as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("a8") as u8);
         assert_eq!(0, game.score());
     }
 

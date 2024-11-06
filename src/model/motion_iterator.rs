@@ -1,4 +1,5 @@
-use crate::model::game::{ChessGame, Type};
+use crate::model::chess_type::Type;
+use crate::model::game::ChessGame;
 use crate::model::moves::Move;
 
 // pub trait MotionIterator {
@@ -28,7 +29,7 @@ impl StepMotionIterator {
             inc,
             is_white,
             found_capture: false,
-            t
+            t,
         }
     }
 }

@@ -1,14 +1,47 @@
 # ♔ Chess Engine in Rust ♚
 
-This repo contains the code of a **chess engine** fully written in Rust, from scratch. 
+This repo contains the code of a **chess engine** fully written in Rust, from scratch, and the UI to interact with it. I would like to keep expanding this project to create a Chess annotation software.
 
 This is one of my many personal projects in Rust. And it is my second chess engine (*I had done the first in [C++](https://github.com/arthurBricq/chess_cpp)*)
 
-This engine runs at about 10 million moves per seconds on my machine.
-
 ![](screenshot.png)
 
-The engine features :
+
+## Quick Start
+
+The only required dependency is Rust with cargo.
+
+Feel free to try it out and let me know !
+
+```bash
+git clone <...>
+cd chess_rust
+cargo run --bin chess --release
+```
+
+The flag `--release` tells rust to optimize the code (this is absolutely required), and `--features fltk` specify that you want to compile the UI and to run with the UI.
+
+## [Dev] TODO List for myself
+
+List of missing features
+
+- Chess Rules
+  - [ ] En Passant, using a stateful representation
+  - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
+    - There is a failing unit-test, but more work has to be dedicated to solving this issue.
+  - [ ] Non-queen promotions
+
+- Engine
+  - Parallel alpha-beta pruning
+  - Engine Server to keep expanding while the other player is thinking
+
+- UI to become a **chess annotation software**
+  - Show the list of move
+  - Be able to come back in the list of move
+  - Be able to create variations in the list of move
+
+
+## More words about the Engine
 
 - Tree-search for the best move (min-max algorithm). The resulting computing speed is about 500'000 moves / second.
   - Alpha Beta pruning to do it faster
@@ -17,7 +50,6 @@ The engine features :
 - Evaluation function that favors attacking positions
 - An extremely light-weight chess representation
 - UI to play locally on your computer
-
 
 The whole idea behind this chess engine is that the representation of a chess game is very small: it's **only** 7 integers !
 
@@ -44,33 +76,12 @@ This code contains the following part:
 - The **chess engine**. Basically, it's a recursive function that explores the **tree of possible moves** until a given depth. The tree-serach algorithm is a **min-max** search with **alpha-beta prunning**. The engine is located under `model/engine.rs`
 - To play with this engine, I have developed a **UI** very easy to deploy with FTLK.rs. There is also a WebApp (because i wanted to try `yew.rs`) in the eventual possibility to host this engine on my website...
 
-## Quick Start
-
-The only required dependency is Rust with cargo.
-
-Feel free to try it out and let me know !
-
-```bash
-git clone <...>
-cd chess_rust
-cargo run --bin chess --release
-```
-
-The flag `--release` tells rust to optimize the code (this is absolutely required), and `--features fltk` specify that you want to compile the UI and to run with the UI. 
 
 ## Why a chess engine to learn Rust ? 
 
 Programming a chess engine is a brilliant exercise for an accomplished developer. I think that chess programming is really the perfect project for testing your own skills. 
 - It is **easy enough** to not take too long: it can be done in a few weeks / months, which is good for self-projects. I often have the problem to start projects too long and I end up tired of them.
 - It is **difficult enough** to really challenge you. There are some things that are really not trivial. Encoding the rule of chess in a way to allows to have a depth of search good enough is really not easy.
-
-## [Dev] TODO List for myself
-
-List of missing features
-
-  - [ ] En Passant, using a stateful representation
-  - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
-  - [ ] Non-queen promotions
 
 ### How to optimise the score function ? 
 

@@ -1,71 +1,9 @@
-use crate::model::game::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use super::moves::*;
+use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
+use crate::model::chess_type::{ScoreType, Type};
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
-
-// transforms a position (x,y) into a bit index
-pub fn pos_to_index(x: i8, y: i8) -> i8 {
-    x + 8 * y
-}
-
-/// Convert an algreabraic chess position to an integer
-pub fn chesspos_to_index(text: &str) -> i8 {
-    let mut chars: Vec<char> = text.chars().collect();
-    let row = chars[1].to_digit(10).unwrap();
-    let col = match chars[0] {
-        'a' => 0,
-        'b' => 1,
-        'c' => 2,
-        'd' => 3,
-        'e' => 4,
-        'f' => 5,
-        'g' => 6,
-        'h' => 7,
-        _ => panic!("Unknown chess position at char: {}", chars[0])
-    };
-    pos_to_index(col, row as i8 - 1)
-}
-
-pub fn index_to_chesspos(index: i8) -> String {
-    let x = index % 8;
-    let y = index / 8 + 1;
-    let s = match x {
-        0 => "a".to_string(),
-        1 => "b".to_string(),
-        2 => "c".to_string(),
-        3 => "d".to_string(),
-        4 => "e".to_string(),
-        5 => "f".to_string(),
-        6 => "g".to_string(),
-        7 => "h".to_string(),
-        _ => panic!("Impossible position: {x}")
-    };
-    s + format!("{y}").as_str()
-}
-
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub enum Type {
-    Pawn,
-    Bishop,
-    Knight,
-    Rook,
-    Queen,
-    King,
-}
-
-pub type ScoreType = i64;
-
-impl Type {
-    pub fn score(&self) -> ScoreType {
-        match self {
-            Pawn => 1,
-            Bishop | Knight => 3,
-            Rook => 5,
-            Queen => 10,
-            King => 10000
-        }
-    }
-}
+use crate::model::tools::{clear_at, is_set, pos_to_index, set_at};
 
 /// Struct to represent a chess game. 
 ///
@@ -78,14 +16,14 @@ impl Type {
 ///     3: has black king castled
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct ChessGame {
-    whites: u64,
-    pawns: u64,
-    bishops: u64,
-    knights: u64,
-    rooks: u64,
-    queens: u64,
-    kings: u64,
-    flags: u64,
+    pub(crate) whites: u64,
+    pub(crate) pawns: u64,
+    pub(crate) bishops: u64,
+    pub(crate) knights: u64,
+    pub(crate) rooks: u64,
+    pub(crate) queens: u64,
+    pub(crate) kings: u64,
+    pub(crate) flags: u64,
 }
 
 const FLAG_WK_MOVED: i8 = 0;
@@ -93,109 +31,12 @@ const FLAG_BK_MOVED: i8 = 1;
 const FLAG_WK_CASTLED: i8 = 2;
 const FLAG_BK_CASTLED: i8 = 3;
 
-macro_rules! is_set {
-    ($a: expr, $at: expr) => {
-        (($a >> $at) & 1u64) == 1
-    };
-}
-
-/// Set the bits
-macro_rules! set_at {
-    ($a:expr , $b:expr) => (
-        $a |= 1u64 << $b; 
-    )
-}
-
-macro_rules! clear_at {
-    ($a:expr , $b:expr) => (
-        $a &= !(1u64 << $b); 
-    )
-}
 
 
 impl ChessGame {
-    pub fn empty() -> Self {
-        ChessGame {
-            whites: 0,
-            pawns: 0,
-            bishops: 0,
-            knights: 0,
-            rooks: 0,
-            queens: 0,
-            kings: 0,
-            flags: 0,
-        }
-    }
-
     /// Construct a chess game from the integers
     pub fn new(whites: u64, pawns: u64, bishops: u64, knights: u64, rooks: u64, queens: u64, kings: u64, flags: u64) -> Self {
         Self { whites, pawns, bishops, knights, rooks, queens, kings, flags }
-    }
-
-    /// Constructor for a normal chess game.
-    /// The pieces are set like on a normal chess set.
-    pub fn standard_game() -> Self {
-        let mut whites = 0;
-        let mut pawns = 0;
-        let mut bishops = 0;
-        let mut knights = 0;
-        let mut rooks = 0;
-        let mut queens = 0;
-        let mut kings = 0;
-
-        // Add the pawns
-        for i in 0..8 {
-            // White pawns
-            set_at!(pawns, pos_to_index(i, 1));
-            set_at!(whites, pos_to_index(i, 1));
-            // Black pawns
-            set_at!(pawns, pos_to_index(i, 6));
-        }
-
-        // Kings
-        set_at!(kings, pos_to_index(4, 0));
-        set_at!(whites, pos_to_index(4, 0));
-        set_at!(kings, pos_to_index(4, 7));
-
-        // Queens
-        set_at!(queens, pos_to_index(3, 0));
-        set_at!(whites, pos_to_index(3, 0));
-        set_at!(queens, pos_to_index(3, 7));
-
-        // Rooks 
-        set_at!(rooks, pos_to_index(0, 0));
-        set_at!(rooks, pos_to_index(7, 0));
-        set_at!(whites, pos_to_index(0, 0));
-        set_at!(whites, pos_to_index(7, 0));
-        set_at!(rooks, pos_to_index(0, 7));
-        set_at!(rooks, pos_to_index(7, 7));
-
-        // bishops
-        set_at!(bishops, pos_to_index(2, 0));
-        set_at!(bishops, pos_to_index(5, 0));
-        set_at!(whites, pos_to_index(2, 0));
-        set_at!(whites, pos_to_index(5, 0));
-        set_at!(bishops, pos_to_index(2, 7));
-        set_at!(bishops, pos_to_index(5, 7));
-
-        // knights 
-        set_at!(knights, pos_to_index(1,0));
-        set_at!(knights, pos_to_index(6,0));
-        set_at!(whites, pos_to_index(1,0));
-        set_at!(whites, pos_to_index(6,0));
-        set_at!(knights, pos_to_index(1,7));
-        set_at!(knights, pos_to_index(6,7));
-
-        Self {
-            whites,
-            pawns,
-            bishops,
-            knights,
-            rooks,
-            queens,
-            kings,
-            flags: 0,
-        }
     }
 
     /// Returns the type of the provided position.
@@ -204,6 +45,7 @@ impl ChessGame {
         self.type_at_index(pos_to_index(x, y))
     }
 
+    /// Returns true if the given (x,y) coordinates contains a white piece
     pub fn is_white_at(&self, x: i8, y: i8) -> bool {
         is_set!(self.whites, pos_to_index(x, y))
     }
@@ -565,12 +407,12 @@ impl ChessGame {
 
     /// Push valid moves in the `MovesContainer`, by trying all the possible moves given
     /// in `motions`
-    fn fill_moves_container_with_list_of_moves(&self,
-                                               to_fill: &mut dyn MovesContainer,
-                                               from: i8,
-                                               motions: &[i8],
-                                               is_white: bool,
-                                               t: Type,
+    fn fill_move_container_with_list_of_moves(&self,
+                                              to_fill: &mut dyn MovesContainer,
+                                              from: i8,
+                                              motions: &[i8],
+                                              is_white: bool,
+                                              t: Type,
     ) {
         for motion in motions {
             let des: i8 = from + motion;
@@ -607,17 +449,17 @@ impl ChessGame {
             match self.type_at_index(i).unwrap() {
                 Pawn => {
                     if is_white {
-                        self.fill_moves_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white, Pawn);
+                        self.fill_move_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white, Pawn);
                     } else {
-                        self.fill_moves_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white, Pawn);
+                        self.fill_move_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white, Pawn);
                     }
                 }
                 Knight => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white, Knight)
+                    self.fill_move_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white, Knight)
                 }
                 King => {
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_MOVES, is_white, King);
-                    self.fill_moves_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white, King);
+                    self.fill_move_container_with_list_of_moves(container, i, &KING_MOVES, is_white, King);
+                    self.fill_move_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white, King);
                 }
                 Bishop => {
                     self.fill_move_container_with_iterator(container, &mut [
@@ -707,11 +549,12 @@ impl ChessGame {
 #[cfg(test)]
 mod tests {
     use crate::model::game::ChessGame;
+    use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
 
     #[test]
     fn test_wrong_knigt_move() {
-        let game = ChessGame::standard_game();
+        let game = GameConstructor::standard_game();
         let mut invalid_move = Move::new(6, 31, true);
         assert!(!game.is_move_valid(&mut invalid_move))
     }
