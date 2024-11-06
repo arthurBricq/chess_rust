@@ -75,15 +75,15 @@ impl Move {
     }
 
     pub fn is_capture(&self) -> bool {
-        self.quality == MoveQuality::GoodCapture ||
-            self.quality == MoveQuality::EqualCapture ||
-            self.quality == MoveQuality::LowCapture
+        self.quality == GoodCapture ||
+            self.quality == EqualCapture ||
+            self.quality == LowCapture
     }
 
     /// Returns the increment that represents the direction of the given move
     /// This increment is used to traverse all squares between the from and to pos
     /// in order to check if there is another piece in between
-    pub fn get_direction_increment(&self) -> i16 {
+    pub fn get_direction_increment(&self) -> i8 {
         let diff = self.to - self.from;
 
         // Look on the same line

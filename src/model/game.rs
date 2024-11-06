@@ -123,14 +123,10 @@ impl ChessGame {
     /// Returns true if the provided move does not goes accross another piece.
     fn is_move_over_free_squares(&self, m: &Move) -> bool {
         let direction = m.get_direction_increment();
-        if direction == 0 {
-            // TODO: ?
-            return true;
-        }
-        let mut current_pos = m.from as i16;
+        let mut current_pos = m.from;
         current_pos += direction;
-        while current_pos != m.to as i16 {
-            if self.has_piece_at(current_pos as i8) {
+        while current_pos != m.to {
+            if self.has_piece_at(current_pos) {
                 return false;
             }
             current_pos += direction;
