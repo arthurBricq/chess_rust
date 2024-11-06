@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::model::game::{ChessGame, };
+    use crate::model::game::{ChessGame};
     use crate::model::chess_type::Type::Pawn;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
@@ -9,14 +9,14 @@ mod tests {
     #[test]
     fn test_moves_container_with_basic_position() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("e7") as u8);
-        
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+
         let mut container = SortedMovesContainer::new();
-        
+
         game.update_move_container(&mut container, true);
         assert_eq!(2, container.count());
-        
+
         game.update_move_container(&mut container, false);
         assert_eq!(2, container.count());
     }
@@ -44,10 +44,8 @@ mod tests {
     #[test]
     fn test_score1() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("e7") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
         assert_eq!(0, game.score());
     }
-
-
 }

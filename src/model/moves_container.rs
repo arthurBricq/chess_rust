@@ -152,8 +152,8 @@ mod tests {
     fn test_sorted_container_from_board() {
         let mut game = GameConstructor::empty();
         // white has 2 pawn --> 4 moves
-        game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("a2") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("a2").unwrap() as u8);
     }
 }
 

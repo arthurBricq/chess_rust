@@ -18,11 +18,11 @@ fn benchmark() {
         let mut game = GameConstructor::standard_game();
 
         // Start the game after e4, e5, Kf3, Kc6, d4
-        game.apply_move_unsafe(&Move::new(chesspos_to_index("e2"), chesspos_to_index("e4"), true));
-        game.apply_move_unsafe(&Move::new(chesspos_to_index("e7"), chesspos_to_index("e5"), false));
-        game.apply_move_unsafe(&Move::new(chesspos_to_index("g1"), chesspos_to_index("f3"), true));
-        game.apply_move_unsafe(&Move::new(chesspos_to_index("b8"), chesspos_to_index("c6"), true));
-        game.apply_move_unsafe(&Move::new(chesspos_to_index("d2"), chesspos_to_index("d4"), true));
+        game.apply_move_unsafe(&Move::new(chesspos_to_index("e2").unwrap(), chesspos_to_index("e4").unwrap(), true));
+        game.apply_move_unsafe(&Move::new(chesspos_to_index("e7").unwrap(), chesspos_to_index("e5").unwrap(), false));
+        game.apply_move_unsafe(&Move::new(chesspos_to_index("g1").unwrap(), chesspos_to_index("f3").unwrap(), true));
+        game.apply_move_unsafe(&Move::new(chesspos_to_index("b8").unwrap(), chesspos_to_index("c6").unwrap(), true));
+        game.apply_move_unsafe(&Move::new(chesspos_to_index("d2").unwrap(), chesspos_to_index("d4").unwrap(), true));
 
         let start = Instant::now();
         if let (result, nps) = solver.find_best_move(game, false) {

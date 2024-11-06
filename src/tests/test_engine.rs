@@ -13,15 +13,15 @@ mod tests {
     /// A test in which white or black can take a pawn
     fn test_simple_engine1() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e4") as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
 
-        game.set_piece(Pawn, false, chesspos_to_index("d5") as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("d7") as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("d7").unwrap() as u8);
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("a2") as u8);
-        game.set_piece(King, false, chesspos_to_index("a7") as u8);
+        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
+        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
         let display = TerminalChessView::new(&mut game);
         display.display();
@@ -30,16 +30,16 @@ mod tests {
 
         // If it is white to play, white captures the pawn
         if let (result, score) = engine.find_best_move(game.clone(), true) {
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4"));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("d5"));
+            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("d5").unwrap());
         } else {
             panic!("Error")
         }
 
         // Same if it is for black
         if let (result, score) = engine.find_best_move(game.clone(), false) {
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5"));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4"));
+            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
         } else {
             panic!("Error")
         }
@@ -63,15 +63,15 @@ mod tests {
     /// A test in which white can take a pawn or a bishop
     fn test_simple_engine2() {
         let mut game = GameConstructor::empty();
-        game.set_piece(King, true, chesspos_to_index("a2") as u8);
-        game.set_piece(King, false, chesspos_to_index("a7") as u8);
+        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
+        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
 
         // Black has two pieces
-        game.set_piece(Pawn, false, chesspos_to_index("d5") as u8);
-        game.set_piece(Knight, false, chesspos_to_index("f5") as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
+        game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
 
         let display = TerminalChessView::new(&mut game);
         display.display();
@@ -81,8 +81,8 @@ mod tests {
         // If it is white to play, it should capture the bishop
         if let (result, score) = engine.find_best_move(game.clone(), true) {
             println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4"));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("f5"));
+            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("f5").unwrap());
         } else {
             panic!("Error")
         }
@@ -90,8 +90,8 @@ mod tests {
         // If black is playing, it should capture the pawn
         if let (result, score) = engine.find_best_move(game.clone(), false) {
             println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5"));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4"));
+            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
         } else {
             panic!("Error")
         }
@@ -104,16 +104,16 @@ mod tests {
         let mut game = GameConstructor::empty();
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4") as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("d4") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("d4").unwrap() as u8);
 
-        game.set_piece(Pawn, false, chesspos_to_index("d5") as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("f5") as u8);
-        game.set_piece(Rook, false, chesspos_to_index("e8") as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("f5").unwrap() as u8);
+        game.set_piece(Rook, false, chesspos_to_index("e8").unwrap() as u8);
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("e2") as u8);
-        game.set_piece(King, false, chesspos_to_index("a7") as u8);
+        game.set_piece(King, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
         let display = TerminalChessView::new(&mut game);
         display.display();
@@ -122,9 +122,9 @@ mod tests {
         engine.set_engine_depth(4, 0);
 
         let valid_white_moves = [
-            Move::new(chesspos_to_index("e2"), chesspos_to_index("f3"), true),
-            Move::new(chesspos_to_index("e2"), chesspos_to_index("d3"), true),
-            Move::new(chesspos_to_index("e4"), chesspos_to_index("e5"), true),
+            Move::new(chesspos_to_index("e2").unwrap(), chesspos_to_index("f3").unwrap(), true),
+            Move::new(chesspos_to_index("e2").unwrap(), chesspos_to_index("d3").unwrap(), true),
+            Move::new(chesspos_to_index("e4").unwrap(), chesspos_to_index("e5").unwrap(), true),
         ];
 
         // If it is white to play, it should move the pawn up and not capture anything
@@ -138,7 +138,7 @@ mod tests {
         // If black is playing, it should capture the pawn with a piece
         if let (result, score) = engine.find_best_move(game.clone(), false) {
             println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4"));
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
         } else {
             panic!("Error")
         }
@@ -150,17 +150,17 @@ mod tests {
         let mut game = GameConstructor::empty();
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e2") as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("d2") as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("f2") as u8);
-        game.set_piece(Rook, true, chesspos_to_index("h4") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("d2").unwrap() as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("f2").unwrap() as u8);
+        game.set_piece(Rook, true, chesspos_to_index("h4").unwrap() as u8);
 
-        game.set_piece(Pawn, false, chesspos_to_index("a7") as u8);
-        game.set_piece(Rook, false, chesspos_to_index("f5") as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("a7").unwrap() as u8);
+        game.set_piece(Rook, false, chesspos_to_index("f5").unwrap() as u8);
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("e1") as u8);
-        game.set_piece(King, false, chesspos_to_index("d5") as u8);
+        game.set_piece(King, true, chesspos_to_index("e1").unwrap() as u8);
+        game.set_piece(King, false, chesspos_to_index("d5").unwrap() as u8);
         game.block_castling();
 
         let display = TerminalChessView::new(&mut game);
@@ -171,8 +171,8 @@ mod tests {
         // If it is white to play, it should move the pawn up and not capture anything
         if let (result, score) = engine.find_best_move(game.clone(), true) {
             println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e2"));
-            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4"));
+            assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e2").unwrap());
+            assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
         } else {
             panic!("Error")
         }
@@ -197,7 +197,7 @@ mod tests {
 
         // Now we wonder, what is the best move for white, given there is one less depth ?
         let mut pos2 = pos1.clone();
-        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5"), chesspos_to_index("a4"), false));
+        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5").unwrap(), chesspos_to_index("a4").unwrap(), false));
         engine.set_engine_depth(3, 4);
         if let (result, _) = engine.find_best_move(pos2.clone(), true) {
             println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
@@ -206,7 +206,7 @@ mod tests {
 
         // let's understand why is the move that attacks a4 is not seen as strong
         let mut pos3 = pos2.clone();
-        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1"), chesspos_to_index("b5"), true));
+        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1").unwrap(), chesspos_to_index("b5").unwrap(), true));
         engine.set_engine_depth(2, 4);
         if let (result, _) = engine.find_best_move(pos3.clone(), false) {
             println!("{} {}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
@@ -224,15 +224,15 @@ mod tests {
     #[test]
     fn test_score_with_low_depth() {
         let mut game = GameConstructor::empty();
-        game.set_piece(King, true, chesspos_to_index("a2") as u8);
-        game.set_piece(King, false, chesspos_to_index("a7") as u8);
+        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
+        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4") as u8);
+        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
 
         // Black has two pieces
-        game.set_piece(Pawn, false, chesspos_to_index("d5") as u8);
-        game.set_piece(Knight, false, chesspos_to_index("f5") as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
+        game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
 
         let mut engine = Engine::new();
         engine.set_engine_depth(1, 0);

@@ -7,7 +7,7 @@ macro_rules! is_set {
 /// Set the bits
 macro_rules! set_at {
     ($a:expr , $b:expr) => (
-        $a |= 1u64 << $b;
+        $a |= 1u64 << $b
     )
 }
 
@@ -26,11 +26,13 @@ pub fn pos_to_index(x: i8, y: i8) -> i8 {
     x + 8 * y
 }
 
-/// Convert an algreabraic chess position to an integer
-pub fn chesspos_to_index(text: &str) -> i8 {
-    let mut chars: Vec<char> = text.chars().collect();
-    let row = chars[1].to_digit(10).unwrap();
-    let col = match chars[0] {
+/// Convert an algebraic chess position to an integer
+pub fn chesspos_to_index(text: &str) -> Option<i8> {
+    let mut iter = text.chars();
+    let first_char = iter.next()?;
+    let second_char = iter.next()?;
+    let row = second_char.to_digit(10).unwrap();
+    let col = match first_char {
         'a' => 0,
         'b' => 1,
         'c' => 2,
@@ -39,9 +41,9 @@ pub fn chesspos_to_index(text: &str) -> i8 {
         'f' => 5,
         'g' => 6,
         'h' => 7,
-        _ => panic!("Unknown chess position at char: {}", chars[0])
+        _ => panic!("Unknown chess position at char: {}", first_char)
     };
-    pos_to_index(col, row as i8 - 1)
+    Some(pos_to_index(col, row as i8 - 1))
 }
 
 pub fn index_to_chesspos(index: i8) -> String {
