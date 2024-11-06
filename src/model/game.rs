@@ -41,11 +41,13 @@ impl ChessGame {
 
     /// Returns the type of the provided position.
     /// If no type is present, returns None.
+    #[allow(dead_code)]
     pub fn type_at(&self, x: i8, y: i8) -> Option<Type> {
         self.type_at_index(pos_to_index(x, y))
     }
 
     /// Returns true if the given (x,y) coordinates contains a white piece
+    #[allow(dead_code)]
     pub fn is_white_at(&self, x: i8, y: i8) -> bool {
         is_set!(self.whites, pos_to_index(x, y))
     }
@@ -77,6 +79,7 @@ impl ChessGame {
 
     /// Adds a piece to self.
     /// Can be used to create custom boards.
+    #[cfg(test)]
     pub fn set_piece(&mut self, piece: Type, white: bool, at: u8) {
         match piece {
             Pawn => set_at!(self.pawns, at),
@@ -91,6 +94,7 @@ impl ChessGame {
         }
     }
 
+    #[cfg(test)]
     pub fn block_castling(&mut self) {
         set_at!(self.flags, FLAG_BK_CASTLED);
         set_at!(self.flags, FLAG_WK_CASTLED);
@@ -529,6 +533,7 @@ impl ChessGame {
         score
     }
 
+    #[allow(dead_code)]
     pub fn print_game_integers(&self) {
         println!("\n----");
         println!("whites:  {},", self.whites);

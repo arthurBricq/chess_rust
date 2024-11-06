@@ -7,6 +7,7 @@ use crate::model::moves_container::SimpleMovesContainer;
 use crate::model::tools::pos_to_index;
 
 #[derive(Copy, Clone)]
+#[allow(dead_code)]
 pub enum Msg {
     RestartGame,
     SquareTapped(i8),
@@ -26,13 +27,6 @@ pub struct ChessViewModel {
     attacked_positions: Vec<i8>,
     engine_move: Option<(i8, i8)>,
 }
-
-/// A chessview is a class responsible for drawing a chess game.
-pub trait ChessView {
-    fn refresh(&mut self);
-    fn play(&mut self);
-}
-
 
 impl ChessViewModel
 {
@@ -72,6 +66,7 @@ impl ChessViewModel
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_char_at(&self, i: i8, j: i8) -> String {
         if let Some(t) = self.game.type_at(i, j) {
             if self.game.is_white_at(i, j) {
@@ -102,6 +97,7 @@ impl ChessViewModel
         self.attacked_positions.contains(&pos_to_index(i, j))
     }
 
+    #[allow(dead_code)]
     pub fn get_class_name(&self, i: i8, j: i8) -> String {
         if self.is_attacked_at(i, j) {
             "attacked".to_string()

@@ -62,6 +62,7 @@ impl<'a> TerminalChessView<'a> {
 
 
 impl<'a> TerminalChessView<'a> {
+    #[allow(dead_code)]
     pub fn play(&mut self) {
         // Read the input
         let mut s = String::new();

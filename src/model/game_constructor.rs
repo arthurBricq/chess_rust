@@ -5,6 +5,7 @@ pub struct GameConstructor;
 
 impl GameConstructor {
     /// An empty chess game
+    #[cfg(test)]
     pub fn empty() -> ChessGame {
         ChessGame {
             whites: 0,
