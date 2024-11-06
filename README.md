@@ -36,6 +36,7 @@ List of missing features
   - Engine Server to keep expanding while the other player is thinking
 
 - UI to become a **chess annotation software**
+  - Allow to resize the window
   - Show the list of move
   - Be able to come back in the list of move
   - Be able to create variations in the list of move

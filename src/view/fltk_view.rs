@@ -6,13 +6,10 @@ use fltk::image::SvgImage;
 use fltk::{button::Button, prelude::*};
 use fltk::{window::Window, *};
 
+
 pub struct GTKView {
     chess_view: ChessViewModel,
 }
-
-const BUTTON_WIDTH: i32 = 50;
-const TOP: i32 = 10;
-const LEFT: i32 = 10;
 
 impl GTKView {
     pub fn new() -> Self {
@@ -31,14 +28,13 @@ impl GTKView {
             let img = SvgImage::load(path).unwrap();
             button.set_image(Some(img));
         } else {
-            let path = format!("src/images/transparent_square.svg");
+            let path = "src/images/transparent_square.svg".to_string();
             let img = SvgImage::load(path).unwrap();
             button.set_image(Some(img));
         }
 
-        // let index = pos_to_index(i as i8, j as i8); 
         let index = i + j;
-        match (self.chess_view.get_square_type(i as i8, j as i8), index % 2) {
+        match (self.chess_view.get_square_type(i, j), index % 2) {
             (SquareType::Attacked, _) => button.set_color(Color::from_hex(0xFF9933)),
             (SquareType::LastEngineMove, _) => button.set_color(Color::from_hex(0xf5f58c)),
             (SquareType::Idle, 1) => button.set_color(Color::from_hex(0xeeeed2)),
@@ -49,25 +45,29 @@ impl GTKView {
         button.set_frame(enums::FrameType::FlatBox);
     }
 
+    /// Creates the FLTK window
     fn draw_window(&self, s: &Sender<Msg>) -> (Window, Vec<Vec<Button>>) {
-        let mut buttons: Vec<Vec<Button>> = Vec::new();
+        const BUTTON_WIDTH: i32 = 50;
+        const TOP_MARGIN: i32 = 10;
+        const SIDE_MARGIN: i32 = 30;
+        const TEXT_SIZE: i32 = 300;
 
         let mut win = Window::default()
-            .with_size(8 * BUTTON_WIDTH + 2 * LEFT, 8 * BUTTON_WIDTH + 2 * TOP)
-            .with_label("Chess Engine by Arthur Bricq")
-            ;
-
+            .with_size(8 * BUTTON_WIDTH + 2 * SIDE_MARGIN + TEXT_SIZE,
+                       8 * BUTTON_WIDTH + 2 * TOP_MARGIN)
+            .with_label("Chess Engine by Arthur Bricq");
         win.set_color(Color::White);
 
+        // Add all the buttons
+        let mut buttons: Vec<Vec<Button>> = Vec::new();
         for i in 0..8 {
             let mut row: Vec<Button> = Vec::new();
             for j in 0..8 {
-
-                // Create a new button 
+                // Create a new button
                 let mut button = Button::default()
                     .with_pos(
-                        LEFT + BUTTON_WIDTH * i,
-                        TOP + BUTTON_WIDTH * j,
+                        SIDE_MARGIN + BUTTON_WIDTH * i,
+                        TOP_MARGIN + BUTTON_WIDTH * j,
                     )
                     .with_size(
                         BUTTON_WIDTH,
@@ -77,12 +77,13 @@ impl GTKView {
                 self.draw_button_at(i as i8, 7 - j as i8, &mut button);
                 row.push(button);
             }
+
             buttons.push(row);
         }
         win.end();
         win.show();
 
-        return (win, buttons);
+        (win, buttons)
     }
 
     pub fn run_app(&mut self) {
