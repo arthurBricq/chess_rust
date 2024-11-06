@@ -1,4 +1,4 @@
-use crate::view::gtk_view::GTKView;
+use crate::view::fltk_view::GTKView;
 
 mod model;
 mod view;
