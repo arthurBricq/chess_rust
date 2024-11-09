@@ -50,13 +50,29 @@ impl GTKView {
         const BUTTON_WIDTH: i32 = 50;
         const TOP_MARGIN: i32 = 10;
         const SIDE_MARGIN: i32 = 30;
-        const TEXT_SIZE: i32 = 300;
+        const TEXT_SIZE: i32 = 0;
 
-        let mut win = Window::default()
+        /// Create the window for the application
+        let mut app_window = Window::default()
             .with_size(8 * BUTTON_WIDTH + 2 * SIDE_MARGIN + TEXT_SIZE,
                        8 * BUTTON_WIDTH + 2 * TOP_MARGIN)
             .with_label("Chess Engine by Arthur Bricq");
-        win.set_color(Color::White);
+        app_window.set_color(Color::White);
+        app_window.make_resizable(true);
+
+        /// If I ever want to improve the UI, here are some links to use...
+        ///
+        /// The chess window is the window which contains
+        /// https://fltk-rs.github.io/fltk-book/Layouts.html
+        /// https://fltk-rs.github.io/fltk-book/Group-widgets.html
+        /// https://fltk-rs.github.io/fltk-book/Trees.html
+        // let mut chess_window = Window::new(
+        //     SIDE_MARGIN,
+        //     SIDE_MARGIN,
+        //     8 *BUTTON_WIDTH,
+        //     8 * BUTTON_WIDTH,
+        //     "couch");
+        // chess_window.make_resizable(false);
 
         // Add all the buttons
         let mut buttons: Vec<Vec<Button>> = Vec::new();
@@ -80,10 +96,10 @@ impl GTKView {
 
             buttons.push(row);
         }
-        win.end();
-        win.show();
 
-        (win, buttons)
+        app_window.end();
+        app_window.show();
+        (app_window, buttons)
     }
 
     pub fn run_app(&mut self) {

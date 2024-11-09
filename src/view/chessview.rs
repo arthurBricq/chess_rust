@@ -151,7 +151,6 @@ impl ChessViewModel
             }
 
             Msg::SquareTapped(pos) => {
-                println!("tapped: {pos}");
 
                 if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;

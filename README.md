@@ -41,7 +41,6 @@ List of missing features
   - Be able to come back in the list of move
   - Be able to create variations in the list of move
 
-
 ## More words about the Engine
 
 - Tree-search for the best move (min-max algorithm). The resulting computing speed is about 500'000 moves / second.
