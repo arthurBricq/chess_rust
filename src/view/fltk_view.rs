@@ -52,7 +52,7 @@ impl GTKView {
         const SIDE_MARGIN: i32 = 30;
         const TEXT_SIZE: i32 = 0;
 
-        /// Create the window for the application
+        // Create the window for the application
         let mut app_window = Window::default()
             .with_size(8 * BUTTON_WIDTH + 2 * SIDE_MARGIN + TEXT_SIZE,
                        8 * BUTTON_WIDTH + 2 * TOP_MARGIN)
@@ -60,12 +60,12 @@ impl GTKView {
         app_window.set_color(Color::White);
         app_window.make_resizable(true);
 
-        /// If I ever want to improve the UI, here are some links to use...
-        ///
-        /// The chess window is the window which contains
-        /// https://fltk-rs.github.io/fltk-book/Layouts.html
-        /// https://fltk-rs.github.io/fltk-book/Group-widgets.html
-        /// https://fltk-rs.github.io/fltk-book/Trees.html
+        // If I ever want to improve the UI, here are some links to use...
+        //
+        // The chess window is the window which contains
+        // https://fltk-rs.github.io/fltk-book/Layouts.html
+        // https://fltk-rs.github.io/fltk-book/Group-widgets.html
+        // https://fltk-rs.github.io/fltk-book/Trees.html
         // let mut chess_window = Window::new(
         //     SIDE_MARGIN,
         //     SIDE_MARGIN,

@@ -1,6 +1,6 @@
 mod model;
 
-use crate::model::engine::Engine;
+use chess::engine::alpha_beta::AlphaBetaEngine;
 use crate::model::game_constructor::GameConstructor;
 use crate::model::moves::Move;
 use std::time::Instant;
@@ -10,7 +10,7 @@ use crate::model::tools::chesspos_to_index;
 fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut times: Vec<f64> = Vec::new();
-    let mut solver = Engine::new();
+    let mut solver = AlphaBetaEngine::new();
     solver.set_engine_depth(7, 2);
     let n = 10;
 

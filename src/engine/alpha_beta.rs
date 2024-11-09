@@ -10,14 +10,14 @@ pub struct SearchResult {
     pub best_move: Option<Move>,
 }
 
-pub struct Engine {
+pub struct AlphaBetaEngine {
     depth: usize,
     extra_depth: usize,
     iter: u64,
     transposition_table: HashMap<ChessGame, ScoreType>,
 }
 
-impl Engine {
+impl AlphaBetaEngine {
     pub fn new() -> Self {
         Self {
             depth: 6,
@@ -131,7 +131,7 @@ impl Engine {
 #[cfg(test)]
 /// This module tests several starting positions that are easy.
 mod tests {
-    use crate::model::engine::Engine;
+    use crate::engine::alpha_beta::AlphaBetaEngine;
     use crate::model::chess_type::Type::{King, Knight, Pawn, Rook};
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
@@ -152,7 +152,7 @@ mod tests {
         game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
         game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
 
         // If it is white to play, white captures the pawn
         let (result, _) = engine.find_best_move(game.clone(), true);
@@ -193,7 +193,7 @@ mod tests {
         game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
         game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
 
         // If it is white to play, it should capture the bishop
         let (result, score) = engine.find_best_move(game.clone(), true);
@@ -226,7 +226,7 @@ mod tests {
         game.set_piece(King, true, chesspos_to_index("e2").unwrap() as u8);
         game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(4, 0);
 
         let valid_white_moves = [
@@ -265,7 +265,7 @@ mod tests {
         game.set_piece(King, false, chesspos_to_index("d5").unwrap() as u8);
         game.block_castling();
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
 
         // If it is white to play, it should move the pawn up and not capture anything
         let (result, score) = engine.find_best_move(game.clone(), true);
@@ -281,7 +281,7 @@ mod tests {
         // This position is the one where black is not supposed to play a5->a4
         let pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(4, 4);
 
         // What is the best move for black ?
@@ -313,7 +313,7 @@ mod tests {
         game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
         game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
 
-        let mut engine = Engine::new();
+        let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(1, 0);
 
         // The result must be zero after white capture

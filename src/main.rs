@@ -2,7 +2,7 @@ use crate::view::fltk_view::GTKView;
 
 mod model;
 mod view;
-
+mod engine;
 
 fn play() {
     // Hierarchy problem:
