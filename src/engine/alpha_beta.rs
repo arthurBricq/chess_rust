@@ -39,7 +39,15 @@ impl AlphaBetaEngine {
         self.iter = 0;
 
         let start = Instant::now();
-        let result = self.alpha_beta_search(game, white_to_play, 0, i32::MIN as ScoreType, i32::MAX as ScoreType, false);
+        let result = self.alpha_beta_search(
+            game,
+            white_to_play,
+            0,
+            i32::MIN as ScoreType,
+            i32::MAX as ScoreType,
+            false,
+            None
+        );
         let end = start.elapsed().as_millis() as f64 / 1000.;
 
         let nps = (self.iter as f64) / end;
@@ -66,11 +74,12 @@ impl AlphaBetaEngine {
                          depth: usize,
                          mut alpha: ScoreType,
                          beta: ScoreType,
-                         last_move_capture: bool,
+                         is_last_move_a_capture: bool,
+                         first_move_to_evaluate: Option<Move>,
     ) -> SearchResult {
         // Ending criteria
-        if (!last_move_capture && depth >= self.depth) ||
-            (last_move_capture && depth >= self.depth + self.extra_depth) ||
+        if (!is_last_move_a_capture && depth >= self.depth) ||
+            (is_last_move_a_capture && depth >= self.depth + self.extra_depth) ||
             game.is_finished()
         {
             self.iter += 1;
@@ -85,6 +94,11 @@ impl AlphaBetaEngine {
         // get the list of available moves
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, white_to_play);
+
+        // Optionally set the first move
+        if let Some(first_move) = first_move_to_evaluate {
+            container.set_first_move(first_move);
+        }
 
         // The best move is initialized with the first one
         let mut current_score = i32::MIN as ScoreType;
@@ -101,7 +115,9 @@ impl AlphaBetaEngine {
                                                 depth + 1,
                                                 -beta,
                                                 -alpha,
-                                                m.is_capture());
+                                                m.is_capture(),
+                                                None,
+            );
 
             let s = -result.score;
 
