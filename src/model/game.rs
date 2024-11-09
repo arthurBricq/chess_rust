@@ -555,7 +555,7 @@ mod tests {
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
-    use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+    use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
     use crate::model::tools::chesspos_to_index;
 
     #[test]
@@ -673,7 +673,7 @@ mod tests {
         game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
         game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
 
-        let mut container = SortedMovesContainer::new();
+        let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, true);
         let count = container.count();
         assert_eq!(2, count);
@@ -687,7 +687,7 @@ mod tests {
     fn test_moves_container_with_standard_position() {
         let game = GameConstructor::standard_game();
 
-        let mut container = SortedMovesContainer::new();
+        let mut container = SmartMoveContainer::new();
 
         // there are twenty possible positions
         game.update_move_container(&mut container, true);

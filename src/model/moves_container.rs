@@ -8,6 +8,8 @@ pub trait MovesContainer {
     fn get_next(&mut self) -> Move;
     fn reset(&mut self);
     fn count(&self) -> usize;
+    /// Asks to retain the given move as the first move to evaluate
+    fn set_first_move(&mut self, m: Move);
 }
 
 pub struct SimpleMovesContainer {
@@ -44,9 +46,20 @@ impl MovesContainer for SimpleMovesContainer {
     fn count(&self) -> usize {
         self.moves.len()
     }
+
+    fn set_first_move(&mut self, m: Move) {
+        todo!()
+    }
 }
 
-pub struct SortedMovesContainer {
+/// A move container which
+/// * keeps move in a sorted datastructures, so that good moves are retrieved before others.
+/// * allows to store a "first move", typically obtained from iterative deepening, which is retrieved
+///   before all the moves in the containers.
+pub struct SmartMoveContainer {
+    /// If some, always returns this move before the others
+    /// Once this move is returned, it is immediately consumed
+    first_move: Option<Move>,
     /// The different containers.
     /// We use arrays and not vectors to be more efficient
     containers: [[Move; 128]; 4],
@@ -56,9 +69,10 @@ pub struct SortedMovesContainer {
     indices: [usize; 4],
 }
 
-impl SortedMovesContainer {
+impl SmartMoveContainer {
     pub fn new() -> Self {
         Self {
+            first_move: None,
             containers: [[Move::new(0, 0, true); 128]; 4],
             lens: [0; 4],
             indices: [0; 4],
@@ -66,7 +80,7 @@ impl SortedMovesContainer {
     }
 }
 
-impl MovesContainer for SortedMovesContainer {
+impl MovesContainer for SmartMoveContainer {
     fn push(&mut self, m: Move) {
         let index = match m.quality {
             MoveQuality::GoodCapture => 0,
@@ -83,9 +97,16 @@ impl MovesContainer for SortedMovesContainer {
             || self.indices[1] < self.lens[1]
             || self.indices[2] < self.lens[2]
             || self.indices[3] < self.lens[3]
+            || self.first_move.is_some()
     }
 
+    // TODO Maybe using VecDeques could make this implementation faster !
     fn get_next(&mut self) -> Move {
+        // If there is a first move stored, consume it.
+        if self.first_move.is_some() {
+            return self.first_move.take().unwrap();
+        }
+        // Otherwise, consume the different lists.
         let index = if self.indices[0] < self.lens[0] {
             0
         } else if self.indices[1] < self.lens[1] {
@@ -102,10 +123,16 @@ impl MovesContainer for SortedMovesContainer {
     fn reset(&mut self) {
         self.lens = [0; 4];
         self.indices = [0; 4];
+        self.first_move = None;
     }
 
     fn count(&self) -> usize {
         self.lens.iter().sum()
+    }
+
+    fn set_first_move(&mut self, m: Move) {
+        // TODO Maybe removing the move from the existing container is a good thing to do.
+        self.first_move = Some(m)
     }
 }
 
@@ -113,11 +140,11 @@ impl MovesContainer for SortedMovesContainer {
 mod tests {
     use crate::model::moves::Move;
     use crate::model::moves::MoveQuality::GoodCapture;
-    use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+    use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
 
     #[test]
     fn test_sorted_container() {
-        let mut container = SortedMovesContainer::new();
+        let mut container = SmartMoveContainer::new();
         assert!(!container.has_next());
 
         let m1 = Move::new(0, 1, true);
@@ -144,6 +171,26 @@ mod tests {
 
         // now the container is empty
         assert!(!container.has_next());
+    }
+
+    #[test]
+    fn test_first_move() {
+        let mut container = SmartMoveContainer::new();
+        let m1 = Move::new(0, 1, true);
+        let m2 = Move::new(2, 3, true);
+        let mut m3 = Move::new(4, 5, true);
+        m3.set_quality(GoodCapture);
+        container.push(m2);
+        container.push(m3);
+        container.set_first_move(m1);
+
+        let first = container.get_next();
+        let second = container.get_next();
+        let third = container.get_next();
+
+        assert_eq!(first, m1);
+        assert_eq!(second, m3);
+        assert_eq!(third, m2);
     }
 
 }

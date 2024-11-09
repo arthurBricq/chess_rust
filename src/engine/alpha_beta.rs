@@ -1,7 +1,7 @@
 use crate::model::chess_type::ScoreType;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
-use crate::model::moves_container::{MovesContainer, SortedMovesContainer};
+use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -83,7 +83,7 @@ impl AlphaBetaEngine {
         }
 
         // get the list of available moves
-        let mut container = SortedMovesContainer::new();
+        let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, white_to_play);
 
         // The best move is initialized with the first one
