@@ -6,6 +6,12 @@ This is one of my many personal projects in Rust. And it is my second chess engi
 
 ![](screenshot.png)
 
+It features:
+- All the rules of chess written in a very compact format (*1 game is represented with 8 bytes*)
+- alpha-beta pruning
+- move ordering to favor captures
+- iterative deepening to improve move ordering
+
 
 ## Quick Start
 

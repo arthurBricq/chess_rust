@@ -32,6 +32,11 @@ impl Engine for IterativeDeepeningEngine {
             );
 
             if depth == self.depth {
+                let end = start.elapsed().as_millis() as f64 / 1000. ;
+                println!("\n\nSolver finished ");
+                println!("    score = {} [points]", result.score);
+                println!("    time = {end} [second]");
+                
                 return (result, start.elapsed().as_millis())
             }
 
