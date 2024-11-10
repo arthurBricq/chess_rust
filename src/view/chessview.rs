@@ -1,5 +1,6 @@
 use crate::engine::alpha_beta::AlphaBetaEngine;
 use crate::engine::engine::Engine;
+use crate::engine::iterative_deepening::IterativeDeepeningEngine;
 use super::super::model::moves::Move;
 use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
@@ -23,7 +24,7 @@ pub enum SquareType {
 
 pub struct ChessViewModel {
     game: ChessGame,
-    solver: AlphaBetaEngine,
+    solver: Box<dyn Engine>,
     selected_pos: Option<i8>,
     attacked_positions: Vec<i8>,
     engine_move: Option<(i8, i8)>,
@@ -34,7 +35,7 @@ impl ChessViewModel
     pub fn new() -> Self {
         Self {
             game: GameConstructor::standard_game(),
-            solver: AlphaBetaEngine::new(),
+            solver: Box::new(IterativeDeepeningEngine::new(6, 2)),
             selected_pos: None,
             attacked_positions: vec![],
             engine_move: None,
