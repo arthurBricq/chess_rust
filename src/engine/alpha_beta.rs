@@ -4,11 +4,7 @@ use crate::model::moves::Move;
 use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
 use std::collections::HashMap;
 use std::time::Instant;
-
-pub struct SearchResult {
-    pub score: ScoreType,
-    pub best_move: Option<Move>,
-}
+use crate::engine::engine::{Engine, SearchResult};
 
 pub struct AlphaBetaEngine {
     depth: usize,
@@ -17,25 +13,9 @@ pub struct AlphaBetaEngine {
     transposition_table: HashMap<ChessGame, ScoreType>,
 }
 
-impl AlphaBetaEngine {
-    pub fn new() -> Self {
-        Self {
-            depth: 6,
-            extra_depth: 0,
-            iter: 0,
-            transposition_table: Default::default(),
-        }
-    }
+impl Engine for AlphaBetaEngine {
 
-    #[allow(dead_code)]
-    pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
-        self.depth = depth;
-        self.extra_depth = extra;
-    }
-
-    /// For a given chess game, finds the solver's best move and returns it as an Option of a move. 
-    /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
-    pub fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
+    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
         self.iter = 0;
 
         let start = Instant::now();
@@ -57,8 +37,27 @@ impl AlphaBetaEngine {
         println!("    nps = {nps} [moves/second]");
         (result, nps as u128)
     }
+}
 
-    /// Chess engine tree search
+impl AlphaBetaEngine {
+    pub fn new() -> Self {
+        Self {
+            depth: 6,
+            extra_depth: 0,
+            iter: 0,
+            transposition_table: Default::default(),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
+        self.depth = depth;
+        self.extra_depth = extra;
+    }
+
+    /// Returns the best move found using alpha-beta pruning with
+    /// * smart move ordering
+    /// * extra depth for captures move only
     ///
     /// Alpha-Beta Pruning: engine stops evaluating a move when at least one possibility has been found
     ///                      that proves the move to be worse than a previously examined move.
@@ -68,7 +67,7 @@ impl AlphaBetaEngine {
     ///         = worth case of black
     ///
     /// Move ordering : we favor moves that captures
-    fn alpha_beta_search(&mut self,
+    pub fn alpha_beta_search(&mut self,
                          game: ChessGame,
                          white_to_play: bool,
                          depth: usize,
@@ -148,6 +147,7 @@ impl AlphaBetaEngine {
 /// This module tests several starting positions that are easy.
 mod tests {
     use crate::engine::alpha_beta::AlphaBetaEngine;
+    use crate::engine::engine::Engine;
     use crate::model::chess_type::Type::{King, Knight, Pawn, Rook};
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
@@ -209,7 +209,7 @@ mod tests {
         game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
         game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = Box::new(AlphaBetaEngine::new());
 
         // If it is white to play, it should capture the bishop
         let (result, score) = engine.find_best_move(game.clone(), true);

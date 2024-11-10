@@ -47,7 +47,7 @@ impl MovesContainer for SimpleMovesContainer {
         self.moves.len()
     }
 
-    fn set_first_move(&mut self, m: Move) {
+    fn set_first_move(&mut self, _m: Move) {
         todo!()
     }
 }

@@ -1,4 +1,5 @@
 use crate::engine::alpha_beta::AlphaBetaEngine;
+use crate::engine::engine::Engine;
 use super::super::model::moves::Move;
 use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
