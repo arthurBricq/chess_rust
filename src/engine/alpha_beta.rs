@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use crate::model::chess_type::ScoreType;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
@@ -11,12 +12,14 @@ pub struct AlphaBetaEngine {
     extra_depth: usize,
     iter: u64,
     transposition_table: HashMap<ChessGame, ScoreType>,
+    killer_moves: HashMap<usize, Vec<Move>>,
 }
 
 impl Engine for AlphaBetaEngine {
-
     fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
         self.iter = 0;
+
+        self.reset_killer_moves();
 
         let start = Instant::now();
         let result = self.alpha_beta_search(
@@ -26,7 +29,7 @@ impl Engine for AlphaBetaEngine {
             i32::MIN as ScoreType,
             i32::MAX as ScoreType,
             false,
-            None
+            None,
         );
         let end = start.elapsed().as_millis() as f64 / 1000.;
 
@@ -46,6 +49,7 @@ impl AlphaBetaEngine {
             extra_depth: 0,
             iter: 0,
             transposition_table: Default::default(),
+            killer_moves: Default::default(),
         }
     }
 
@@ -53,6 +57,14 @@ impl AlphaBetaEngine {
     pub fn set_engine_depth(&mut self, depth: usize, extra: usize) {
         self.depth = depth;
         self.extra_depth = extra;
+        self.reset_killer_moves()
+    }
+
+    fn reset_killer_moves(&mut self) {
+        self.killer_moves.clear();
+        for i in (0..self.depth + self.extra_depth) {
+            self.killer_moves.insert(i, vec![]);
+        }
     }
 
     /// Returns the best move found using alpha-beta pruning with
@@ -68,13 +80,13 @@ impl AlphaBetaEngine {
     ///
     /// Move ordering : we favor moves that captures
     pub fn alpha_beta_search(&mut self,
-                         game: ChessGame,
-                         white_to_play: bool,
-                         depth: usize,
-                         mut alpha: ScoreType,
-                         beta: ScoreType,
-                         is_last_move_a_capture: bool,
-                         first_move_to_evaluate: Option<Move>,
+                             game: ChessGame,
+                             white_to_play: bool,
+                             depth: usize,
+                             mut alpha: ScoreType,
+                             beta: ScoreType,
+                             is_last_move_a_capture: bool,
+                             first_move_to_evaluate: Option<Move>,
     ) -> SearchResult {
         // Ending criteria
         if (!is_last_move_a_capture && depth >= self.depth) ||
@@ -98,6 +110,13 @@ impl AlphaBetaEngine {
         if let Some(first_move) = first_move_to_evaluate {
             container.set_first_move(first_move);
         }
+
+        // Adds the killer move potentially found by other branches
+        // if let Some(moves) = self.killer_moves.get(&depth) {
+        //     for i in 0..min(3, moves.len()) {
+        //         container.add_killer_move(moves[i]);
+        //     }
+        // }
 
         // The best move is initialized with the first one
         let mut current_score = i32::MIN as ScoreType;
@@ -130,6 +149,14 @@ impl AlphaBetaEngine {
             }
 
             if alpha >= beta {
+                // cutoff: remember the "killer move" for future branches
+                // TODO understand why this produces wrong result
+                // self
+                //     .killer_moves
+                //     .get_mut(&depth)
+                //     .expect("The datastructure is always initialized to support this usage")
+                //     .push(m);
+                
                 break;
             }
         }

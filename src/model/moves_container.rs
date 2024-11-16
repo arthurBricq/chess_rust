@@ -10,6 +10,9 @@ pub trait MovesContainer {
     fn count(&self) -> usize;
     /// Asks to retain the given move as the first move to evaluate
     fn set_first_move(&mut self, m: Move);
+    /// Add killer move
+    /// A killer is a move that produced a cutoff at the same depth
+    fn add_killer_move(&mut self, m: Move);
 }
 
 pub struct SimpleMovesContainer {
@@ -48,6 +51,10 @@ impl MovesContainer for SimpleMovesContainer {
     }
 
     fn set_first_move(&mut self, _m: Move) {
+        todo!()
+    }
+
+    fn add_killer_move(&mut self, m: Move) {
         todo!()
     }
 }
@@ -133,6 +140,12 @@ impl MovesContainer for SmartMoveContainer {
     fn set_first_move(&mut self, m: Move) {
         // TODO Maybe removing the move from the existing container is a good thing to do.
         self.first_move = Some(m)
+    }
+    
+    fn add_killer_move(&mut self, m: Move) {
+        // TODO Maybe removing the move from the existing container is a good thing to do.
+        self.containers[0][self.lens[0]] = m;
+        self.lens[0] += 1;
     }
 }
 
