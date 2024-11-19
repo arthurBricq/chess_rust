@@ -78,26 +78,32 @@ impl AlphaBetaEngine {
     /// * beta  = maximum score that black is assured of
     ///         = worth case of black
     ///
-    /// Move ordering : we favor moves that captures
+    /// Improvements
+    /// * Move ordering : we favor moves that captures
+    /// * Iterative deepening : provide a "first line" which even improves the move ordering
+    /// * Killer-move heuristic : WIP
+    /// 
+    /// Algorithm taken from 
+    /// https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode
+    /// (fail-soft variation)
     pub fn alpha_beta_search(&mut self,
                              game: ChessGame,
                              white_to_play: bool,
                              depth: usize,
                              mut alpha: ScoreType,
-                             beta: ScoreType,
+                             mut beta: ScoreType,
                              is_last_move_a_capture: bool,
                              first_move_to_evaluate: Option<Move>,
     ) -> SearchResult {
-        // Ending criteria
+        // Terminal node
         if (!is_last_move_a_capture && depth >= self.depth) ||
             (is_last_move_a_capture && depth >= self.depth + self.extra_depth) ||
             game.is_finished()
         {
             self.iter += 1;
-
             let s = *self.transposition_table.entry(game).or_insert_with(|| game.score());
             return SearchResult {
-                score: if white_to_play { s } else { -s },
+                score: s,
                 best_move: None,
             };
         }
@@ -107,6 +113,7 @@ impl AlphaBetaEngine {
         game.update_move_container(&mut container, white_to_play);
 
         // Optionally set the first move
+        // (used for iterative deepening)
         if let Some(first_move) = first_move_to_evaluate {
             container.set_first_move(first_move);
         }
@@ -118,53 +125,64 @@ impl AlphaBetaEngine {
         //     }
         // }
 
-        // The best move is initialized with the first one
-        let mut current_score = i32::MIN as ScoreType;
+        let mut score = if white_to_play {
+            ScoreType::MIN
+        } else {
+            ScoreType::MAX
+        };
+        // TODO is there a way to not keep track of the best move at runtime ?
         let mut best_move = None;
 
         while container.has_next() {
             let mut new_game = game.clone();
             let m = container.get_next();
             new_game.apply_move_unsafe(&m);
-
-            // call the recursion
+            
             let result = self.alpha_beta_search(new_game,
                                                 !white_to_play,
                                                 depth + 1,
-                                                -beta,
-                                                -alpha,
+                                                alpha,
+                                                beta,
                                                 m.is_capture(),
                                                 None,
             );
-
-            let s = -result.score;
-
-            if s > current_score {
-                best_move = Some(m);
-                current_score = s;
-            }
-
-            if current_score > alpha {
-                alpha = current_score;
-            }
-
-            if alpha >= beta {
-                // cutoff: remember the "killer move" for future branches
-                // TODO understand why this produces wrong result
-                // self
-                //     .killer_moves
-                //     .get_mut(&depth)
-                //     .expect("The datastructure is always initialized to support this usage")
-                //     .push(m);
+            
+            if white_to_play {
+                // value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
+                // α := max(α, value)
+                // if value ≥ β then break (* β cutoff *)
                 
-                break;
+                // current_score = max(current_score, result.score);
+                if result.score > score {
+                    best_move = Some(m);
+                    score = result.score;
+                }
+                alpha = max(alpha, score);
+                if score >= beta {
+                    break;
+                }
+            } else {
+                // value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
+                // β := min(β, value)
+                // if value ≤ α then break (* α cutoff *)
+                
+                // current_score = min(current_score, result.score);
+                if result.score < score {
+                    best_move = Some(m);
+                    score = result.score;
+                }
+                beta = min(beta, score);
+                if score <= alpha {
+                    break;
+                }
             }
+       
         }
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
         SearchResult {
-            score: current_score,
+            score,
             best_move,
         }
     }
