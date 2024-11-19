@@ -1,4 +1,6 @@
+use std::collections::{BinaryHeap, VecDeque};
 use crate::model::moves::{Move, MoveQuality};
+use crate::model::moves::MoveQuality::{GoodCapture, Principal};
 
 /// Stores a list of moves and retrieve them in an order that implementation can define
 /// This allows to not have to sort a list of move based on an order.
@@ -64,88 +66,49 @@ impl MovesContainer for SimpleMovesContainer {
 /// * allows to store a "first move", typically obtained from iterative deepening, which is retrieved
 ///   before all the moves in the containers.
 pub struct SmartMoveContainer {
-    /// If some, always returns this move before the others
-    /// Once this move is returned, it is immediately consumed
-    first_move: Option<Move>,
-    /// The different containers.
-    /// We use arrays and not vectors to be more efficient
-    containers: [[Move; 128]; 4],
-    /// size of each containers
-    lens: [usize; 4],
-    /// index inside each container
-    indices: [usize; 4],
+    moves: BinaryHeap<Move>
 }
 
 impl SmartMoveContainer {
     pub fn new() -> Self {
         Self {
-            first_move: None,
-            containers: [[Move::new(0, 0, true); 128]; 4],
-            lens: [0; 4],
-            indices: [0; 4],
+            moves: BinaryHeap::with_capacity(128)
         }
     }
 }
 
 impl MovesContainer for SmartMoveContainer {
     fn push(&mut self, m: Move) {
-        let index = match m.quality {
-            MoveQuality::GoodCapture => 0,
-            MoveQuality::EqualCapture => 1,
-            MoveQuality::LowCapture => 2,
-            MoveQuality::Motion => 3,
-        };
-        self.containers[index][self.lens[index]] = m;
-        self.lens[index] += 1;
+        self.moves.push(m)
     }
 
     fn has_next(&self) -> bool {
-        self.indices[0] < self.lens[0]
-            || self.indices[1] < self.lens[1]
-            || self.indices[2] < self.lens[2]
-            || self.indices[3] < self.lens[3]
-            || self.first_move.is_some()
+        self.moves.len() > 0
     }
 
-    // TODO Maybe using VecDeques could make this implementation faster !
     fn get_next(&mut self) -> Move {
-        // If there is a first move stored, consume it.
-        if self.first_move.is_some() {
-            return self.first_move.take().unwrap();
-        }
-        // Otherwise, consume the different lists.
-        let index = if self.indices[0] < self.lens[0] {
-            0
-        } else if self.indices[1] < self.lens[1] {
-            1
-        } else if self.indices[2] < self.lens[2] {
-            2
-        } else {
-            3
-        };
-        self.indices[index] += 1;
-        self.containers[index][self.indices[index] - 1]
+        self.moves.pop().unwrap()
     }
 
     fn reset(&mut self) {
-        self.lens = [0; 4];
-        self.indices = [0; 4];
-        self.first_move = None;
+        self.moves.clear();
     }
 
     fn count(&self) -> usize {
-        self.lens.iter().sum()
+        self.moves.len()
     }
 
-    fn set_first_move(&mut self, m: Move) {
+    fn set_first_move(&mut self, mut m: Move) {
         // TODO Maybe removing the move from the existing container is a good thing to do.
-        self.first_move = Some(m)
+        m.set_quality(Principal);
+        self.moves.push(m);
     }
-    
-    fn add_killer_move(&mut self, m: Move) {
+
+    fn add_killer_move(&mut self, mut m: Move) {
         // TODO Maybe removing the move from the existing container is a good thing to do.
-        self.containers[0][self.lens[0]] = m;
-        self.lens[0] += 1;
+        // TODO new category for killer moves ?
+        m.set_quality(GoodCapture);
+        self.moves.push(m);
     }
 }
 
@@ -205,6 +168,5 @@ mod tests {
         assert_eq!(second, m3);
         assert_eq!(third, m2);
     }
-
 }
 

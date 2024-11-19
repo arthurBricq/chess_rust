@@ -1,5 +1,6 @@
+use std::cmp::Ordering;
 use crate::model::chess_type::ScoreType;
-use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture};
+use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal};
 use crate::model::tools::index_to_chesspos;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -24,18 +25,65 @@ pub const KING_SPECIAL_MOVES: [i8; 2] = [
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum MoveQuality {
+    Principal,
     GoodCapture,
     EqualCapture,
     LowCapture,
     Motion,
 }
 
-#[derive(Copy, Clone, PartialEq)]
+impl PartialOrd for MoveQuality {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MoveQuality {
+    fn cmp(&self, other: &Self) -> Ordering {
+        // TODO assess if using "ToInt" or similar would be faster than this.
+        match (self, other) {
+            (Principal, Principal) => Ordering::Equal,
+            (Principal, _) => Ordering::Greater,
+            (_, Principal) => Ordering::Less,
+            (GoodCapture, GoodCapture) => Ordering::Equal,
+            (GoodCapture, _) => Ordering::Greater,
+            (_, GoodCapture) => Ordering::Less,
+            (EqualCapture, EqualCapture) => Ordering::Equal,
+            (EqualCapture, _) => Ordering::Greater,
+            (_, EqualCapture) => Ordering::Less,
+            (LowCapture, LowCapture) => Ordering::Equal,
+            (LowCapture, _) => Ordering::Greater,
+            (_, LowCapture) => Ordering::Less,
+            _ => Ordering::Equal,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Eq)]
 pub struct Move {
     pub from: i8,
     pub to: i8,
     pub is_white: bool,
     pub quality: MoveQuality,
+}
+
+impl PartialOrd for Move {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Move {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.quality.cmp(&other.quality)
+    }
+}
+
+impl PartialEq<Self> for Move {
+    fn eq(&self, other: &Self) -> bool {
+        // The implementation of `PartialEq` is a bit more minimalist than the default
+        self.from == other.from && self.to == other.to
+    }
 }
 
 impl Debug for Move {
