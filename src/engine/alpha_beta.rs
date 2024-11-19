@@ -62,7 +62,7 @@ impl AlphaBetaEngine {
 
     fn reset_killer_moves(&mut self) {
         self.killer_moves.clear();
-        for i in (0..self.depth + self.extra_depth) {
+        for i in 0..self.depth + self.extra_depth {
             self.killer_moves.insert(i, vec![]);
         }
     }
@@ -119,11 +119,11 @@ impl AlphaBetaEngine {
         }
 
         // Adds the killer move potentially found by other branches
-        // if let Some(moves) = self.killer_moves.get(&depth) {
-        //     for i in 0..min(3, moves.len()) {
-        //         container.add_killer_move(moves[i]);
-        //     }
-        // }
+        if let Some(moves) = self.killer_moves.get(&depth) {
+            for i in 0..min(2, moves.len()) {
+                container.add_killer_move(moves[i]);
+            }
+        }
 
         let mut score = if white_to_play {
             ScoreType::MIN
@@ -159,6 +159,12 @@ impl AlphaBetaEngine {
                 }
                 alpha = max(alpha, score);
                 if score >= beta {
+                    // cutoff: remember the "killer move" for future branches
+                    self
+                        .killer_moves
+                        .get_mut(&depth)
+                        .expect("The datastructure is always initialized to support this usage")
+                        .push(m);
                     break;
                 }
             } else {
