@@ -1,6 +1,6 @@
-use std::collections::{BinaryHeap, VecDeque};
-use crate::model::moves::{Move, MoveQuality};
-use crate::model::moves::MoveQuality::{GoodCapture, KillerMove, Principal};
+use crate::model::moves::Move;
+use crate::model::moves::MoveQuality::{KillerMove, Principal};
+use std::collections::BinaryHeap;
 
 /// Stores a list of moves and retrieve them in an order that implementation can define
 /// This allows to not have to sort a list of move based on an order.
@@ -56,7 +56,7 @@ impl MovesContainer for SimpleMovesContainer {
         todo!()
     }
 
-    fn add_killer_move(&mut self, m: Move) {
+    fn add_killer_move(&mut self, _m: Move) {
         todo!()
     }
 }
@@ -66,7 +66,7 @@ impl MovesContainer for SimpleMovesContainer {
 /// * allows to store a "first move", typically obtained from iterative deepening, which is retrieved
 ///   before all the moves in the containers.
 pub struct SmartMoveContainer {
-    moves: BinaryHeap<Move>
+    moves: BinaryHeap<Move>,
 }
 
 impl SmartMoveContainer {

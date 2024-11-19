@@ -1,19 +1,18 @@
 mod model;
 mod engine;
 
-use crate::model::game_constructor::GameConstructor;
-use crate::model::moves::Move;
-use std::time::Instant;
-use crate::engine::alpha_beta::AlphaBetaEngine;
 use crate::engine::engine::Engine;
 use crate::engine::iterative_deepening::IterativeDeepeningEngine;
+use crate::model::game_constructor::GameConstructor;
+use crate::model::moves::Move;
 use crate::model::tools::chesspos_to_index;
+use std::time::Instant;
 
 /// This function runs a benchmarking of the chess game
 fn benchmark() {
     let mut nodes_per_seconds: Vec<u128> = Vec::new();
     let mut times: Vec<f64> = Vec::new();
-    
+
     let folds = 10;
 
     for _i in 0..folds {
