@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use crate::model::chess_type::ScoreType;
-use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal, KillerMove};
+use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal, KillerMove, Motion};
 use crate::model::tools::index_to_chesspos;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -33,54 +33,12 @@ pub enum MoveQuality {
     Motion,
 }
 
-impl PartialOrd for MoveQuality {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for MoveQuality {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // TODO assess if using "ToInt" or similar would be faster than this.
-        match (self, other) {
-            (Principal, Principal) => Ordering::Equal,
-            (Principal, _) => Ordering::Greater,
-            (_, Principal) => Ordering::Less,
-            (KillerMove, KillerMove) => Ordering::Equal,
-            (KillerMove, _) => Ordering::Greater,
-            (_, KillerMove) => Ordering::Less,
-            (GoodCapture, GoodCapture) => Ordering::Equal,
-            (GoodCapture, _) => Ordering::Greater,
-            (_, GoodCapture) => Ordering::Less,
-            (EqualCapture, EqualCapture) => Ordering::Equal,
-            (EqualCapture, _) => Ordering::Greater,
-            (_, EqualCapture) => Ordering::Less,
-            (LowCapture, LowCapture) => Ordering::Equal,
-            (LowCapture, _) => Ordering::Greater,
-            (_, LowCapture) => Ordering::Less,
-            _ => Ordering::Equal,
-        }
-    }
-}
-
 #[derive(Copy, Clone, Eq)]
 pub struct Move {
     pub from: i8,
     pub to: i8,
     pub is_white: bool,
     pub quality: MoveQuality,
-}
-
-impl PartialOrd for Move {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Move {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.quality.cmp(&other.quality)
-    }
 }
 
 impl PartialEq<Self> for Move {
@@ -179,3 +137,40 @@ impl Move {
     }
 }
 
+impl From<&MoveQuality> for u8 {
+    fn from(value: &MoveQuality) -> Self {
+        match value {
+            Principal => 5,
+            KillerMove => 4,
+            GoodCapture => 3,
+            EqualCapture => 2,
+            LowCapture => 1,
+            Motion => 0
+        }
+    }
+}
+
+impl PartialOrd for MoveQuality {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MoveQuality {
+    fn cmp(&self, other: &Self) -> Ordering {
+        u8::from(self).cmp(&u8::from(other))
+    }
+}
+
+
+impl PartialOrd for Move {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Move {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.quality.cmp(&other.quality)
+    }
+}
