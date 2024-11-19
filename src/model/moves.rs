@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use crate::model::chess_type::ScoreType;
-use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal};
+use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal, KillerMove};
 use crate::model::tools::index_to_chesspos;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -26,6 +26,7 @@ pub const KING_SPECIAL_MOVES: [i8; 2] = [
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum MoveQuality {
     Principal,
+    KillerMove,
     GoodCapture,
     EqualCapture,
     LowCapture,
@@ -45,6 +46,9 @@ impl Ord for MoveQuality {
             (Principal, Principal) => Ordering::Equal,
             (Principal, _) => Ordering::Greater,
             (_, Principal) => Ordering::Less,
+            (KillerMove, KillerMove) => Ordering::Equal,
+            (KillerMove, _) => Ordering::Greater,
+            (_, KillerMove) => Ordering::Less,
             (GoodCapture, GoodCapture) => Ordering::Equal,
             (GoodCapture, _) => Ordering::Greater,
             (_, GoodCapture) => Ordering::Less,

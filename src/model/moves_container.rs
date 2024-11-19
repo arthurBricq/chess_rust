@@ -1,6 +1,6 @@
 use std::collections::{BinaryHeap, VecDeque};
 use crate::model::moves::{Move, MoveQuality};
-use crate::model::moves::MoveQuality::{GoodCapture, Principal};
+use crate::model::moves::MoveQuality::{GoodCapture, KillerMove, Principal};
 
 /// Stores a list of moves and retrieve them in an order that implementation can define
 /// This allows to not have to sort a list of move based on an order.
@@ -106,8 +106,7 @@ impl MovesContainer for SmartMoveContainer {
 
     fn add_killer_move(&mut self, mut m: Move) {
         // TODO Maybe removing the move from the existing container is a good thing to do.
-        // TODO new category for killer moves ?
-        m.set_quality(GoodCapture);
+        m.set_quality(KillerMove);
         self.moves.push(m);
     }
 }
