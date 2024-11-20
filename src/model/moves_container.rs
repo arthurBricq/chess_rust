@@ -149,7 +149,7 @@ mod tests {
         game.update_move_container(&mut container, false);
         assert_eq!(20, container.count());
     }
-    
+
     #[test]
     fn test_sorted_container() {
         let mut container = SmartMoveContainer::new();

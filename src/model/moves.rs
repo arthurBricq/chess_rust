@@ -50,7 +50,7 @@ impl PartialEq<Self> for Move {
 
 impl Debug for Move {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}->{}", index_to_chesspos(self.from), index_to_chesspos(self.to))
+        write!(f, "{} to {}", self.from, self.to)
     }
 }
 
@@ -61,7 +61,7 @@ impl fmt::Display for Move {
         // stream: `f`. Returns `fmt::Result` which indicates whether the
         // operation succeeded or failed. Note that `write!` uses syntax which
         // is very similar to `println!`.
-        write!(f, "{} to {}", self.from, self.to)
+        write!(f, "{}->{}", index_to_chesspos(self.from), index_to_chesspos(self.to))
     }
 }
 

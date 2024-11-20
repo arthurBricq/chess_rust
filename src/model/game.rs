@@ -211,12 +211,21 @@ impl ChessGame {
         }
     }
 
+    /// Asserts that the pawn moves respect some basic rules
     fn is_pawn_move_valid(&self, m: &Move) -> bool {
         // Direction of the move must be valid 
         if (m.is_white && (m.from / 8) > (m.to / 8)) || (!m.is_white && (m.from / 8) < (m.to / 8)) {
             return false;
         }
 
+        // match m.to - m.from {
+        //     16 => return m.from / 8 != 1,
+        //     -16 => return m.from / 8 != 6,
+        //     7 | 9 | -7 | -9 => return self.has_piece_at(m.to),
+        //     8 | -8 => return true,
+        //     _ => return false
+        // }
+        
         // Two squares up on the first line
         if m.to == m.from + 16 && m.from / 8 != 1 {
             return false;
@@ -233,7 +242,8 @@ impl ChessGame {
         }
 
         // If you end up here, it means that the pawn move is valid
-        true
+        let motion = m.to - m.from;
+        motion == 8 || motion == -8 || motion == -16 || motion == 16
     }
 
     fn is_king_move_valid(&self, m: &Move) -> bool {
@@ -283,6 +293,7 @@ impl ChessGame {
 
         // Check that the destination is valid and that the moves remains within the chess board
         // TODO when calling from `score`, we know that the rules are respected
+        // TODO do we need to call this for all pieces ?
         if !self.is_in_bound(&m, &t) {
             return false;
         }
@@ -391,6 +402,7 @@ impl ChessGame {
 
     pub fn apply_move_safe(&mut self, m: Move) -> bool {
         if self.is_move_valid(&m) {
+            println!("Move: {m:?} is valid");
             self.apply_move_unsafe(&m);
             return true;
         }
@@ -647,5 +659,11 @@ mod tests {
         game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
         game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
         assert_eq!(0, game.score());
+    }
+    
+    #[test]
+    fn test_invalid_pawn_move_at_begining() {
+        let game = GameConstructor::standard_game();
+        assert!(!game.is_move_valid(&Move::new(12, 36, true)))
     }
 }
