@@ -172,6 +172,7 @@ impl ChessGame {
     fn is_king_move_valid(&self, m: &Move) -> bool {
         // First, check if it is one of the casling move.
         let motion = m.to - m.from;
+        
         if motion == 2 || motion == -2 {
             // 1. check that the king did not move or castled
             // using the flag for white or black
@@ -184,6 +185,7 @@ impl ChessGame {
                 if !is_set!(self.rooks, m.from + 3) {
                     return false;
                 }
+                // TODO check for other pieces here
             } else {
                 if !is_set!(self.rooks, m.from - 4) {
                     return false;
@@ -573,6 +575,27 @@ mod tests {
 
         // but if we block castling, the move is not valid
         game.block_castling();
+        assert!(!game.is_move_valid(&mut move1));
+    }
+    
+    #[test]
+    fn test_invalid_small_castle() {
+        // GIVEN
+        // (e4, _)
+        // (Nf3, _)
+        let mut game = ChessGame {
+            whites:  270593983,
+            pawns:   65038346434440960,
+            bishops: 2594073385365405732,
+            knights: 4755801206505340930,
+            rooks:   9295429630892703873,
+            queens:  576460752303423496,
+            kings:   1152921504606846992,
+            flags:   0
+        };
+
+        // THEN white must not be able to castle
+        let mut move1 = Move::new(4, 6, true);
         assert!(!game.is_move_valid(&mut move1));
     }
 

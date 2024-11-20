@@ -33,8 +33,6 @@ List of missing features
 
 - Chess Rules
   - [ ] En Passant, using a stateful representation
-  - [ ] Fix bugs with castling: it seems possible to long castle if there is a piece in between the king and the rook
-    - There is a failing unit-test, but more work has to be dedicated to solving this issue.
   - [ ] Non-queen promotions
 
 - Engine
