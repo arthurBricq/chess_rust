@@ -383,9 +383,11 @@ mod tests {
         let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(1, 0);
 
-        // The result must be zero after white capture
+        // Asserts that the black captures the knight
         let pos1 = game.clone();
-        let (result, _) = engine.find_best_move(pos1.clone(), true);
-        assert_eq!(0, result.score);
+        let (result, _) = engine.find_best_move(game, true);
+        let best_move = result.best_move.unwrap();
+        assert_eq!(chesspos_to_index("e4").unwrap(), best_move.from);
+        assert_eq!(chesspos_to_index("f5").unwrap(), best_move.to);
     }
 }

@@ -54,9 +54,9 @@ impl StepMotionIterator {
         if game.is_destination_of_incorrect_color(&m) {
             return None;
         }
-
+        
         // Check boundary overflow
-        if !game.is_in_bound(&m, &self.t) {
+        if !game.is_move_valid_for_type(&m, self.t) {
             return None;
         }
 

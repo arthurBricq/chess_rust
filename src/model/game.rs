@@ -134,49 +134,6 @@ impl ChessGame {
         true
     }
 
-    /// Returns true if the destination is in bound
-    pub(crate) fn is_in_bound(&self, m: &Move, t: &Type) -> bool {
-        let motion = m.to - m.from;
-        let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
-
-        match t {
-            Pawn => {
-                (x2 - x1).abs() <= 1
-            }
-            Bishop => {
-                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
-            }
-            Rook => {
-                Self::is_rook_valid(&motion, &m)
-            }
-            Queen => {
-                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || Self::is_rook_valid(&motion, &m)
-            }
-            Knight => {
-                match motion {
-                    17 | 10 => x2 > x1 && y2 > y1,
-                    15 | 6 => x2 < x1 && y2 > y1,
-                    -10 | -17 => x2 < x1 && y2 < y1,
-                    -15 | -6 => x2 > x1 && y2 < y1,
-                    _ => false
-                }
-            }
-            King => {
-                match motion {
-                    7 | 8 | 9 => if !(y2 > y1) { return false; },
-                    -7 | -8 | -9 => if !(y2 < y1) { return false; },
-                    _ => {}
-                }
-                match motion {
-                    -7 | 9 | 1 => if !(x2 > x1) { return false; },
-                    7 | -9 | -1 => if !(x2 < x1) { return false; },
-                    _ => {}
-                }
-                true
-            }
-        }
-    }
-
     /// Asserts that the pawn moves respect some basic rules
     fn is_pawn_move_valid(&self, m: &Move) -> bool {
         // Direction of the move must be valid 
@@ -277,24 +234,9 @@ impl ChessGame {
         }
     }
 
-    fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
-        if match t {
-            Pawn => !self.is_pawn_move_valid(&m),
-            King => !self.is_king_move_valid(&m),
-            _ => false
-        } {
-            return false;
-        }
-
+    pub(crate) fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
         // In the case where there is a piece at the last position, check that it has a different color
         if self.is_destination_of_incorrect_color(&m) {
-            return false;
-        }
-
-        // Check that the destination is valid and that the moves remains within the chess board
-        // TODO when calling from `score`, we know that the rules are respected
-        // TODO do we need to call this for all pieces ?
-        if !self.is_in_bound(&m, &t) {
             return false;
         }
 
@@ -302,8 +244,37 @@ impl ChessGame {
         if !(t == Knight || t == King || self.is_move_over_free_squares(&m)) {
             return false;
         }
+        
+        let motion = m.to - m.from;
+        let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
 
-        true
+        match t {
+            Pawn => {
+                self.is_pawn_move_valid(&m)
+            }
+            Bishop => {
+                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
+            }
+            Rook => {
+                Self::is_rook_valid(&motion, &m)
+            }
+            Queen => {
+                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || Self::is_rook_valid(&motion, &m)
+            }
+            Knight => {
+                match motion {
+                    17 | 10 => x2 > x1 && y2 > y1,
+                    15 | 6 => x2 < x1 && y2 > y1,
+                    -10 | -17 => x2 < x1 && y2 < y1,
+                    -15 | -6 => x2 > x1 && y2 < y1,
+                    _ => false
+                }
+            }
+            King => {
+                self.is_king_move_valid(&m)
+            }
+        }
+
     }
 
     /// Returns true if the move respect the rules of check
