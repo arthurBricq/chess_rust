@@ -2,10 +2,6 @@ use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
 
-// pub trait MotionIterator {
-//     fn next(&mut self, game: &ChessGame) -> Option<Move>;
-// }
-
 pub struct StepMotionIterator {
     /// Origin of the iterator
     from: i8,
@@ -49,11 +45,6 @@ impl StepMotionIterator {
         }
 
         let mut m = Move::new(self.from, self.pos, self.is_white);
-
-        // Check direction
-        if game.is_destination_of_incorrect_color(&m) {
-            return None;
-        }
         
         // Check boundary overflow
         if !game.is_move_valid_for_type(&m, self.t) {

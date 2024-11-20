@@ -384,7 +384,6 @@ mod tests {
         engine.set_engine_depth(1, 0);
 
         // Asserts that the black captures the knight
-        let pos1 = game.clone();
         let (result, _) = engine.find_best_move(game, true);
         let best_move = result.best_move.unwrap();
         assert_eq!(chesspos_to_index("e4").unwrap(), best_move.from);

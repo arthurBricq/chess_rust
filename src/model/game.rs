@@ -234,6 +234,11 @@ impl ChessGame {
         }
     }
 
+    /// Returns true if the destination
+    fn is_destination_of_incorrect_color(&self, m: &Move) -> bool {
+        self.has_piece_at(m.to) && is_set!(self.whites, m.to) == is_set!(self.whites, m.from)
+    }
+
     pub(crate) fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
         // In the case where there is a piece at the last position, check that it has a different color
         if self.is_destination_of_incorrect_color(&m) {
@@ -274,7 +279,6 @@ impl ChessGame {
                 self.is_king_move_valid(&m)
             }
         }
-
     }
 
     /// Returns true if the move respect the rules of check
@@ -283,11 +287,6 @@ impl ChessGame {
         self.type_at_index(m.from)
             .map(|t| self.is_move_valid_for_type(m, t))
             .unwrap_or(false)
-    }
-
-    /// Returns true if the destination
-    pub(crate) fn is_destination_of_incorrect_color(&self, m: &Move) -> bool {
-        self.has_piece_at(m.to) && is_set!(self.whites, m.to) == is_set!(self.whites, m.from)
     }
 
     /// Apply the move without any kind of safety check
