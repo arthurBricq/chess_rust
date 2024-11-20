@@ -256,6 +256,8 @@ impl ChessGame {
                     return false;
                 }
             }
+            
+            return true;
         }
 
         // Otherwise, only a set of moves are accepted
