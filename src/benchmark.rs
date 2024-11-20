@@ -18,7 +18,7 @@ fn benchmark() {
     for _i in 0..folds {
         // let mut engine = AlphaBetaEngine::new();
         // engine.set_engine_depth(7, 2);
-        let engine = IterativeDeepeningEngine::new(7, 2);
+        let engine = IterativeDeepeningEngine::new(8, 0);
         let mut solver: Box<dyn Engine> = Box::new(engine);
 
         // Start the game after e4, e5, Kf3, Kc6, d4
