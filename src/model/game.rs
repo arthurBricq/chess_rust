@@ -139,52 +139,18 @@ impl ChessGame {
         let motion = m.to - m.from;
         let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
 
-        fn is_bishop_valid(motion: &i8, x1: &i8, y1: &i8, x2: &i8, y2: &i8) -> bool {
-            if motion % 7 == 0 {
-                return if *motion > 0 {
-                    // upper left diagonal
-                    x1 > x2 && y1 < y2
-                } else {
-                    // lower right diagonal
-                    x1 < x2 && y1 > y2
-                };
-            } else if motion % 9 == 0 {
-                return if *motion > 0 {
-                    // upper right diagonal
-                    x1 < x2 && y1 < y2
-                } else {
-                    // lower left diagonal
-                    x1 > x2 && y1 > y2
-                }
-            }
-            false
-        }
-
-        fn is_rook_valid(motion: &i8, m: &Move) -> bool {
-            // Look on the same line
-            let remain = m.from % 8;
-            let min = m.from - remain;
-            let max = m.from + (7 - remain);
-            if m.to >= min && m.to <= max {
-                true
-            } else {
-                // Then look up and down
-                motion % 8 == 0
-            }
-        }
-
         match t {
             Pawn => {
                 (x2 - x1).abs() <= 1
             }
             Bishop => {
-                is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
+                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
             }
             Rook => {
-                is_rook_valid(&motion, &m)
+                Self::is_rook_valid(&motion, &m)
             }
             Queen => {
-                is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || is_rook_valid(&motion, &m)
+                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || Self::is_rook_valid(&motion, &m)
             }
             Knight => {
                 match motion {
@@ -275,6 +241,40 @@ impl ChessGame {
             || motion == 8 || motion == -8
             || motion == 7 || motion == -7
             || motion == 9 || motion == -9
+    }
+    
+    fn is_bishop_valid(motion: &i8, x1: &i8, y1: &i8, x2: &i8, y2: &i8) -> bool {
+        if motion % 7 == 0 {
+            return if *motion > 0 {
+                // upper left diagonal
+                x1 > x2 && y1 < y2
+            } else {
+                // lower right diagonal
+                x1 < x2 && y1 > y2
+            };
+        } else if motion % 9 == 0 {
+            return if *motion > 0 {
+                // upper right diagonal
+                x1 < x2 && y1 < y2
+            } else {
+                // lower left diagonal
+                x1 > x2 && y1 > y2
+            }
+        }
+        false
+    }
+
+    fn is_rook_valid(motion: &i8, m: &Move) -> bool {
+        // Look on the same line
+        let remain = m.from % 8;
+        let min = m.from - remain;
+        let max = m.from + (7 - remain);
+        if m.to >= min && m.to <= max {
+            true
+        } else {
+            // Then look up and down
+            motion % 8 == 0
+        }
     }
 
     fn is_move_valid_for_type(&self, m: &Move, t: Type) -> bool {
