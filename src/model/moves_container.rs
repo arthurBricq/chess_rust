@@ -113,10 +113,43 @@ impl MovesContainer for SmartMoveContainer {
 
 #[cfg(test)]
 mod tests {
+    use crate::model::chess_type::Type::Pawn;
+    use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
     use crate::model::moves::MoveQuality::GoodCapture;
     use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
+    use crate::model::tools::chesspos_to_index;
 
+    #[test]
+    fn test_moves_container_with_basic_position() {
+        let mut game = GameConstructor::empty();
+        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+
+        let mut container = SmartMoveContainer::new();
+        game.update_move_container(&mut container, true);
+        let count = container.count();
+        assert_eq!(2, count);
+
+        game.update_move_container(&mut container, false);
+        let count = container.count();
+        assert_eq!(2, count);
+    }
+
+    #[test]
+    fn test_moves_container_with_standard_position() {
+        let game = GameConstructor::standard_game();
+
+        let mut container = SmartMoveContainer::new();
+
+        // there are twenty possible positions
+        game.update_move_container(&mut container, true);
+        assert_eq!(20, container.count());
+
+        game.update_move_container(&mut container, false);
+        assert_eq!(20, container.count());
+    }
+    
     #[test]
     fn test_sorted_container() {
         let mut container = SmartMoveContainer::new();

@@ -1,7 +1,6 @@
-use crate::engine::alpha_beta::AlphaBetaEngine;
+use super::super::model::moves::Move;
 use crate::engine::engine::Engine;
 use crate::engine::iterative_deepening::IterativeDeepeningEngine;
-use super::super::model::moves::Move;
 use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
 use crate::model::game_constructor::GameConstructor;
@@ -153,7 +152,6 @@ impl ChessViewModel
             }
 
             Msg::SquareTapped(pos) => {
-
                 if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;
                     if self.game.apply_move_safe(Move::new(previous_pos, *pos, true)) {
