@@ -277,14 +277,6 @@ impl ChessGame {
         }
     }
 
-    /// Returns true if the move respect the rules of check
-    /// This function eventually edits the `quality` property of a move
-    fn is_move_valid(&self, m: &Move) -> bool {
-        self.type_at_index(m.from)
-            .map(|t| self.is_move_valid_for_type(m, t))
-            .unwrap_or(false)
-    }
-
     /// Apply the move without any kind of safety check
     pub fn apply_move_unsafe(&mut self, m: &Move) {
         if let Some(t) = self.type_at_index(m.from) {
@@ -366,6 +358,16 @@ impl ChessGame {
         }
     }
 
+    /// Returns true if the move respect the rules of check
+    /// This function eventually edits the `quality` property of a move
+    fn is_move_valid(&self, m: &Move) -> bool {
+        self.type_at_index(m.from)
+            .map(|t| self.is_move_valid_for_type(m, t))
+            .unwrap_or(false)
+    }
+
+    /// Applies a move after checking all the rules
+    /// This function is never called in the optimisation
     pub fn apply_move_safe(&mut self, m: Move) -> bool {
         if self.is_move_valid(&m) {
             println!("Move: {m:?} is valid");
