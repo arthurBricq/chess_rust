@@ -437,7 +437,7 @@ impl ChessGame {
     pub fn update_move_container<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
 
-        let pieces = if is_white {
+        let mut pieces = if is_white {
             (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings)
                 & self.whites
         } else {
@@ -445,11 +445,9 @@ impl ChessGame {
                 & !self.whites
         };
 
-        for i in 0..64 {
-            if !is_set!(pieces, i) {
-                continue;
-            }
-
+        while pieces != 0 {
+            let i = pieces.trailing_zeros() as ChessPosition;
+            pieces &= (pieces - 1);
             match self.type_at_index(i).unwrap() {
                 Pawn => {
                     if is_white {
@@ -735,5 +733,15 @@ mod tests {
     fn test_invalid_pawn_move_at_begining() {
         let game = GameConstructor::standard_game();
         assert!(!game.is_move_valid(&Move::new(12, 36, true)))
+    }
+    
+    #[test]
+    fn test_gpt_crazy_shit() {
+        let mut pieces = 0b01001100u8;
+        while pieces != 0 {
+            let first_piece = pieces.trailing_zeros();
+            println!("{first_piece}");
+            pieces &= (pieces - 1);
+        }
     }
 }
