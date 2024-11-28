@@ -6,7 +6,6 @@ use fltk::image::SvgImage;
 use fltk::{button::Button, prelude::*};
 use fltk::{window::Window, *};
 
-
 pub struct GTKView {
     chess_view: ChessViewModel,
 }
@@ -14,7 +13,7 @@ pub struct GTKView {
 impl GTKView {
     pub fn new() -> Self {
         Self {
-            chess_view: ChessViewModel::new()
+            chess_view: ChessViewModel::new(),
         }
     }
 
@@ -39,7 +38,9 @@ impl GTKView {
             (SquareType::LastEngineMove, _) => button.set_color(Color::from_hex(0xf5f58c)),
             (SquareType::Idle, 1) => button.set_color(Color::from_hex(0xeeeed2)),
             (SquareType::Idle, 0) => button.set_color(Color::from_hex(0xbaca44)),
-            _ => { println!("Weird for index {index}, i={i}, j={j}") }
+            _ => {
+                println!("Weird for index {index}, i={i}, j={j}")
+            }
         }
 
         button.set_frame(enums::FrameType::FlatBox);
@@ -54,8 +55,10 @@ impl GTKView {
 
         // Create the window for the application
         let mut app_window = Window::default()
-            .with_size(8 * BUTTON_WIDTH + 2 * SIDE_MARGIN + TEXT_SIZE,
-                       8 * BUTTON_WIDTH + 2 * TOP_MARGIN)
+            .with_size(
+                8 * BUTTON_WIDTH + 2 * SIDE_MARGIN + TEXT_SIZE,
+                8 * BUTTON_WIDTH + 2 * TOP_MARGIN,
+            )
             .with_label("Chess Engine by Arthur Bricq");
         app_window.set_color(Color::White);
         app_window.make_resizable(true);
@@ -85,10 +88,7 @@ impl GTKView {
                         SIDE_MARGIN + BUTTON_WIDTH * i,
                         TOP_MARGIN + BUTTON_WIDTH * j,
                     )
-                    .with_size(
-                        BUTTON_WIDTH,
-                        BUTTON_WIDTH,
-                    );
+                    .with_size(BUTTON_WIDTH, BUTTON_WIDTH);
                 button.emit(*s, Msg::SquareTapped(pos_to_index(i as i8, 7 - j as i8)));
                 self.draw_button_at(i as i8, 7 - j as i8, &mut button);
                 row.push(button);

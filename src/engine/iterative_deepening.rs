@@ -13,7 +13,7 @@ pub struct IterativeDeepeningEngine {
 }
 
 impl Engine for IterativeDeepeningEngine {
-    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
+    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> SearchResult {
         let mut search_engine = AlphaBetaEngine::new();
         let start = Instant::now();
         let mut first_move = None;
@@ -28,22 +28,20 @@ impl Engine for IterativeDeepeningEngine {
                 i32::MIN as ScoreType,
                 i32::MAX as ScoreType,
                 false,
-                first_move
+                first_move,
             );
 
             if depth == self.depth {
-                let end = start.elapsed().as_millis() as f64 / 1000. ;
+                let end = start.elapsed().as_millis() as f64 / 1000.;
                 println!("\n\nSolver finished ");
                 println!("    score = {} [points]", result.score);
                 println!("    time = {end} [second]");
-                
-                return (result, start.elapsed().as_millis())
+                return result;
             }
 
             first_move = result.best_move;
             depth += 1;
         }
-
     }
 }
 

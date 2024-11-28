@@ -1,26 +1,22 @@
-use std::cmp::{max, min};
+use crate::engine::engine::{Engine, SearchResult};
 use crate::model::chess_type::ScoreType;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
 use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
+use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::time::Instant;
-use crate::engine::engine::{Engine, SearchResult};
 
 pub struct AlphaBetaEngine {
     depth: usize,
     extra_depth: usize,
-    iter: u64,
     transposition_table: HashMap<ChessGame, ScoreType>,
     killer_moves: HashMap<usize, Vec<Move>>,
 }
 
 impl Engine for AlphaBetaEngine {
-    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128) {
-        self.iter = 0;
-
+    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> SearchResult {
         self.reset_killer_moves();
-
         let start = Instant::now();
         let result = self.alpha_beta_search(
             game,
@@ -33,12 +29,10 @@ impl Engine for AlphaBetaEngine {
         );
         let end = start.elapsed().as_millis() as f64 / 1000.;
 
-        let nps = (self.iter as f64) / end;
-        println!("\n\nSolver finished after evaluating {} positions", self.iter);
+        println!("\n\nSolver finished");
         println!("    score = {} [points]", result.score);
         println!("    time = {end} [second]");
-        println!("    nps = {nps} [moves/second]");
-        (result, nps as u128)
+        result
     }
 }
 
@@ -47,7 +41,6 @@ impl AlphaBetaEngine {
         Self {
             depth: 6,
             extra_depth: 0,
-            iter: 0,
             transposition_table: Default::default(),
             killer_moves: Default::default(),
         }
@@ -82,26 +75,29 @@ impl AlphaBetaEngine {
     /// * Move ordering : we favor moves that captures
     /// * Iterative deepening : provide a "first line" which even improves the move ordering
     /// * Killer-move heuristic : WIP
-    /// 
-    /// Algorithm taken from 
+    ///
+    /// Algorithm taken from
     /// https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode
     /// (fail-soft variation)
-    pub fn alpha_beta_search(&mut self,
-                             game: ChessGame,
-                             white_to_play: bool,
-                             depth: usize,
-                             mut alpha: ScoreType,
-                             mut beta: ScoreType,
-                             is_last_move_a_capture: bool,
-                             first_move_to_evaluate: Option<Move>,
+    pub fn alpha_beta_search(
+        &mut self,
+        game: ChessGame,
+        white_to_play: bool,
+        depth: usize,
+        mut alpha: ScoreType,
+        mut beta: ScoreType,
+        is_last_move_a_capture: bool,
+        first_move_to_evaluate: Option<Move>,
     ) -> SearchResult {
         // Terminal node
-        if (!is_last_move_a_capture && depth >= self.depth) ||
-            (is_last_move_a_capture && depth >= self.depth + self.extra_depth) ||
-            game.is_finished()
+        if (!is_last_move_a_capture && depth >= self.depth)
+            || (is_last_move_a_capture && depth >= self.depth + self.extra_depth)
+            || game.is_finished()
         {
-            self.iter += 1;
-            let s = *self.transposition_table.entry(game).or_insert_with(|| game.score());
+            let s = *self
+                .transposition_table
+                .entry(game)
+                .or_insert_with(|| game.score());
             return SearchResult {
                 score: s,
                 best_move: None,
@@ -137,21 +133,22 @@ impl AlphaBetaEngine {
             let mut new_game = game.clone();
             let m = container.get_next();
             new_game.apply_move_unsafe(&m);
-            
-            let result = self.alpha_beta_search(new_game,
-                                                !white_to_play,
-                                                depth + 1,
-                                                alpha,
-                                                beta,
-                                                m.is_capture(),
-                                                None,
+
+            let result = self.alpha_beta_search(
+                new_game,
+                !white_to_play,
+                depth + 1,
+                alpha,
+                beta,
+                m.is_capture(),
+                None,
             );
-            
+
             if white_to_play {
                 // value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
                 // α := max(α, value)
                 // if value ≥ β then break (* β cutoff *)
-                
+
                 // current_score = max(current_score, result.score);
                 if result.score > score {
                     best_move = Some(m);
@@ -160,8 +157,7 @@ impl AlphaBetaEngine {
                 alpha = max(alpha, score);
                 if score >= beta {
                     // cutoff: remember the "killer move" for future branches
-                    self
-                        .killer_moves
+                    self.killer_moves
                         .get_mut(&depth)
                         .expect("The datastructure is always initialized to support this usage")
                         .push(m);
@@ -171,7 +167,7 @@ impl AlphaBetaEngine {
                 // value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
                 // β := min(β, value)
                 // if value ≤ α then break (* α cutoff *)
-                
+
                 // current_score = min(current_score, result.score);
                 if result.score < score {
                     best_move = Some(m);
@@ -182,15 +178,11 @@ impl AlphaBetaEngine {
                     break;
                 }
             }
-       
         }
 
         // Once we reach this point, we have explored all the possible moves of this branch
         // ==> we know which is the best move
-        SearchResult {
-            score,
-            best_move,
-        }
+        SearchResult { score, best_move }
     }
 }
 
@@ -222,14 +214,26 @@ mod tests {
         let mut engine = AlphaBetaEngine::new();
 
         // If it is white to play, white captures the pawn
-        let (result, _) = engine.find_best_move(game.clone(), true);
-        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("d5").unwrap());
+        let result = engine.find_best_move(game.clone(), true);
+        assert_eq!(
+            result.best_move.unwrap().from,
+            chesspos_to_index("e4").unwrap()
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("d5").unwrap()
+        );
 
         // Same if it is for black
-        let (result, _) = engine.find_best_move(game.clone(), false);
-        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
+        let result = engine.find_best_move(game.clone(), false);
+        assert_eq!(
+            result.best_move.unwrap().from,
+            chesspos_to_index("d5").unwrap()
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("e4").unwrap()
+        );
     }
 
     #[test]
@@ -244,7 +248,6 @@ mod tests {
         println!("{b}");
         println!("{c}");
     }
-
 
     #[test]
     /// A test in which white can take a pawn or a bishop
@@ -263,16 +266,36 @@ mod tests {
         let mut engine = Box::new(AlphaBetaEngine::new());
 
         // If it is white to play, it should capture the bishop
-        let (result, score) = engine.find_best_move(game.clone(), true);
-        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e4").unwrap());
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("f5").unwrap());
+        let result = engine.find_best_move(game.clone(), true);
+        println!(
+            "{} {}",
+            index_to_chesspos(result.best_move.unwrap().from),
+            index_to_chesspos(result.best_move.unwrap().to)
+        );
+        assert_eq!(
+            result.best_move.unwrap().from,
+            chesspos_to_index("e4").unwrap()
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("f5").unwrap()
+        );
 
         // If black is playing, it should capture the pawn
-        let (result, score) = engine.find_best_move(game.clone(), false);
-        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("d5").unwrap());
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
+        let result = engine.find_best_move(game.clone(), false);
+        println!(
+            "{} {}",
+            index_to_chesspos(result.best_move.unwrap().from),
+            index_to_chesspos(result.best_move.unwrap().to)
+        );
+        assert_eq!(
+            result.best_move.unwrap().from,
+            chesspos_to_index("d5").unwrap()
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("e4").unwrap()
+        );
     }
 
     #[test]
@@ -297,20 +320,43 @@ mod tests {
         engine.set_engine_depth(4, 0);
 
         let valid_white_moves = [
-            Move::new(chesspos_to_index("e2").unwrap(), chesspos_to_index("f3").unwrap(), true),
-            Move::new(chesspos_to_index("e2").unwrap(), chesspos_to_index("d3").unwrap(), true),
-            Move::new(chesspos_to_index("e4").unwrap(), chesspos_to_index("e5").unwrap(), true),
+            Move::new(
+                chesspos_to_index("e2").unwrap(),
+                chesspos_to_index("f3").unwrap(),
+                true,
+            ),
+            Move::new(
+                chesspos_to_index("e2").unwrap(),
+                chesspos_to_index("d3").unwrap(),
+                true,
+            ),
+            Move::new(
+                chesspos_to_index("e4").unwrap(),
+                chesspos_to_index("e5").unwrap(),
+                true,
+            ),
         ];
 
         // If it is white to play, it should move the pawn up and not capture anything
-        let (result, score) = engine.find_best_move(game.clone(), true);
-        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
+        let result = engine.find_best_move(game.clone(), true);
+        println!(
+            "{} {}",
+            index_to_chesspos(result.best_move.unwrap().from),
+            index_to_chesspos(result.best_move.unwrap().to)
+        );
         assert!(valid_white_moves.contains(&result.best_move.unwrap()));
 
         // If black is playing, it should capture the pawn with a piece
-        let (result, score) = engine.find_best_move(game.clone(), false);
-        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
+        let result = engine.find_best_move(game.clone(), false);
+        println!(
+            "{} {}",
+            index_to_chesspos(result.best_move.unwrap().from),
+            index_to_chesspos(result.best_move.unwrap().to)
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("e4").unwrap()
+        );
     }
 
     #[test]
@@ -335,10 +381,20 @@ mod tests {
         let mut engine = AlphaBetaEngine::new();
 
         // If it is white to play, it should move the pawn up and not capture anything
-        let (result, score) = engine.find_best_move(game.clone(), true);
-        println!("{} {} --> {score}", index_to_chesspos(result.best_move.unwrap().from), index_to_chesspos(result.best_move.unwrap().to));
-        assert_eq!(result.best_move.unwrap().from, chesspos_to_index("e2").unwrap());
-        assert_eq!(result.best_move.unwrap().to, chesspos_to_index("e4").unwrap());
+        let result = engine.find_best_move(game.clone(), true);
+        println!(
+            "{} {}",
+            index_to_chesspos(result.best_move.unwrap().from),
+            index_to_chesspos(result.best_move.unwrap().to)
+        );
+        assert_eq!(
+            result.best_move.unwrap().from,
+            chesspos_to_index("e2").unwrap()
+        );
+        assert_eq!(
+            result.best_move.unwrap().to,
+            chesspos_to_index("e4").unwrap()
+        );
     }
 
     #[test]
@@ -346,25 +402,42 @@ mod tests {
     /// We want to make sure that black sees this treat.
     fn test_simple_engine5() {
         // This position is the one where black is not supposed to play a5->a4
-        let pos1 = ChessGame::new(402973695, 71494648782447360, 2594073385365405732, 4755801206503243842, 9295429630892703873, 576460752303423496, 1152921504606846992, 0);
+        let pos1 = ChessGame::new(
+            402973695,
+            71494648782447360,
+            2594073385365405732,
+            4755801206503243842,
+            9295429630892703873,
+            576460752303423496,
+            1152921504606846992,
+            0,
+        );
 
         let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(4, 4);
 
         // What is the best move for black ?
-        let (_, _) = engine.find_best_move(pos1.clone(), false);
+        let _ = engine.find_best_move(pos1.clone(), false);
 
         // Now we wonder, what is the best move for white, given there is one less depth ?
         let mut pos2 = pos1.clone();
-        pos2.apply_move_unsafe(&Move::new(chesspos_to_index("a5").unwrap(), chesspos_to_index("a4").unwrap(), false));
+        pos2.apply_move_unsafe(&Move::new(
+            chesspos_to_index("a5").unwrap(),
+            chesspos_to_index("a4").unwrap(),
+            false,
+        ));
         engine.set_engine_depth(3, 4);
-        let (_, _) = engine.find_best_move(pos2.clone(), true);
+        let _ = engine.find_best_move(pos2.clone(), true);
 
         // let's understand why is the move that attacks a4 is not seen as strong
         let mut pos3 = pos2.clone();
-        pos3.apply_move_unsafe(&Move::new(chesspos_to_index("f1").unwrap(), chesspos_to_index("b5").unwrap(), true));
+        pos3.apply_move_unsafe(&Move::new(
+            chesspos_to_index("f1").unwrap(),
+            chesspos_to_index("b5").unwrap(),
+            true,
+        ));
         engine.set_engine_depth(2, 4);
-        let (_, _) = engine.find_best_move(pos3.clone(), false);
+        let _ = engine.find_best_move(pos3.clone(), false);
     }
 
     #[test]
@@ -384,7 +457,7 @@ mod tests {
         engine.set_engine_depth(1, 0);
 
         // Asserts that the black captures the knight
-        let (result, _) = engine.find_best_move(game, true);
+        let result = engine.find_best_move(game, true);
         let best_move = result.best_move.unwrap();
         assert_eq!(chesspos_to_index("e4").unwrap(), best_move.from);
         assert_eq!(chesspos_to_index("f5").unwrap(), best_move.to);

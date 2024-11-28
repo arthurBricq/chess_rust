@@ -3,12 +3,13 @@ use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::model::chess_type::{ScoreType, Type};
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
+use crate::model::precomputation::PAWN_ATTACK_MASKS;
 use crate::model::tools::{clear_at, is_set, pos_to_index, set_at};
 
-/// Struct to represent a chess game. 
+/// Struct to represent a chess game.
 ///
 /// Each int represent a type. A '1' value set in each bit means that there is a piece of this type at the position (i % 8, i // 8).
-/// Colors of pieces are encoded within the int 'whites'. 
+/// Colors of pieces are encoded within the int 'whites'.
 /// An additional int is provided, 'flags', and contained the following information
 ///     0: has white king moved
 ///     1: has black king moved
@@ -31,28 +32,32 @@ const FLAG_BK_MOVED: i8 = 1;
 const FLAG_WK_CASTLED: i8 = 2;
 const FLAG_BK_CASTLED: i8 = 3;
 
-
 impl ChessGame {
     /// Construct a chess game from the integers
-    #[cfg(test)]
-    pub fn new(whites: u64, pawns: u64, bishops: u64, knights: u64, rooks: u64, queens: u64, kings: u64, flags: u64) -> Self {
-        Self { whites, pawns, bishops, knights, rooks, queens, kings, flags }
-    }
-
-    /// Returns the type of the provided position.
-    /// If no type is present, returns None.
     #[allow(dead_code)]
-    pub fn type_at(&self, x: i8, y: i8) -> Option<Type> {
-        self.type_at_index(pos_to_index(x, y))
+    pub fn new(
+        whites: u64,
+        pawns: u64,
+        bishops: u64,
+        knights: u64,
+        rooks: u64,
+        queens: u64,
+        kings: u64,
+        flags: u64,
+    ) -> Self {
+        Self {
+            whites,
+            pawns,
+            bishops,
+            knights,
+            rooks,
+            queens,
+            kings,
+            flags,
+        }
     }
 
-    /// Returns true if the given (x,y) coordinates contains a white piece
-    #[allow(dead_code)]
-    pub fn is_white_at(&self, x: i8, y: i8) -> bool {
-        is_set!(self.whites, pos_to_index(x, y))
-    }
-
-    /// Returns the type of the provided index. 
+    /// Returns the type of the provided index.
     /// If no type is present, returns None.
     pub fn type_at_index(&self, at: i8) -> Option<Type> {
         if is_set!(self.pawns, at) {
@@ -76,7 +81,10 @@ impl ChessGame {
     pub(crate) fn has_piece_at(&self, at: i8) -> bool {
         // TODO maybe adding 1 integer in the struct that just keeps the position of the pieces would be faster than this...
         //      It's a small change to test.
-        is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
+        is_set!(
+            self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings,
+            at
+        )
     }
 
     /// Adds a piece to self.
@@ -111,7 +119,7 @@ impl ChessGame {
 
     pub fn apply_capture(&mut self, m: &Move) {
         // We can simply clear the position for all integers
-        // TODO: evaluate if this approach is not more time consuming than checking all the different integers 
+        // TODO: evaluate if this approach is not more time consuming than checking all the different integers
         // and clearing just the correct one
         clear_at!(self.pawns, m.to);
         clear_at!(self.bishops, m.to);
@@ -138,11 +146,11 @@ impl ChessGame {
 
     /// Asserts that the pawn moves respect some basic rules
     fn is_pawn_move_valid(&self, m: &Move) -> bool {
-        // Direction of the move must be valid 
+        // Direction of the move must be valid
         if (m.is_white && (m.from / 8) > (m.to / 8)) || (!m.is_white && (m.from / 8) < (m.to / 8)) {
             return false;
         }
-        
+
         // Two squares up on the first line
         if m.to == m.from + 16 && m.from / 8 != 1 {
             return false;
@@ -166,11 +174,13 @@ impl ChessGame {
     fn is_king_move_valid(&self, m: &Move) -> bool {
         // First, check if it is one of the casling move.
         let motion = m.to - m.from;
-        
+
         if motion == 2 || motion == -2 {
             // 1. check that the king did not move or castled
             // using the flag for white or black
-            if (m.is_white && is_set!(self.flags, FLAG_WK_MOVED)) || (!m.is_white && is_set!(self.flags, FLAG_BK_MOVED)) {
+            if (m.is_white && is_set!(self.flags, FLAG_WK_MOVED))
+                || (!m.is_white && is_set!(self.flags, FLAG_BK_MOVED))
+            {
                 return false;
             }
 
@@ -190,12 +200,16 @@ impl ChessGame {
         }
 
         // Otherwise, only a set of moves are accepted
-        motion == 1 || motion == -1
-            || motion == 8 || motion == -8
-            || motion == 7 || motion == -7
-            || motion == 9 || motion == -9
+        motion == 1
+            || motion == -1
+            || motion == 8
+            || motion == -8
+            || motion == 7
+            || motion == -7
+            || motion == 9
+            || motion == -9
     }
-    
+
     fn is_bishop_valid(motion: &i8, x1: &i8, y1: &i8, x2: &i8, y2: &i8) -> bool {
         if motion % 7 == 0 {
             return if *motion > 0 {
@@ -212,7 +226,7 @@ impl ChessGame {
             } else {
                 // lower left diagonal
                 x1 > x2 && y1 > y2
-            }
+            };
         }
         false
     }
@@ -245,42 +259,32 @@ impl ChessGame {
         if !(t == Knight || t == King || self.is_move_over_free_squares(&m)) {
             return false;
         }
-        
+
         let motion = m.to - m.from;
         let (x1, y1, x2, y2) = (m.from % 8, m.from / 8, m.to % 8, m.to / 8);
 
         match t {
-            Pawn => {
-                self.is_pawn_move_valid(&m)
-            }
-            Bishop => {
-                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
-            }
-            Rook => {
-                Self::is_rook_valid(&motion, &m)
-            }
+            Pawn => self.is_pawn_move_valid(&m),
+            Bishop => Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2),
+            Rook => Self::is_rook_valid(&motion, &m),
             Queen => {
-                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2) || Self::is_rook_valid(&motion, &m)
+                Self::is_bishop_valid(&motion, &x1, &y1, &x2, &y2)
+                    || Self::is_rook_valid(&motion, &m)
             }
-            Knight => {
-                match motion {
-                    17 | 10 => x2 > x1 && y2 > y1,
-                    15 | 6 => x2 < x1 && y2 > y1,
-                    -10 | -17 => x2 < x1 && y2 < y1,
-                    -15 | -6 => x2 > x1 && y2 < y1,
-                    _ => false
-                }
-            }
-            King => {
-                self.is_king_move_valid(&m)
-            }
+            Knight => match motion {
+                17 | 10 => x2 > x1 && y2 > y1,
+                15 | 6 => x2 < x1 && y2 > y1,
+                -10 | -17 => x2 < x1 && y2 < y1,
+                -15 | -6 => x2 > x1 && y2 < y1,
+                _ => false,
+            },
+            King => self.is_king_move_valid(&m),
         }
     }
 
     /// Apply the move without any kind of safety check
     pub fn apply_move_unsafe(&mut self, m: &Move) {
         if let Some(t) = self.type_at_index(m.from) {
-
             // Eventually apply the capture
             self.apply_capture(&m);
 
@@ -316,7 +320,7 @@ impl ChessGame {
                     set_at!(self.kings, m.to);
 
                     // Flags update : king moved
-                    // TODO OPT: check if setting the flag only at the first is worth it 
+                    // TODO OPT: check if setting the flag only at the first is worth it
                     if m.is_white {
                         set_at!(self.flags, FLAG_WK_MOVED);
                     } else {
@@ -337,7 +341,7 @@ impl ChessGame {
                             (m.from - 4, m.from - 1)
                         };
 
-                        // apply the move rook 
+                        // apply the move rook
                         clear_at!(self.rooks, rook_from);
                         set_at!(self.rooks, rook_to);
 
@@ -377,9 +381,20 @@ impl ChessGame {
         false
     }
 
+    /// Returns all the attacked positions, without checking the rules for the move but only using
+    /// the attack masks of each piece types.
+    fn get_attacked_squares(&self) -> Vec<u8> {
+        let (white, black) = &*PAWN_ATTACK_MASKS;
+        vec![]
+    }
+
     /// Push valid moves in the `MovesContainer`, while going in the direction of the motion
     /// iterator.
-    fn fill_move_container_with_iterator(&self, to_fill: &mut dyn MovesContainer, iterators: &mut [StepMotionIterator]) {
+    fn fill_move_container_with_iterator(
+        &self,
+        to_fill: &mut dyn MovesContainer,
+        iterators: &mut [StepMotionIterator],
+    ) {
         for iter in iterators {
             while let Some(m) = iter.next(self) {
                 to_fill.push(m)
@@ -389,12 +404,13 @@ impl ChessGame {
 
     /// Push valid moves in the `MovesContainer`, by trying all the possible moves given
     /// in `motions`
-    fn fill_move_container_with_list_of_moves(&self,
-                                              to_fill: &mut dyn MovesContainer,
-                                              from: i8,
-                                              motions: &[i8],
-                                              is_white: bool,
-                                              t: Type,
+    fn fill_move_container_with_list_of_moves(
+        &self,
+        to_fill: &mut dyn MovesContainer,
+        from: i8,
+        motions: &[i8],
+        is_white: bool,
+        t: Type,
     ) {
         for motion in motions {
             let des: i8 = from + motion;
@@ -418,9 +434,11 @@ impl ChessGame {
         container.reset();
 
         let pieces = if is_white {
-            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & self.whites
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings)
+                & self.whites
         } else {
-            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings) & !self.whites
+            (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings)
+                & !self.whites
         };
 
         for i in 0..64 {
@@ -431,47 +449,83 @@ impl ChessGame {
             match self.type_at_index(i).unwrap() {
                 Pawn => {
                     if is_white {
-                        self.fill_move_container_with_list_of_moves(container, i, &WHITE_PAWN_MOVES, is_white, Pawn);
+                        self.fill_move_container_with_list_of_moves(
+                            container,
+                            i,
+                            &WHITE_PAWN_MOVES,
+                            is_white,
+                            Pawn,
+                        );
                     } else {
-                        self.fill_move_container_with_list_of_moves(container, i, &BLACK_PAWN_MOVES, is_white, Pawn);
+                        self.fill_move_container_with_list_of_moves(
+                            container,
+                            i,
+                            &BLACK_PAWN_MOVES,
+                            is_white,
+                            Pawn,
+                        );
                     }
                 }
-                Knight => {
-                    self.fill_move_container_with_list_of_moves(container, i, &KNIGHT_MOVES, is_white, Knight)
-                }
+                Knight => self.fill_move_container_with_list_of_moves(
+                    container,
+                    i,
+                    &KNIGHT_MOVES,
+                    is_white,
+                    Knight,
+                ),
                 King => {
-                    self.fill_move_container_with_list_of_moves(container, i, &KING_MOVES, is_white, King);
-                    self.fill_move_container_with_list_of_moves(container, i, &KING_SPECIAL_MOVES, is_white, King);
+                    self.fill_move_container_with_list_of_moves(
+                        container,
+                        i,
+                        &KING_MOVES,
+                        is_white,
+                        King,
+                    );
+                    self.fill_move_container_with_list_of_moves(
+                        container,
+                        i,
+                        &KING_SPECIAL_MOVES,
+                        is_white,
+                        King,
+                    );
                 }
-                Bishop => {
-                    self.fill_move_container_with_iterator(container, &mut [
+                Bishop => self.fill_move_container_with_iterator(
+                    container,
+                    &mut [
                         StepMotionIterator::new(i, 9, is_white, Bishop),
                         StepMotionIterator::new(i, -9, is_white, Bishop),
                         StepMotionIterator::new(i, 7, is_white, Bishop),
                         StepMotionIterator::new(i, -7, is_white, Bishop),
-                    ])
-                }
-                Rook => {
-                    self.fill_move_container_with_iterator(container, &mut [
+                    ],
+                ),
+                Rook => self.fill_move_container_with_iterator(
+                    container,
+                    &mut [
                         StepMotionIterator::new(i, 1, is_white, Rook),
                         StepMotionIterator::new(i, -1, is_white, Rook),
                         StepMotionIterator::new(i, 8, is_white, Rook),
                         StepMotionIterator::new(i, -8, is_white, Rook),
-                    ])
-                }
+                    ],
+                ),
                 Queen => {
-                    self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 9, is_white, Queen),
-                        StepMotionIterator::new(i, -9, is_white, Queen),
-                        StepMotionIterator::new(i, 7, is_white, Queen),
-                        StepMotionIterator::new(i, -7, is_white, Queen),
-                    ]);
-                    self.fill_move_container_with_iterator(container, &mut [
-                        StepMotionIterator::new(i, 1, is_white, Queen),
-                        StepMotionIterator::new(i, -1, is_white, Queen),
-                        StepMotionIterator::new(i, 8, is_white, Queen),
-                        StepMotionIterator::new(i, -8, is_white, Queen),
-                    ]);
+                    self.fill_move_container_with_iterator(
+                        container,
+                        &mut [
+                            StepMotionIterator::new(i, 9, is_white, Queen),
+                            StepMotionIterator::new(i, -9, is_white, Queen),
+                            StepMotionIterator::new(i, 7, is_white, Queen),
+                            StepMotionIterator::new(i, -7, is_white, Queen),
+                        ],
+                    );
+                    self.fill_move_container_with_iterator(
+                        container,
+                        &mut [
+                            StepMotionIterator::new(i, 1, is_white, Queen),
+                            StepMotionIterator::new(i, -1, is_white, Queen),
+                            StepMotionIterator::new(i, 8, is_white, Queen),
+                            StepMotionIterator::new(i, -8, is_white, Queen),
+                        ],
+                    );
                 }
             }
         }
@@ -497,7 +551,7 @@ impl ChessGame {
         // if is_set!(self.flags, FLAG_BK_CASTLED) { score -= 3; }
 
         // This is really the problem: the number of attacked squres takes a lot of time to be found
-        // and reduces the performs by a factor of 28. Is there a better way to do this ? 
+        // and reduces the performs by a factor of 28. Is there a better way to do this ?
 
         // Number of attacked squares
         // The bigger this ratio is, the less the engine will favor attacking positions.
@@ -524,8 +578,31 @@ impl ChessGame {
         println!("flags:   {}", self.flags);
         println!("score = {}", self.score());
         println!("----");
-        println!("({}, {}, {}, {}, {}, {}, {}, {})", self.whites, self.pawns, self.bishops, self.knights, self.rooks, self.queens, self.kings, self.flags);
+        println!(
+            "({}, {}, {}, {}, {}, {}, {}, {})",
+            self.whites,
+            self.pawns,
+            self.bishops,
+            self.knights,
+            self.rooks,
+            self.queens,
+            self.kings,
+            self.flags
+        );
         println!("----");
+    }
+
+    /// Returns the type of the provided position.
+    /// If no type is present, returns None.
+    #[allow(dead_code)]
+    pub fn type_at(&self, x: i8, y: i8) -> Option<Type> {
+        self.type_at_index(pos_to_index(x, y))
+    }
+
+    /// Returns true if the given (x,y) coordinates contains a white piece
+    #[allow(dead_code)]
+    pub fn is_white_at(&self, x: i8, y: i8) -> bool {
+        is_set!(self.whites, pos_to_index(x, y))
     }
 }
 
@@ -573,21 +650,21 @@ mod tests {
         game.block_castling();
         assert!(!game.is_move_valid(&mut move1));
     }
-    
+
     #[test]
     fn test_invalid_small_castle() {
         // GIVEN
         // (e4, _)
         // (Nf3, _)
         let mut game = ChessGame {
-            whites:  270593983,
-            pawns:   65038346434440960,
+            whites: 270593983,
+            pawns: 65038346434440960,
             bishops: 2594073385365405732,
             knights: 4755801206505340930,
-            rooks:   9295429630892703873,
-            queens:  576460752303423496,
-            kings:   1152921504606846992,
-            flags:   0
+            rooks: 9295429630892703873,
+            queens: 576460752303423496,
+            kings: 1152921504606846992,
+            flags: 0,
         };
 
         // THEN white must not be able to castle
@@ -649,7 +726,7 @@ mod tests {
         game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
         assert_eq!(0, game.score());
     }
-    
+
     #[test]
     fn test_invalid_pawn_move_at_begining() {
         let game = GameConstructor::standard_game();

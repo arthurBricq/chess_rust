@@ -29,8 +29,7 @@ pub struct ChessViewModel {
     engine_move: Option<(i8, i8)>,
 }
 
-impl ChessViewModel
-{
+impl ChessViewModel {
     pub fn new() -> Self {
         Self {
             game: GameConstructor::standard_game(),
@@ -45,21 +44,21 @@ impl ChessViewModel
         if let Some(t) = self.game.type_at(i, j) {
             if self.game.is_white_at(i, j) {
                 match t {
-                    Type::Pawn => { Some("pawn_white.svg".to_string()) }
-                    Type::Bishop => { Some("bishop_white.svg".to_string()) }
-                    Type::Knight => { Some("knight_white.svg".to_string()) }
-                    Type::Rook => { Some("rook_white.svg".to_string()) }
-                    Type::Queen => { Some("queen_white.svg".to_string()) }
-                    Type::King => { Some("king_white.svg".to_string()) }
+                    Type::Pawn => Some("pawn_white.svg".to_string()),
+                    Type::Bishop => Some("bishop_white.svg".to_string()),
+                    Type::Knight => Some("knight_white.svg".to_string()),
+                    Type::Rook => Some("rook_white.svg".to_string()),
+                    Type::Queen => Some("queen_white.svg".to_string()),
+                    Type::King => Some("king_white.svg".to_string()),
                 }
             } else {
                 match t {
-                    Type::Pawn => { Some("pawn_dark.svg".to_string()) }
-                    Type::Bishop => { Some("bishop_dark.svg".to_string()) }
-                    Type::Knight => { Some("knight_dark.svg".to_string()) }
-                    Type::Rook => { Some("rook_dark.svg".to_string()) }
-                    Type::Queen => { Some("queen_dark.svg".to_string()) }
-                    Type::King => { Some("king_dark.svg".to_string()) }
+                    Type::Pawn => Some("pawn_dark.svg".to_string()),
+                    Type::Bishop => Some("bishop_dark.svg".to_string()),
+                    Type::Knight => Some("knight_dark.svg".to_string()),
+                    Type::Rook => Some("rook_dark.svg".to_string()),
+                    Type::Queen => Some("queen_dark.svg".to_string()),
+                    Type::King => Some("king_dark.svg".to_string()),
                 }
             }
         } else {
@@ -72,21 +71,21 @@ impl ChessViewModel
         if let Some(t) = self.game.type_at(i, j) {
             if self.game.is_white_at(i, j) {
                 match t {
-                    Type::Pawn => { "♙".to_string() }
-                    Type::Bishop => { "♗".to_string() }
-                    Type::Knight => { "♘".to_string() }
-                    Type::Rook => { "♖".to_string() }
-                    Type::Queen => { "♕".to_string() }
-                    Type::King => { "♔".to_string() }
+                    Type::Pawn => "♙".to_string(),
+                    Type::Bishop => "♗".to_string(),
+                    Type::Knight => "♘".to_string(),
+                    Type::Rook => "♖".to_string(),
+                    Type::Queen => "♕".to_string(),
+                    Type::King => "♔".to_string(),
                 }
             } else {
                 match t {
-                    Type::Pawn => { "♟︎".to_string() }
-                    Type::Bishop => { "♝".to_string() }
-                    Type::Knight => { "♞".to_string() }
-                    Type::Rook => { "♜".to_string() }
-                    Type::Queen => { "♛".to_string() }
-                    Type::King => { "♚".to_string() }
+                    Type::Pawn => "♟︎".to_string(),
+                    Type::Bishop => "♝".to_string(),
+                    Type::Knight => "♞".to_string(),
+                    Type::Rook => "♜".to_string(),
+                    Type::Queen => "♛".to_string(),
+                    Type::King => "♚".to_string(),
                 }
             }
         } else {
@@ -123,14 +122,13 @@ impl ChessViewModel
 
     pub fn play_with_engine(&mut self) -> bool {
         // Make the engine play
-        let (search_result, _nps) = self.solver.find_best_move(self.game, false);
+        let search_result = self.solver.find_best_move(self.game, false);
         if let Some(best_move) = search_result.best_move {
             // Save the move
             self.engine_move = Some((best_move.from, best_move.to));
             // Apply the move
-            self.game.apply_move_safe(
-                Move::new(best_move.from, best_move.to, false)
-            )
+            self.game
+                .apply_move_safe(Move::new(best_move.from, best_move.to, false))
         } else {
             false
         }
@@ -140,7 +138,12 @@ impl ChessViewModel
         if let Some(pos) = self.selected_pos {
             let mut container = SimpleMovesContainer::new();
             self.game.update_move_container(&mut container, true);
-            self.attacked_positions = container.moves.iter().filter(|m| m.from == pos).map(|m| m.to).collect();
+            self.attacked_positions = container
+                .moves
+                .iter()
+                .filter(|m| m.from == pos)
+                .map(|m| m.to)
+                .collect();
         }
     }
 
@@ -154,7 +157,10 @@ impl ChessViewModel
             Msg::SquareTapped(pos) => {
                 if let Some(previous_pos) = self.selected_pos {
                     self.engine_move = None;
-                    if self.game.apply_move_safe(Move::new(previous_pos, *pos, true)) {
+                    if self
+                        .game
+                        .apply_move_safe(Move::new(previous_pos, *pos, true))
+                    {
                         self.selected_pos = None;
                         self.attacked_positions = vec![];
                         self.play_with_engine();
@@ -181,4 +187,3 @@ impl ChessViewModel
         }
     }
 }
-

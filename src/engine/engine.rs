@@ -10,5 +10,5 @@ pub struct SearchResult {
 pub trait Engine {
     /// For a given chess game, finds the solver's best move and returns it as an Option of a move.
     /// The function also returns the NPS (nodes per second) in the unit k-nps (for benchmarking)
-    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> (SearchResult, u128);
+    fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> SearchResult;
 }

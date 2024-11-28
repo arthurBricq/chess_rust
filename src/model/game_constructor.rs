@@ -66,12 +66,12 @@ impl GameConstructor {
         set_at!(bishops, pos_to_index(5, 7));
 
         // knights
-        set_at!(knights, pos_to_index(1,0));
-        set_at!(knights, pos_to_index(6,0));
-        set_at!(whites, pos_to_index(1,0));
-        set_at!(whites, pos_to_index(6,0));
-        set_at!(knights, pos_to_index(1,7));
-        set_at!(knights, pos_to_index(6,7));
+        set_at!(knights, pos_to_index(1, 0));
+        set_at!(knights, pos_to_index(6, 0));
+        set_at!(whites, pos_to_index(1, 0));
+        set_at!(whites, pos_to_index(6, 0));
+        set_at!(knights, pos_to_index(1, 7));
+        set_at!(knights, pos_to_index(6, 7));
 
         ChessGame {
             whites,
