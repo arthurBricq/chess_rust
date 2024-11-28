@@ -74,6 +74,8 @@ impl ChessGame {
 
     /// Returns true if there is a piece at this position
     pub(crate) fn has_piece_at(&self, at: i8) -> bool {
+        // TODO maybe adding 1 integer in the struct that just keeps the position of the pieces would be faster than this...
+        //      It's a small change to test.
         is_set!(self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings, at)
     }
 
@@ -140,14 +142,6 @@ impl ChessGame {
         if (m.is_white && (m.from / 8) > (m.to / 8)) || (!m.is_white && (m.from / 8) < (m.to / 8)) {
             return false;
         }
-
-        // match m.to - m.from {
-        //     16 => return m.from / 8 != 1,
-        //     -16 => return m.from / 8 != 6,
-        //     7 | 9 | -7 | -9 => return self.has_piece_at(m.to),
-        //     8 | -8 => return true,
-        //     _ => return false
-        // }
         
         // Two squares up on the first line
         if m.to == m.from + 16 && m.from / 8 != 1 {
