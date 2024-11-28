@@ -6,3 +6,4 @@ pub mod tools;
 pub mod moves_container;
 
 mod motion_iterator;
+mod precomputation;
