@@ -8,7 +8,7 @@ use crate::model::moves::Move;
 use std::time::Instant;
 use crate::model::chess_type::Type::{King, Pawn};
 use crate::model::game_constructor::GameConstructor;
-use crate::model::tools::chesspos_to_index;
+use crate::model::utils::chesspos_to_index;
 
 /// Finds the best move at the given position, `folds` times and prints the average time spent on this position
 fn benchmark(mut game: ChessGame, folds: usize, is_white: bool) {
@@ -52,11 +52,11 @@ fn main() {
     benchmark(game, 10, false);
     
     let mut game = GameConstructor::empty();
-    game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
-    game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
-    game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
-    game.set_piece(Pawn, false, chesspos_to_index("d7").unwrap() as u8);
-    game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
-    game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+    game.set_piece(Pawn, true, "e4");
+    game.set_piece(Pawn, true, "e2");
+    game.set_piece(Pawn, false, "d5");
+    game.set_piece(Pawn, false, "d7");
+    game.set_piece(King, true, "a2");
+    game.set_piece(King, false, "a7");
     benchmark(game, 10, false);
 }

@@ -5,7 +5,7 @@ use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
 use crate::model::game_constructor::GameConstructor;
 use crate::model::moves_container::SimpleMovesContainer;
-use crate::model::tools::pos_to_index;
+use crate::model::utils::pos_to_index;
 
 #[derive(Copy, Clone)]
 #[allow(dead_code)]

@@ -1,7 +1,7 @@
 use crate::model::chess_type::Type;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
-use crate::model::tools::pos_to_index;
+use crate::model::utils::pos_to_index;
 use regex::Regex;
 use std::io::{stdin, stdout, Write};
 use std::str::FromStr;

@@ -118,13 +118,13 @@ mod tests {
     use crate::model::moves::Move;
     use crate::model::moves::MoveQuality::GoodCapture;
     use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
-    use crate::model::tools::chesspos_to_index;
+    use crate::model::utils::chesspos_to_index;
 
     #[test]
     fn test_moves_container_with_basic_position() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+        game.set_piece(Pawn, true, "e2");
+        game.set_piece(Pawn, false, "e7");
 
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, true);

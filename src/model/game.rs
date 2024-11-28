@@ -4,7 +4,10 @@ use crate::model::chess_type::{ScoreType, Type};
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
 use crate::model::precomputation::PAWN_ATTACK_MASKS;
-use crate::model::tools::{clear_at, is_set, pos_to_index, set_at};
+use crate::model::utils::{chesspos_to_index, clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
+
+
+
 
 /// Struct to represent a chess game.
 ///
@@ -59,7 +62,7 @@ impl ChessGame {
 
     /// Returns the type of the provided index.
     /// If no type is present, returns None.
-    pub fn type_at_index(&self, at: i8) -> Option<Type> {
+    pub fn type_at_index(&self, at: ChessPosition) -> Option<Type> {
         if is_set!(self.pawns, at) {
             Some(Pawn)
         } else if is_set!(self.bishops, at) {
@@ -78,7 +81,7 @@ impl ChessGame {
     }
 
     /// Returns true if there is a piece at this position
-    pub(crate) fn has_piece_at(&self, at: i8) -> bool {
+    pub(crate) fn has_piece_at(&self, at: ChessPosition) -> bool {
         // TODO maybe adding 1 integer in the struct that just keeps the position of the pieces would be faster than this...
         //      It's a small change to test.
         is_set!(
@@ -90,7 +93,8 @@ impl ChessGame {
     /// Adds a piece to self.
     /// Can be used to create custom boards.
     #[allow(dead_code)]
-    pub fn set_piece(&mut self, piece: Type, white: bool, at: u8) {
+    pub fn set_piece(&mut self, piece: Type, white: bool, at: impl IntoChessPosition) {
+        let at: ChessPosition = at.into_position();
         match piece {
             Pawn => set_at!(self.pawns, at),
             Bishop => set_at!(self.bishops, at),
@@ -383,7 +387,7 @@ impl ChessGame {
 
     /// Returns all the attacked positions, without checking the rules for the move but only using
     /// the attack masks of each piece types.
-    fn get_attacked_squares(&self) -> Vec<u8> {
+    fn get_attacked_squares(&self) -> Vec<ChessPosition> {
         let (white, black) = &*PAWN_ATTACK_MASKS;
         vec![]
     }
@@ -595,13 +599,13 @@ impl ChessGame {
     /// Returns the type of the provided position.
     /// If no type is present, returns None.
     #[allow(dead_code)]
-    pub fn type_at(&self, x: i8, y: i8) -> Option<Type> {
+    pub fn type_at(&self, x: ChessPosition, y: ChessPosition) -> Option<Type> {
         self.type_at_index(pos_to_index(x, y))
     }
 
     /// Returns true if the given (x,y) coordinates contains a white piece
     #[allow(dead_code)]
-    pub fn is_white_at(&self, x: i8, y: i8) -> bool {
+    pub fn is_white_at(&self, x: ChessPosition, y: ChessPosition) -> bool {
         is_set!(self.whites, pos_to_index(x, y))
     }
 }
@@ -612,7 +616,7 @@ mod tests {
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
-    use crate::model::tools::chesspos_to_index;
+    use crate::model::utils::chesspos_to_index;
 
     #[test]
     fn test_wrong_knight_move() {
@@ -722,8 +726,8 @@ mod tests {
     #[test]
     fn test_score1() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("e7").unwrap() as u8);
+        game.set_piece(Pawn, true, "e2");
+        game.set_piece(Pawn, false, "e7");
         assert_eq!(0, game.score());
     }
 

@@ -1,5 +1,5 @@
 use super::super::view::chessview::*;
-use crate::model::tools::pos_to_index;
+use crate::model::utils::pos_to_index;
 use fltk::app::{event_text, App, Sender};
 use fltk::enums::{Color, Event};
 use fltk::image::SvgImage;

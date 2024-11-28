@@ -195,21 +195,21 @@ mod tests {
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
-    use crate::model::tools::{chesspos_to_index, index_to_chesspos};
+    use crate::model::utils::{chesspos_to_index, index_to_chesspos};
 
     #[test]
     /// A test in which white or black can take a pawn
     fn test_simple_engine1() {
         let mut game = GameConstructor::empty();
-        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+        game.set_piece(Pawn, true, "e4");
+        game.set_piece(Pawn, true, "e2");
 
-        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("d7").unwrap() as u8);
+        game.set_piece(Pawn, false, "d5");
+        game.set_piece(Pawn, false, "d7");
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
-        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+        game.set_piece(King, true, "a2");
+        game.set_piece(King, false, "a7");
 
         let mut engine = AlphaBetaEngine::new();
 
@@ -253,15 +253,15 @@ mod tests {
     /// A test in which white can take a pawn or a bishop
     fn test_simple_engine2() {
         let mut game = GameConstructor::empty();
-        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
-        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+        game.set_piece(King, true, "a2");
+        game.set_piece(King, false, "a7");
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
+        game.set_piece(Pawn, true, "e4");
 
         // Black has two pieces
-        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
-        game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
+        game.set_piece(Pawn, false, "d5");
+        game.set_piece(Knight, false, "f5");
 
         let mut engine = Box::new(AlphaBetaEngine::new());
 
@@ -305,16 +305,15 @@ mod tests {
         let mut game = GameConstructor::empty();
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("d4").unwrap() as u8);
-
-        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
-        game.set_piece(Pawn, false, chesspos_to_index("f5").unwrap() as u8);
-        game.set_piece(Rook, false, chesspos_to_index("e8").unwrap() as u8);
+        game.set_piece(Pawn, true, "e4");
+        game.set_piece(Pawn, true, "d4");
+        game.set_piece(Pawn, false, "d5");
+        game.set_piece(Pawn, false, "f5");
+        game.set_piece(Rook, false, "e8");
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("e2").unwrap() as u8);
-        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+        game.set_piece(King, true, "e2");
+        game.set_piece(King, false, "a7");
 
         let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(4, 0);
@@ -365,17 +364,17 @@ mod tests {
         let mut game = GameConstructor::empty();
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("d2").unwrap() as u8);
-        game.set_piece(Pawn, true, chesspos_to_index("f2").unwrap() as u8);
-        game.set_piece(Rook, true, chesspos_to_index("h4").unwrap() as u8);
+        game.set_piece(Pawn, true, "e2");
+        game.set_piece(Pawn, true, "d2");
+        game.set_piece(Pawn, true, "f2");
+        game.set_piece(Rook, true, "h4");
 
-        game.set_piece(Pawn, false, chesspos_to_index("a7").unwrap() as u8);
-        game.set_piece(Rook, false, chesspos_to_index("f5").unwrap() as u8);
+        game.set_piece(Pawn, false, "a7");
+        game.set_piece(Rook, false, "f5");
 
         // The game needs to have kings alive
-        game.set_piece(King, true, chesspos_to_index("e1").unwrap() as u8);
-        game.set_piece(King, false, chesspos_to_index("d5").unwrap() as u8);
+        game.set_piece(King, true, "e1");
+        game.set_piece(King, false, "d5");
         game.block_castling();
 
         let mut engine = AlphaBetaEngine::new();
@@ -443,15 +442,15 @@ mod tests {
     #[test]
     fn test_score_with_low_depth() {
         let mut game = GameConstructor::empty();
-        game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
-        game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+        game.set_piece(King, true, "a2");
+        game.set_piece(King, false, "a7");
 
         // White has one pawn
-        game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
+        game.set_piece(Pawn, true, "e4");
 
         // Black has two pieces
-        game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
-        game.set_piece(Knight, false, chesspos_to_index("f5").unwrap() as u8);
+        game.set_piece(Pawn, false, "d5");
+        game.set_piece(Knight, false, "f5");
 
         let mut engine = AlphaBetaEngine::new();
         engine.set_engine_depth(1, 0);

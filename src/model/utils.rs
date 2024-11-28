@@ -21,14 +21,26 @@ pub(crate) use is_set;
 pub(crate) use set_at;
 pub(crate) use clear_at;
 
+pub type ChessPosition = i8;
+
+pub trait IntoChessPosition {
+    fn into_position(&self) -> ChessPosition;
+}
+
+impl IntoChessPosition for &str {
+    fn into_position(&self) -> ChessPosition {
+        chesspos_to_index(self).unwrap()
+    }
+}
+
 // transforms a position (x,y) into a bit index
-pub fn pos_to_index(x: i8, y: i8) -> i8 {
+pub fn pos_to_index(x: ChessPosition, y: ChessPosition) -> ChessPosition {
     x + 8 * y
 }
 
 /// Convert an algebraic chess position to an integer
 #[allow(dead_code)]
-pub fn chesspos_to_index(text: &str) -> Option<i8> {
+pub fn chesspos_to_index(text: &str) -> Option<ChessPosition> {
     let mut iter = text.chars();
     let first_char = iter.next()?;
     let second_char = iter.next()?;
@@ -44,10 +56,10 @@ pub fn chesspos_to_index(text: &str) -> Option<i8> {
         'h' => 7,
         _ => panic!("Unknown chess position at char: {}", first_char)
     };
-    Some(pos_to_index(col, row as i8 - 1))
+    Some(pos_to_index(col, row as ChessPosition - 1))
 }
 
-pub fn index_to_chesspos(index: i8) -> String {
+pub fn index_to_chesspos(index: ChessPosition) -> String {
     let x = index % 8;
     let y = index / 8 + 1;
     let s = match x {

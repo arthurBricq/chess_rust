@@ -1,5 +1,5 @@
 use crate::model::game::ChessGame;
-use crate::model::tools::{pos_to_index, set_at};
+use crate::model::utils::{pos_to_index, set_at};
 
 pub struct GameConstructor;
 

@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use crate::model::chess_type::ScoreType;
 use crate::model::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal, KillerMove, Motion};
-use crate::model::tools::index_to_chesspos;
+use crate::model::utils::{index_to_chesspos, ChessPosition};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
@@ -35,8 +35,8 @@ pub enum MoveQuality {
 
 #[derive(Copy, Clone, Eq)]
 pub struct Move {
-    pub from: i8,
-    pub to: i8,
+    pub from: ChessPosition,
+    pub to: ChessPosition,
     pub is_white: bool,
     pub quality: MoveQuality,
 }
@@ -66,7 +66,7 @@ impl fmt::Display for Move {
 }
 
 impl Move {
-    pub fn new(from: i8, to: i8, is_white: bool) -> Self {
+    pub fn new(from: ChessPosition, to: ChessPosition, is_white: bool) -> Self {
         Self { from, to, is_white, quality: MoveQuality::Motion }
     }
 
