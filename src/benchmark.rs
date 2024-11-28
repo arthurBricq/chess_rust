@@ -6,9 +6,12 @@ use crate::engine::iterative_deepening::IterativeDeepeningEngine;
 use crate::model::game::ChessGame;
 use crate::model::moves::Move;
 use std::time::Instant;
+use crate::model::chess_type::Type::{King, Pawn};
+use crate::model::game_constructor::GameConstructor;
+use crate::model::tools::chesspos_to_index;
 
-/// This function runs a benchmarking of the chess game
-fn benchmark(mut game: ChessGame, folds: usize) {
+/// Finds the best move at the given position, `folds` times and prints the average time spent on this position
+fn benchmark(mut game: ChessGame, folds: usize, is_white: bool) {
     let mut times: Vec<f64> = Vec::new();
 
     for _i in 0..folds {
@@ -19,7 +22,7 @@ fn benchmark(mut game: ChessGame, folds: usize) {
         let start = Instant::now();
         let result = solver.find_best_move(game, false);
         let best_move = result.best_move.unwrap();
-        let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, false));
+        let _success = game.apply_move_safe(Move::new(best_move.from, best_move.to, is_white));
         let end = start.elapsed().as_millis() as f64;
         times.push(end);
     }
@@ -46,5 +49,14 @@ fn main() {
         1152921504606846992,
         0,
     );
-    benchmark(game, 10);
+    benchmark(game, 10, false);
+    
+    let mut game = GameConstructor::empty();
+    game.set_piece(Pawn, true, chesspos_to_index("e4").unwrap() as u8);
+    game.set_piece(Pawn, true, chesspos_to_index("e2").unwrap() as u8);
+    game.set_piece(Pawn, false, chesspos_to_index("d5").unwrap() as u8);
+    game.set_piece(Pawn, false, chesspos_to_index("d7").unwrap() as u8);
+    game.set_piece(King, true, chesspos_to_index("a2").unwrap() as u8);
+    game.set_piece(King, false, chesspos_to_index("a7").unwrap() as u8);
+    benchmark(game, 10, false);
 }

@@ -89,7 +89,7 @@ impl ChessGame {
 
     /// Adds a piece to self.
     /// Can be used to create custom boards.
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub fn set_piece(&mut self, piece: Type, white: bool, at: u8) {
         match piece {
             Pawn => set_at!(self.pawns, at),

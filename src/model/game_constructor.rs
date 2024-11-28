@@ -5,7 +5,7 @@ pub struct GameConstructor;
 
 impl GameConstructor {
     /// An empty chess game
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub fn empty() -> ChessGame {
         ChessGame {
             whites: 0,
