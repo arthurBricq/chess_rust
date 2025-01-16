@@ -6,9 +6,6 @@ use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
 use crate::model::precomputation::PAWN_ATTACK_MASKS;
 use crate::model::utils::{chesspos_to_index, clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
 
-
-
-
 /// Struct to represent a chess game.
 ///
 /// Each int represent a type. A '1' value set in each bit means that there is a piece of this type at the position (i % 8, i // 8).
