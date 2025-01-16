@@ -1,9 +1,12 @@
 use once_cell::sync::Lazy;
 
-/// Precomputes the attack masks
+/// Computes the attack masks for pawns
+/// 
 /// For each position of the chess board, one attack mask is an `u64` where the ones indicate that
-/// there is an attack
-fn precompute_pawn_attacks() -> ([u64; 64], [u64; 64]) {
+/// there is an attack.
+/// 
+/// This function returns the attack mask for white and black pawns.
+fn computes_pawn_attacks() -> ([u64; 64], [u64; 64]) {
     let mut white_attacks = [0u64; 64];
     let mut black_attacks = [0u64; 64];
 
@@ -39,4 +42,4 @@ fn precompute_pawn_attacks() -> ([u64; 64], [u64; 64]) {
     (white_attacks, black_attacks)
 }
 
-pub static PAWN_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(precompute_pawn_attacks);
+pub static PAWN_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(computes_pawn_attacks);

@@ -103,7 +103,22 @@ My goal is to get the following workflow
       squares
 - computing `attacked_positions` must also compute the possible `moves` in this position (of the next player)
 
-Unfortunately, I don't think that there optimisation to avoid going through all the pieces of both players...
+I try to make a roadmap here
+
+- Part I: Given a chess position, compute all the attacked pieces. For now, I want to recreate this from scratch (
+  without using my `next moves` computation)
+    - bit mask
+        - [x] Implement pawn attack using bit mask
+        - [ ] Implement knight attack using bit mask
+        - [ ] Implement king attack using bit mask
+    - sliding pieces using "ray mask"
+- Part II: Now that we have attacked positions, implement castling rules. This will obviously slow down a lot the
+  engine.
+    - add `attacked_position` field and compute it automatically after applying moves
+    - implement castling rules
+- Part III: factorize computation of `next move`, somehow... The goal of this step is to "restore" the old speed of the
+  chess engine. This will not be entirely possible, but you have to keep in mind that the chess evaluation function will
+  benefit from this work.
 
 ### How to optimise the score function ?
 

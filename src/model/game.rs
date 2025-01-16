@@ -1,3 +1,6 @@
+/// Defines chess attacks
+mod attacks;
+
 use super::moves::*;
 use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::model::chess_type::{ScoreType, Type};
@@ -380,13 +383,6 @@ impl ChessGame {
             return true;
         }
         false
-    }
-
-    /// Returns all the attacked positions, without checking the rules for the move but only using
-    /// the attack masks of each piece types.
-    fn get_attacked_squares(&self) -> Vec<ChessPosition> {
-        let (white, black) = &*PAWN_ATTACK_MASKS;
-        vec![]
     }
 
     /// Push valid moves in the `MovesContainer`, while going in the direction of the motion
