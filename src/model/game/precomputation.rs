@@ -69,6 +69,36 @@ fn precompute_knight_attacks() -> [u64; 64] {
     attacks
 }
 
+
+fn precompute_king_attacks() -> [u64; 64] {
+    let mut attacks = [0u64; 64];
+
+    for sq in 0..64 {
+        let mut mask = 0;
+        let rank = sq / 8;
+        let file = sq % 8;
+
+        let moves = [
+            (0, 1), (1, 1), (1, 0), (1, -1),
+            (0, -1), (-1, -1), (-1, 0), (-1, 1),
+        ];
+
+        for (dr, df) in moves {
+            let r = rank as isize + dr;
+            let f = file as isize + df;
+            if r >= 0 && r < 8 && f >= 0 && f < 8 {
+                mask |= 1 << (r * 8 + f);
+            }
+        }
+
+        attacks[sq] = mask;
+    }
+
+    attacks
+}
+
 pub static PAWN_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(computes_pawn_attacks);
 
 pub static KNIGHT_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(precompute_knight_attacks);
+
+pub static KING_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(precompute_king_attacks);

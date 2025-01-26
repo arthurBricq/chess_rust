@@ -1,4 +1,4 @@
-use crate::model::game::precomputation::{KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS};
+use crate::model::game::precomputation::{KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS};
 use crate::model::game::ChessGame;
 
 trait ChessAttacks {
@@ -8,8 +8,11 @@ trait ChessAttacks {
     /// By the pawn
     fn get_attacked_squares_pawn(&self, white_playing: bool) -> u64;
 
-    /// Get the squared attacked by the kngiths in this position.
+    /// Get the squared attacked by the knights in this position.
     fn get_attacked_squares_knight(&self, white_playing: bool) -> u64;
+
+    /// Get the squared attacked by the knights in this position.
+    fn get_attacked_squares_king(&self, white_playing: bool) -> u64;
 }
 
 impl ChessAttacks for ChessGame {
@@ -54,7 +57,7 @@ impl ChessAttacks for ChessGame {
             } else {
                 !self.whites
             });
-        
+
         // Iterate over all knights depending on the player's color
         while knights_left != 0 {
             // Get the position of the least significant bit (LSB)
@@ -67,11 +70,34 @@ impl ChessAttacks for ChessGame {
 
         attacks
     }
+
+    fn get_attacked_squares_king(&self, white_playing: bool) -> u64 {
+        let mut attacks = 0;
+
+        let mut king_left = self.kings
+            & (if white_playing {
+                self.whites
+            } else {
+                !self.whites
+            });
+
+        // Iterate over all king depending on the player's color
+        while king_left != 0 {
+            // Get the position of the least significant bit (LSB)
+            let sq = king_left.trailing_zeros() as usize;
+            // Add the precomputed knight attacks for this position
+            attacks |= KING_ATTACK_MASKS[sq];
+            // Remove the LSB
+            king_left &= king_left - 1;
+        }
+
+        attacks
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::chess_type::Type::{Knight, Pawn};
+    use crate::model::chess_type::Type::{King, Knight, Pawn};
     use crate::model::game::attacks::ChessAttacks;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::utils::{chesspos_to_index, IntoChessPosition};
@@ -189,7 +215,6 @@ mod tests {
     /// Tests that a knight on the corners of the board (a1, a8, h1, h8) only attacks 2 squares.
     #[test]
     fn test_knight_attacks_edges() {
-
         // Test a knight at a1
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(Knight, true, "a1");
@@ -231,4 +256,148 @@ mod tests {
         );
     }
 
-}
+    /// Tests that a king in the center of the board (e.g., e4) attacks all 8 adjoining squares.
+    #[test]
+    fn test_king_attacks_center() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place a king at e4
+        chess_game.set_piece(King, true, "e4");
+
+        let attacks = chess_game.get_attacked_squares_king(true);
+
+        // Expected attacks for a king on e4
+        let expected_attacks = (1 << "d3".into_position())
+            | (1 << "d4".into_position())
+            | (1 << "d5".into_position())
+            | (1 << "e3".into_position())
+            | (1 << "e5".into_position())
+            | (1 << "f3".into_position())
+            | (1 << "f4".into_position())
+            | (1 << "f5".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "King at e4 should attack all 8 surrounding squares, but got incorrect result."
+        );
+    }
+
+    /// Tests that a king on the edges (e.g., a4, h4, e1, e8) attacks the appropriate limited squares.
+    #[test]
+    fn test_king_attacks_edges() {
+        // Test a king at a4
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "a4");
+        let attacks_a4 = chess_game.get_attacked_squares_king(true);
+        let expected_a4 = (1 << "a3".into_position())
+            | (1 << "a5".into_position())
+            | (1 << "b3".into_position())
+            | (1 << "b4".into_position())
+            | (1 << "b5".into_position());
+
+        assert_eq!(
+            attacks_a4, expected_a4,
+            "King at a4 should attack 5 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at h4
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "h4");
+        let attacks_h4 = chess_game.get_attacked_squares_king(true);
+        let expected_h4 = (1 << "g3".into_position())
+            | (1 << "g4".into_position())
+            | (1 << "g5".into_position())
+            | (1 << "h3".into_position())
+            | (1 << "h5".into_position());
+
+        assert_eq!(
+            attacks_h4, expected_h4,
+            "King at h4 should attack 5 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at e1
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "e1");
+        let attacks_e1 = chess_game.get_attacked_squares_king(true);
+        let expected_e1 = (1 << "d1".into_position())
+            | (1 << "d2".into_position())
+            | (1 << "e2".into_position())
+            | (1 << "f1".into_position())
+            | (1 << "f2".into_position());
+
+        assert_eq!(
+            attacks_e1, expected_e1,
+            "King at e1 should attack 5 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at e8
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "e8");
+        let attacks_e8 = chess_game.get_attacked_squares_king(true);
+        let expected_e8 = (1 << "d8".into_position())
+            | (1 << "d7".into_position())
+            | (1 << "e7".into_position())
+            | (1 << "f8".into_position())
+            | (1 << "f7".into_position());
+
+        assert_eq!(
+            attacks_e8, expected_e8,
+            "King at e8 should attack 5 surrounding squares, but got incorrect result."
+        );
+    }
+
+    /// Tests that a king in a corner (e.g., a1, h1, a8, h8) attacks only the 3 nearby squares.
+    #[test]
+    fn test_king_attacks_corners() {
+        // Test a king at a1
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "a1");
+        let attacks_a1 = chess_game.get_attacked_squares_king(true);
+        let expected_a1 = (1 << "a2".into_position())
+            | (1 << "b1".into_position())
+            | (1 << "b2".into_position());
+
+        assert_eq!(
+            attacks_a1, expected_a1,
+            "King at a1 should only attack 3 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at h1
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "h1");
+        let attacks_h1 = chess_game.get_attacked_squares_king(true);
+        let expected_h1 = (1 << "h2".into_position())
+            | (1 << "g1".into_position())
+            | (1 << "g2".into_position());
+
+        assert_eq!(
+            attacks_h1, expected_h1,
+            "King at h1 should only attack 3 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at a8
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "a8");
+        let attacks_a8 = chess_game.get_attacked_squares_king(true);
+        let expected_a8 = (1 << "a7".into_position())
+            | (1 << "b8".into_position())
+            | (1 << "b7".into_position());
+
+        assert_eq!(
+            attacks_a8, expected_a8,
+            "King at a8 should only attack 3 surrounding squares, but got incorrect result."
+        );
+
+        // Test a king at h8
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(King, true, "h8");
+        let attacks_h8 = chess_game.get_attacked_squares_king(true);
+        let expected_h8 = (1 << "h7".into_position())
+            | (1 << "g8".into_position())
+            | (1 << "g7".into_position());
+
+        assert_eq!(
+            attacks_h8, expected_h8,
+            "King at h8 should only attack 3 surrounding squares, but got incorrect result."
+        );
+    }}

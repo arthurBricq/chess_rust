@@ -107,10 +107,10 @@ I try to make a roadmap here
 
 - Part I: Given a chess position, compute all the attacked pieces. For now, I want to recreate this from scratch (
   without using my `next moves` computation)
-    - bit mask
+    - bit mask: DONE
         - [x] Implement pawn attack using bit mask
         - [x] Implement knight attack using bit mask
-        - [ ] Implement king attack using bit mask
+        - [x] Implement king attack using bit mask
     - sliding pieces using "ray mask"
 - Part II: Now that we have attacked positions, implement castling rules. This will obviously slow down a lot the
   engine.
