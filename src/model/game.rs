@@ -1,12 +1,13 @@
 /// Defines chess attacks
 mod attacks;
+/// Computes some bitmask that can be reused efficently at runtime.
+mod precomputation;
 
 use super::moves::*;
 use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::model::chess_type::{ScoreType, Type};
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
-use crate::model::precomputation::PAWN_ATTACK_MASKS;
 use crate::model::utils::{chesspos_to_index, clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
 
 /// Struct to represent a chess game.
