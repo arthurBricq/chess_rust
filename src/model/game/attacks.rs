@@ -104,7 +104,8 @@ impl ChessAttacks for ChessGame {
         // TODO I'm pretty sure this is used somewhere, so let's try to refactor it (if it is the case...)
         let occupancy =
             !(self.rooks & self.kings & self.queens & self.pawns & self.bishops & self.knights);
-        let (north, south, east, west) = &*SLIDING_ATTACK_MASKS;
+        // let (north, south, east, west) = &*SLIDING_ATTACK_MASKS;
+        
 
         let mut rook_left = self.rooks
             & (if white_playing {
@@ -113,14 +114,14 @@ impl ChessAttacks for ChessGame {
                 !self.whites
             });
 
-        while rook_left != 0 {
-            let sq = rook_left.trailing_zeros() as usize;
-            attacks |= north[sq] & occupancy
-                | south[sq] & occupancy
-                | east[sq] & occupancy
-                | west[sq] & occupancy;
-            rook_left &= rook_left - 1;
-        }
+        // while rook_left != 0 {
+        //     let sq = rook_left.trailing_zeros() as usize;
+        //     attacks |= north[sq] & occupancy
+        //         | south[sq] & occupancy
+        //         | east[sq] & occupancy
+        //         | west[sq] & occupancy;
+        //     rook_left &= rook_left - 1;
+        // }
 
         attacks
     }
