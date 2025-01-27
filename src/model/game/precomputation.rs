@@ -210,6 +210,8 @@ mod tests {
     fn test_finding_closest_blocker() {
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(Pawn, true, "a3");
+        chess_game.set_piece(Pawn, true, "a2");
+        chess_game.set_piece(Pawn, true, "a4");
         chess_game.set_piece(Pawn, true, "a6");
         chess_game.set_piece(Pawn, true, "d1");
         chess_game.set_piece(Pawn, true, "f1");
@@ -231,11 +233,18 @@ mod tests {
 
             // Finding the closest blocker
             // Problem is, depending on the direction, there are different possible formula...
-            
+            // My current take on the problem is that chatGPT might be simply wrong.
+            // I should read carefully the descriptions, and decide if I pursue this discussion.
+            // Otherwise, I could generate
+            // - for every position
+            // - for every direction
+            // 1 vector of "next" positions
+            // Then, finding the closest hit is very simple...
+
             // let closest_blocker = blockers & blockers.wrapping_sub(1);
-            let closest_blocker = blockers & !(blockers.wrapping_sub(1));
-            // let closest_blocker = ray_direction.compute_closest_blocker(blockers);
-            
+            // let closest_blocker = blockers & !(blockers.wrapping_sub(1));
+            let closest_blocker = ray_direction.compute_closest_blocker(blockers);
+
             let blocker_pos = closest_blocker.trailing_zeros() as usize;
 
             assert_eq!(1, closest_blocker.count_ones(), "There should be only one blocker");
