@@ -1,4 +1,6 @@
-use crate::model::game::precomputation::{KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS};
+use crate::model::game::precomputation::{
+    KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
+};
 use crate::model::game::ChessGame;
 
 trait ChessAttacks {
@@ -13,6 +15,8 @@ trait ChessAttacks {
 
     /// Get the squared attacked by the knights in this position.
     fn get_attacked_squares_king(&self, white_playing: bool) -> u64;
+
+    fn get_attacked_squares_rook(&self, white_playing: bool) -> u64;
 }
 
 impl ChessAttacks for ChessGame {
@@ -93,14 +97,41 @@ impl ChessAttacks for ChessGame {
 
         attacks
     }
+
+    // Combine precomputed rays for rooks and bishops
+    fn get_attacked_squares_rook(&self, white_playing: bool) -> u64 {
+        let mut attacks = 0;
+        // TODO I'm pretty sure this is used somewhere, so let's try to refactor it (if it is the case...)
+        let occupancy =
+            !(self.rooks & self.kings & self.queens & self.pawns & self.bishops & self.knights);
+        let (north, south, east, west) = &*SLIDING_ATTACK_MASKS;
+
+        let mut rook_left = self.rooks
+            & (if white_playing {
+                self.whites
+            } else {
+                !self.whites
+            });
+
+        while rook_left != 0 {
+            let sq = rook_left.trailing_zeros() as usize;
+            attacks |= north[sq] & occupancy
+                | south[sq] & occupancy
+                | east[sq] & occupancy
+                | west[sq] & occupancy;
+            rook_left &= rook_left - 1;
+        }
+
+        attacks
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::chess_type::Type::{King, Knight, Pawn};
+    use crate::model::chess_type::Type::{King, Knight, Pawn, Rook};
     use crate::model::game::attacks::ChessAttacks;
     use crate::model::game_constructor::GameConstructor;
-    use crate::model::utils::{chesspos_to_index, IntoChessPosition};
+    use crate::model::utils::IntoChessPosition;
 
     /// Asserts that if a white pawn is in e4, d5 and f5 are attacked
     #[test]
@@ -353,9 +384,8 @@ mod tests {
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(King, true, "a1");
         let attacks_a1 = chess_game.get_attacked_squares_king(true);
-        let expected_a1 = (1 << "a2".into_position())
-            | (1 << "b1".into_position())
-            | (1 << "b2".into_position());
+        let expected_a1 =
+            (1 << "a2".into_position()) | (1 << "b1".into_position()) | (1 << "b2".into_position());
 
         assert_eq!(
             attacks_a1, expected_a1,
@@ -366,9 +396,8 @@ mod tests {
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(King, true, "h1");
         let attacks_h1 = chess_game.get_attacked_squares_king(true);
-        let expected_h1 = (1 << "h2".into_position())
-            | (1 << "g1".into_position())
-            | (1 << "g2".into_position());
+        let expected_h1 =
+            (1 << "h2".into_position()) | (1 << "g1".into_position()) | (1 << "g2".into_position());
 
         assert_eq!(
             attacks_h1, expected_h1,
@@ -379,9 +408,8 @@ mod tests {
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(King, true, "a8");
         let attacks_a8 = chess_game.get_attacked_squares_king(true);
-        let expected_a8 = (1 << "a7".into_position())
-            | (1 << "b8".into_position())
-            | (1 << "b7".into_position());
+        let expected_a8 =
+            (1 << "a7".into_position()) | (1 << "b8".into_position()) | (1 << "b7".into_position());
 
         assert_eq!(
             attacks_a8, expected_a8,
@@ -392,12 +420,75 @@ mod tests {
         let mut chess_game = GameConstructor::empty();
         chess_game.set_piece(King, true, "h8");
         let attacks_h8 = chess_game.get_attacked_squares_king(true);
-        let expected_h8 = (1 << "h7".into_position())
-            | (1 << "g8".into_position())
-            | (1 << "g7".into_position());
+        let expected_h8 =
+            (1 << "h7".into_position()) | (1 << "g8".into_position()) | (1 << "g7".into_position());
 
         assert_eq!(
             attacks_h8, expected_h8,
             "King at h8 should only attack 3 surrounding squares, but got incorrect result."
         );
-    }}
+    }
+
+    /// Tests that a rook in a1 attacks exactly 14 squares.
+    #[test]
+    fn test_rook_attacks_a1() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place a rook at a1
+        chess_game.set_piece(Rook, true, "a1");
+
+        let attacks = chess_game.get_attacked_squares_rook(true);
+
+        // Expected attacks for a rook on a1
+        let expected_attacks = (1 << "a2".into_position())
+            | (1 << "a3".into_position())
+            | (1 << "a4".into_position())
+            | (1 << "a5".into_position())
+            | (1 << "a6".into_position())
+            | (1 << "a7".into_position())
+            | (1 << "a8".into_position())
+            | (1 << "b1".into_position())
+            | (1 << "c1".into_position())
+            | (1 << "d1".into_position())
+            | (1 << "e1".into_position())
+            | (1 << "f1".into_position())
+            | (1 << "g1".into_position())
+            | (1 << "h1".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "Rook at a1 should attack exactly 14 squares, but got an incorrect result."
+        );
+    }
+
+    /// Tests that a rook in a1 attacks correctly when a pawn blocks part of its path at a4.
+    #[test]
+    fn test_rook_attacks_a1_with_blocking_pawn() {
+        let mut chess_game = GameConstructor::empty();
+        chess_game.set_piece(Rook, true, "a1");
+        chess_game.set_piece(Pawn, true, "a2");
+
+        let attacks = chess_game.get_attacked_squares_rook(true);
+
+        // Count the number of 1s in attacks (number of attacked squares)
+        let count = attacks.count_ones();
+        println!("Number of attacked squares: {}", count);
+
+        // Expected attacks for a rook on a1 when a pawn is blocking at a4
+        let expected_attacks = (1 << "a2".into_position())
+            | (1 << "a3".into_position())
+            | (1 << "b1".into_position())
+            | (1 << "c1".into_position())
+            | (1 << "d1".into_position())
+            | (1 << "e1".into_position())
+            | (1 << "f1".into_position())
+            | (1 << "g1".into_position())
+            | (1 << "h1".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "Rook at a1 should correctly attack up to the blocking pawn at a4 and no further."
+        );
+    }
+
+}

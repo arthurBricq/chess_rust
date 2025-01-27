@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 /// there is an attack.
 /// 
 /// This function returns the attack mask for white and black pawns.
-fn computes_pawn_attacks() -> ([u64; 64], [u64; 64]) {
+fn pawn_attacks() -> ([u64; 64], [u64; 64]) {
     let mut white_attacks = [0u64; 64];
     let mut black_attacks = [0u64; 64];
 
@@ -42,7 +42,7 @@ fn computes_pawn_attacks() -> ([u64; 64], [u64; 64]) {
     (white_attacks, black_attacks)
 }
 
-fn precompute_knight_attacks() -> [u64; 64] {
+fn knight_attacks() -> [u64; 64] {
     let mut attacks = [0u64; 64];
 
     for sq in 0..64 {
@@ -70,7 +70,7 @@ fn precompute_knight_attacks() -> [u64; 64] {
 }
 
 
-fn precompute_king_attacks() -> [u64; 64] {
+fn king_attacks() -> [u64; 64] {
     let mut attacks = [0u64; 64];
 
     for sq in 0..64 {
@@ -97,8 +97,51 @@ fn precompute_king_attacks() -> [u64; 64] {
     attacks
 }
 
-pub static PAWN_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(computes_pawn_attacks);
+/// For each square and direction, precompute the "ray" of squares that would be attacked 
+/// if no blocking pieces existed. It is up to the runtime to compute the actual attacked squares
+/// using a mask.
+/// 
+/// Directions are defined as: N, S, E, W
+fn sliding_attacks() -> ([u64; 64], [u64; 64], [u64; 64], [u64; 64]) {
+    let mut north = [0u64; 64];
+    let mut south = [0u64; 64];
+    let mut east = [0u64; 64];
+    let mut west = [0u64; 64];
 
-pub static KNIGHT_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(precompute_knight_attacks);
+    for sq in 0..64 {
+        let rank = sq / 8;
+        let file = sq % 8;
 
-pub static KING_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(precompute_king_attacks);
+        // North
+        for r in (rank + 1)..8 {
+            north[sq] |= 1 << (r * 8 + file);
+        }
+        // South
+        for r in (0..rank).rev() {
+            south[sq] |= 1 << (r * 8 + file);
+        }
+        // East
+        for f in (file + 1)..8 {
+            east[sq] |= 1 << (rank * 8 + f);
+        }
+        // West
+        for f in (0..file).rev() {
+            west[sq] |= 1 << (rank * 8 + f);
+        }
+    }
+
+    (north, south, east, west)
+}
+
+
+// TODO understand clearly if the way that I use these static variables it the right one
+// I really must make sure that I am not using some sort of cloning.
+
+pub static PAWN_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(pawn_attacks);
+
+pub static KNIGHT_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(knight_attacks);
+
+pub static KING_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(king_attacks);
+
+pub static SLIDING_ATTACK_MASKS: Lazy<([u64; 64], [u64; 64], [u64; 64], [u64; 64])> = Lazy::new(sliding_attacks);
+

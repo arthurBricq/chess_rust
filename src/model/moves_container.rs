@@ -118,7 +118,6 @@ mod tests {
     use crate::model::moves::Move;
     use crate::model::moves::MoveQuality::GoodCapture;
     use crate::model::moves_container::{MovesContainer, SmartMoveContainer};
-    use crate::model::utils::chesspos_to_index;
 
     #[test]
     fn test_moves_container_with_basic_position() {

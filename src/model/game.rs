@@ -8,7 +8,9 @@ use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::model::chess_type::{ScoreType, Type};
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
-use crate::model::utils::{chesspos_to_index, clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
+use crate::model::utils::{
+    clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition,
+};
 
 /// Struct to represent a chess game.
 ///
@@ -441,7 +443,7 @@ impl ChessGame {
 
         while pieces != 0 {
             let i = pieces.trailing_zeros() as ChessPosition;
-            pieces &= (pieces - 1);
+            pieces &= pieces - 1;
             match self.type_at_index(i).unwrap() {
                 Pawn => {
                     if is_white {
@@ -608,7 +610,6 @@ mod tests {
     use crate::model::game::ChessGame;
     use crate::model::game_constructor::GameConstructor;
     use crate::model::moves::Move;
-    use crate::model::utils::chesspos_to_index;
 
     #[test]
     fn test_wrong_knight_move() {
@@ -728,14 +729,14 @@ mod tests {
         let game = GameConstructor::standard_game();
         assert!(!game.is_move_valid(&Move::new(12, 36, true)))
     }
-    
+
     #[test]
     fn test_gpt_crazy_shit() {
         let mut pieces = 0b01001100u8;
         while pieces != 0 {
             let first_piece = pieces.trailing_zeros();
             println!("{first_piece}");
-            pieces &= (pieces - 1);
+            pieces &= pieces - 1;
         }
     }
 }
