@@ -5,9 +5,16 @@ use crate::model::game::ChessGame;
 use crate::model::utils::{is_set, set_at};
 use std::ops::Range;
 
-trait ChessAttacks {
+pub(super) trait ChessAttacks {
     /// Returns the list of attack squares
-    fn get_attacked_squares(&self, white_playing: bool) -> u64;
+    fn get_attacked_squares(&self, white_playing: bool) -> u64 {
+        self.get_attacked_squares_bishop(white_playing)
+            | self.get_attacked_squares_knight(white_playing)
+            | self.get_attacked_squares_king(white_playing)
+            | self.get_attacked_squares_pawn(white_playing)
+            | self.get_attacked_squares_queen(white_playing)
+            | self.get_attacked_squares_rook(white_playing)
+    }
     /// Get the squared attacked by the pawn
     fn get_attacked_squares_pawn(&self, white_playing: bool) -> u64;
     /// Get the squared attacked by the knights in this position.
@@ -83,6 +90,7 @@ impl ChessGame {
         direction_indices: Range<usize>,
     ) -> u64 {
         let mut attacks = 0;
+        // TODO factorize this 
         let occupancy =
             self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
         while pieces != 0 {
@@ -107,13 +115,6 @@ impl ChessGame {
 }
 
 impl ChessAttacks for ChessGame {
-    fn get_attacked_squares(&self, white_playing: bool) -> u64 {
-        // TODO
-        // There is a nice suggestion done by GPT at the beginning of this thread:
-        // https://chatgpt.com/c/67487aed-1ee0-8011-9c8a-8d90c88513e0
-        0
-    }
-
     fn get_attacked_squares_pawn(&self, white_playing: bool) -> u64 {
         let (white_pawn_attacks, black_pawn_attacks) = &*PAWN_ATTACK_MASKS;
         let mut attacks = 0;
@@ -125,7 +126,12 @@ impl ChessAttacks for ChessGame {
         };
 
         // Iterate over all pawns
-        let mut pawns_left = self.pawns;
+        let mut pawns_left = self.pawns
+            & (if white_playing {
+            self.whites
+        } else {
+            !self.whites
+        });
         while pawns_left != 0 {
             // Get the position of the least significant bit
             let sq = pawns_left.trailing_zeros() as usize;
@@ -208,10 +214,10 @@ impl ChessAttacks for ChessGame {
     fn get_attacked_squares_queen(&self, white_playing: bool) -> u64 {
         let queens_left = self.queens
             & (if white_playing {
-            self.whites
-        } else {
-            !self.whites
-        });
+                self.whites
+            } else {
+                !self.whites
+            });
         self.get_attacked_squares_from_sliding_piece(queens_left, 0..8)
     }
 }
@@ -221,21 +227,7 @@ mod tests {
     use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Rook};
     use crate::model::game::attacks::ChessAttacks;
     use crate::model::game_constructor::GameConstructor;
-    use crate::model::utils::IntoChessPosition;
-
-    /// Prints all the bits of an integer as a grid
-    /// Used for debugging.
-    fn print_bitboard(bitboard: u64) {
-        for rank in (0..8).rev() {
-            for file in 0..8 {
-                let square = rank * 8 + file;
-                let bit = (bitboard >> square) & 1;
-                print!("{} ", bit);
-            }
-            println!();
-        }
-        println!();
-    }
+    use crate::model::utils::{print_bitboard, IntoChessPosition};
 
     /// Asserts that if a white pawn is in e4, d5 and f5 are attacked
     #[test]
@@ -673,7 +665,6 @@ mod tests {
         );
     }
 
-
     /// Tests that a bishop in e4 attacks all squares in its diagonal paths without any blockers.
     #[test]
     fn test_bishop_attacks_e4() {
@@ -705,4 +696,12 @@ mod tests {
         );
     }
     
+    
+    #[test]
+    fn test_attacks_of_pawns_at_first_rank() {
+        let game = GameConstructor::standard_game();
+        print_bitboard(game.get_attacked_squares_pawn(true));
+        // println!("-----");
+        // print_bitboard(game.get_attacked_squares(false));
+    }
 }

@@ -6,11 +6,10 @@ mod precomputation;
 use super::moves::*;
 use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::model::chess_type::{ScoreType, Type};
+use crate::model::game::attacks::ChessAttacks;
 use crate::model::motion_iterator::StepMotionIterator;
 use crate::model::moves_container::{MovesContainer, SimpleMovesContainer};
-use crate::model::utils::{
-    clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition,
-};
+use crate::model::utils::{clear_at, is_set, pos_to_index, print_bitboard, set_at, ChessPosition, IntoChessPosition};
 
 /// Struct to represent a chess game.
 ///
@@ -87,6 +86,8 @@ impl ChessGame {
     pub(crate) fn has_piece_at(&self, at: ChessPosition) -> bool {
         // TODO maybe adding 1 integer in the struct that just keeps the position of the pieces would be faster than this...
         //      It's a small change to test.
+        // Note: since the occupancy grid is computed in many places in the `attacks.rs` module, I really think that
+        // this would make sense...
         is_set!(
             self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings,
             at
@@ -191,14 +192,37 @@ impl ChessGame {
                 return false;
             }
 
-            // check that there is a rook
+            // Check that there is a rook in the correct position
             if motion > 0 {
                 if !is_set!(self.rooks, m.from + 3) {
                     return false;
                 }
-                // TODO check for other pieces here
             } else {
                 if !is_set!(self.rooks, m.from - 4) {
+                    return false;
+                }
+            }
+
+            // Check that the neighbors positions are empty and not attacked
+            let positions_to_check = if motion > 0 {
+                vec![m.from + 1, m.from + 2]
+            } else {
+                vec![m.from - 1, m.from - 2, m.from - 3]
+            };
+
+            // First check the occupancy, as it cost less
+            let occupancy =
+                self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
+            for pos in &positions_to_check {
+                if is_set!(occupancy, pos) {
+                    return false;
+                }
+            }
+            
+            // Second check the attacks
+            let attacked = self.get_attacked_squares(!m.is_white);
+            for pos in positions_to_check {
+                if is_set!(attacked, pos) {
                     return false;
                 }
             }
@@ -621,9 +645,9 @@ mod tests {
     #[test]
     fn test_small_castle() {
         // This is the chess position reached after
-        // (e4,e5)
-        // (Nf3, Qf6)
-        // (Bc4, Qf4)
+        // 1. e4 e5
+        // 2. Nf3 Qf6
+        // 3. Bc4 Qf4
         // which by the way is terrible for black...
         // It is white's turn
         // White can castle or move the king up

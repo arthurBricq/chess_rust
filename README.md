@@ -10,7 +10,7 @@ in [C++](https://github.com/arthurBricq/chess_cpp)*)
 
 It features:
 
-- All the rules of chess written in a very compact format (*1 game is represented with 8 bytes*)
+- Very compact representation of a chess-game (*1 game is represented with 8 bytes*)
 - alpha-beta pruning
 - move ordering to favor captures
 - iterative deepening to improve move ordering
@@ -81,49 +81,39 @@ List of missing features
 - Chess Rules
     - [ ] En Passant, using a stateful representation
     - [ ] Non-queen promotions
-    - [ ] Proper castling
 
 - Engine
     - Parallel alpha-beta pruning
     - Engine Server to keep expanding while the other player is thinking
+
+- Lichess API
+
+What I am not happy about
+
+- I don't really like the "redundancy" between the `attacks` module and the `get_next_moves`: when computing the next
+  moves, we absolutely don't use the next pre-computed masks. I can probably optimize some things.
+- I could come up with a better benchmarking system.
+- All the `TODO` in the code that I have left.
 
 ### Castling
 
 The very big challenge to implement castling is that you need to know which squares are attacked in a given position.
 There are no easy ways to compute that optimally.
 
-You could think that there is a strong link between the attacked squares and the possible moves, and this is true for
-most pieces except for pawns.
+It is very easy to understand that the problem of implementing castling rules is equally hard as the problem to compute
+attacked squares by a player. Most specifically, the player that is not currently playing.
 
-My goal is to get the following workflow
+I have implemented this computation using bitmasks that are precomputed before starting a game, and stored in memory.
+The idea is quite simple, and must be differentiated between two kinds of pieces.
 
-- each game keeps track of all the attacked positions, as one new field `attacked_positions: u64`
-    - this will solve the castling rules
-    - this will allow to give a better evaluation function: you can ponderate the score with the number of attacked
-      squares
-- computing `attacked_positions` must also compute the possible `moves` in this position (of the next player)
+- For pawns, kights and kings: given every 64 possible positions, you always know the attacked positions. These can be
+  precomputed and stored at all time.
+- For bishops, rooks and queens: given every 64 possible positions, you always know the "rays" attacked. You can always
+  go through the raw in a defined order until (1) the ray is finished or (2) you find a piece.
 
-I try to make a roadmap here
+All of this logic is defined in the `attacks` module.
 
-- Part I: Given a chess position, compute all the attacked pieces. For now, I want to recreate this from scratch (
-  without using my `next moves` computation)
-    - bit mask: DONE
-        - [x] Implement pawn attack using bit mask
-        - [x] Implement knight attack using bit mask
-        - [x] Implement king attack using bit mask
-    - sliding pieces using "ray mask"
-- Part II: Now that we have attacked positions, implement castling rules. This will obviously slow down a lot the
-  engine.
-    - add `attacked_position` field and compute it automatically after applying moves
-    - implement castling rules
-- Part III: factorize computation of `next move`, somehow... The goal of this step is to "restore" the old speed of the
-  chess engine. This will not be entirely possible, but you have to keep in mind that the chess evaluation function will
-  benefit from this work.
+**Is it possible to "factorize" the computation of the attacked squares and the computation of the next moves ?**
 
-### How to optimise the score function ?
-
-- solver calls game.getAllMoves --> we know the size here.
-- for each move, create a new game
-- for each new game, call the solver : if finished, call game.score()
-
-==> for a given game, game.score() is always called before game.getAllMoves ... 
+No, it's not. Because when you compute the attacked squares, the player has not yet played. The fact that the player
+applies 1 more move change everything.

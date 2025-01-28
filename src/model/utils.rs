@@ -94,3 +94,18 @@ pub fn index_to_chesspos(index: ChessPosition) -> String {
     };
     s + format!("{y}").as_str()
 }
+
+/// Prints all the bits of an integer as a grid
+/// Used for debugging.
+#[allow(dead_code)]
+pub fn print_bitboard(bitboard: u64) {
+    for rank in (0..8).rev() {
+        for file in 0..8 {
+            let square = rank * 8 + file;
+            let bit = (bitboard >> square) & 1;
+            print!("{} ", bit);
+        }
+        println!();
+    }
+    println!();
+}
