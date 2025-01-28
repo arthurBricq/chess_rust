@@ -1,40 +1,41 @@
-use std::ops::Range;
 use crate::model::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
 use crate::model::game::ChessGame;
 use crate::model::utils::{is_set, set_at};
+use std::ops::Range;
 
 trait ChessAttacks {
     /// Returns the list of attack squares
     fn get_attacked_squares(&self, white_playing: bool) -> u64;
-
-    /// By the pawn
+    /// Get the squared attacked by the pawn
     fn get_attacked_squares_pawn(&self, white_playing: bool) -> u64;
-
     /// Get the squared attacked by the knights in this position.
     fn get_attacked_squares_knight(&self, white_playing: bool) -> u64;
-
     /// Get the squared attacked by the knights in this position.
     fn get_attacked_squares_king(&self, white_playing: bool) -> u64;
-
+    /// Get the squared attacked by the rooks
     fn get_attacked_squares_rook(&self, white_playing: bool) -> u64;
+    /// Get the squared attacked by the bishops
+    fn get_attacked_squares_bishop(&self, white_playing: bool) -> u64;
+    /// Get the squared attacked by the queen
+    fn get_attacked_squares_queen(&self, white_playing: bool) -> u64;
 }
 
 impl ChessGame {
-    /// Computes the squares attacked by a sliding piece (rook, bishop, or queen) 
+    /// Computes the squares attacked by a sliding piece (rook, bishop, or queen)
     /// on the chessboard.
     ///
-    /// Sliding pieces attack squares along straight paths until obstructed 
-    /// by another piece or reaching the edge of the board. This function uses 
-    /// precomputed sliding attack masks for each square and direction to determine 
+    /// Sliding pieces attack squares along straight paths until obstructed
+    /// by another piece or reaching the edge of the board. This function uses
+    /// precomputed sliding attack masks for each square and direction to determine
     /// the attacks.
     ///
     /// # Arguments
     ///
-    /// - `pieces`: A bitboard representing the positions of the sliding pieces whose 
+    /// - `pieces`: A bitboard representing the positions of the sliding pieces whose
     ///   attacks are to be computed.
-    /// - `direction_indices`: A range specifying the indices of directions to consider 
+    /// - `direction_indices`: A range specifying the indices of directions to consider
     ///   in the `SLIDING_ATTACK_MASKS`. For example:
     ///   - `0..4`: Horizontal and vertical directions (rook-like movement).
     ///   - `4..8`: Diagonal directions (bishop-like movement).
@@ -47,16 +48,16 @@ impl ChessGame {
     ///
     /// The calculation proceeds as follows:
     /// - For each piece in the bitboard, its position is determined.
-    /// - For each direction in the given range, the attack ray for this direction 
+    /// - For each direction in the given range, the attack ray for this direction
     ///   is retrieved from the precomputed `SLIDING_ATTACK_MASKS`.
-    /// - The attack is calculated iteratively until an occupied square is encountered 
+    /// - The attack is calculated iteratively until an occupied square is encountered
     ///   (blocking the attack in that direction).
     ///
     /// This method makes use of bitwise operations for efficient computation.
     ///
     /// # Notes
     ///
-    /// The method assumes a precomputed occupancy bitboard (`self.rooks | self.kings | 
+    /// The method assumes a precomputed occupancy bitboard (`self.rooks | self.kings |
     /// self.queens | self.pawns | self.bishops | self.knights`) to identify blocking pieces.
     ///
     /// # Example
@@ -191,17 +192,36 @@ impl ChessAttacks for ChessGame {
             } else {
                 !self.whites
             });
-
         self.get_attacked_squares_from_sliding_piece(rook_left, 0..4)
+    }
+
+    fn get_attacked_squares_bishop(&self, white_playing: bool) -> u64 {
+        let bishops_left = self.bishops
+            & (if white_playing {
+                self.whites
+            } else {
+                !self.whites
+            });
+        self.get_attacked_squares_from_sliding_piece(bishops_left, 4..8)
+    }
+
+    fn get_attacked_squares_queen(&self, white_playing: bool) -> u64 {
+        let queens_left = self.queens
+            & (if white_playing {
+            self.whites
+        } else {
+            !self.whites
+        });
+        self.get_attacked_squares_from_sliding_piece(queens_left, 0..8)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::model::chess_type::Type::{King, Knight, Pawn, Rook};
+    use crate::model::chess_type::Type::{Bishop, King, Knight, Pawn, Rook};
     use crate::model::game::attacks::ChessAttacks;
     use crate::model::game_constructor::GameConstructor;
-    use crate::model::utils::{index_to_chesspos, ChessPosition, IntoChessPosition};
+    use crate::model::utils::IntoChessPosition;
 
     /// Prints all the bits of an integer as a grid
     /// Used for debugging.
@@ -627,4 +647,62 @@ mod tests {
             "Rook at e4 should attack only 4 squares when blocked by pieces at e3, e5, d4, and f4."
         );
     }
+
+    /// Tests that a bishop in a1 attacks all squares in its diagonal paths without any blockers.
+    #[test]
+    fn test_bishop_attacks_a1() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place a bishop at a1
+        chess_game.set_piece(Bishop, true, "a1");
+
+        let attacks = chess_game.get_attacked_squares_bishop(true);
+
+        // Expected attacks for a bishop on a1
+        let expected_attacks = (1 << "b2".into_position())
+            | (1 << "c3".into_position())
+            | (1 << "d4".into_position())
+            | (1 << "e5".into_position())
+            | (1 << "f6".into_position())
+            | (1 << "g7".into_position())
+            | (1 << "h8".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "Bishop at a1 should attack all diagonal squares: b2, c3, d4, etc., but got an incorrect result."
+        );
+    }
+
+
+    /// Tests that a bishop in e4 attacks all squares in its diagonal paths without any blockers.
+    #[test]
+    fn test_bishop_attacks_e4() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place a bishop at e4
+        chess_game.set_piece(Bishop, true, "e4");
+
+        let attacks = chess_game.get_attacked_squares_bishop(true);
+
+        // Expected attacks for a bishop on e4
+        let expected_attacks = (1 << "d3".into_position())
+            | (1 << "c2".into_position())
+            | (1 << "b1".into_position())
+            | (1 << "f3".into_position())
+            | (1 << "g2".into_position())
+            | (1 << "h1".into_position())
+            | (1 << "d5".into_position())
+            | (1 << "c6".into_position())
+            | (1 << "b7".into_position())
+            | (1 << "a8".into_position())
+            | (1 << "f5".into_position())
+            | (1 << "g6".into_position())
+            | (1 << "h7".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "Bishop at e4 should attack both diagonals: d3->b1, f3->h1, d5->a8, and f5->h7, but got an incorrect result."
+        );
+    }
+    
 }
