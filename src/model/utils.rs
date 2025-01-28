@@ -23,6 +23,25 @@ pub(crate) use clear_at;
 
 pub type ChessPosition = i8;
 
+/// Creates a `ChessPosition` from a rank (row) and file (column).
+///
+/// # Arguments
+/// * `rank` - The rank (row) of the position, ranging from 0 to 7.
+/// * `file` - The file (column) of the position, ranging from 0 to 7.
+///
+/// # Returns
+/// * A valid `ChessPosition`, which is essentially an index ranging from 0 to 63.
+///
+/// # Panics
+/// * The function panics if the rank or file is outside the valid range (0-7).
+pub fn from_rank_file(rank: usize, file: usize) -> ChessPosition {
+    assert!(rank < 8, "Rank must be between 0 and 7");
+    assert!(file < 8, "File must be between 0 and 7");
+    // Calculate the 1D index of the chessboard from rank and file
+    (rank * 8 + file) as ChessPosition
+}
+
+
 pub trait IntoChessPosition {
     fn into_position(&self) -> ChessPosition;
 }

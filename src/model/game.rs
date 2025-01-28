@@ -653,7 +653,7 @@ mod tests {
         // GIVEN
         // (e4, _)
         // (Nf3, _)
-        let mut game = ChessGame {
+        let game = ChessGame {
             whites: 270593983,
             pawns: 65038346434440960,
             bishops: 2594073385365405732,

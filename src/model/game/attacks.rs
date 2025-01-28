@@ -2,6 +2,7 @@ use crate::model::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
 use crate::model::game::ChessGame;
+use crate::model::utils::{is_set, set_at};
 
 trait ChessAttacks {
     /// Returns the list of attack squares
@@ -103,9 +104,7 @@ impl ChessAttacks for ChessGame {
         let mut attacks = 0;
         // TODO I'm pretty sure this is used somewhere, so let's try to refactor it (if it is the case...)
         let occupancy =
-            !(self.rooks & self.kings & self.queens & self.pawns & self.bishops & self.knights);
-        // let (north, south, east, west) = &*SLIDING_ATTACK_MASKS;
-        
+            self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
 
         let mut rook_left = self.rooks
             & (if white_playing {
@@ -114,14 +113,29 @@ impl ChessAttacks for ChessGame {
                 !self.whites
             });
 
-        // while rook_left != 0 {
-        //     let sq = rook_left.trailing_zeros() as usize;
-        //     attacks |= north[sq] & occupancy
-        //         | south[sq] & occupancy
-        //         | east[sq] & occupancy
-        //         | west[sq] & occupancy;
-        //     rook_left &= rook_left - 1;
-        // }
+        while rook_left != 0 {
+            let sq = rook_left.trailing_zeros() as usize;
+
+            // For each direction (North, South, East, West)
+            for dir in 0..4 {
+                // Get the attack ray for this direction from the precomputed sliding masks
+                let ray = &SLIDING_ATTACK_MASKS[dir][sq];
+
+                println!("Ray {ray:?} for direction {dir}");
+
+                for position in ray {
+                    println!(" * Square {position}");
+                    set_at!(attacks, *position);
+                    // If the square is occupied, end
+                    if is_set!(occupancy, *position) {
+                        println!(" * Square {position} is occupied");
+                        break;
+                    }
+                }
+            }
+
+            rook_left &= rook_left - 1;
+        }
 
         attacks
     }
@@ -132,7 +146,21 @@ mod tests {
     use crate::model::chess_type::Type::{King, Knight, Pawn, Rook};
     use crate::model::game::attacks::ChessAttacks;
     use crate::model::game_constructor::GameConstructor;
-    use crate::model::utils::IntoChessPosition;
+    use crate::model::utils::{index_to_chesspos, ChessPosition, IntoChessPosition};
+
+    /// Prints all the bits of an integer as a grid
+    /// Used for debugging.
+    fn print_bitboard(bitboard: u64) {
+        for rank in (0..8).rev() {
+            for file in 0..8 {
+                let square = rank * 8 + file;
+                let bit = (bitboard >> square) & 1;
+                print!("{} ", bit);
+            }
+            println!();
+        }
+        println!();
+    }
 
     /// Asserts that if a white pawn is in e4, d5 and f5 are attacked
     #[test]
@@ -440,6 +468,8 @@ mod tests {
 
         let attacks = chess_game.get_attacked_squares_rook(true);
 
+        print_bitboard(attacks);
+
         // Expected attacks for a rook on a1
         let expected_attacks = (1 << "a2".into_position())
             | (1 << "a3".into_position())
@@ -477,7 +507,6 @@ mod tests {
 
         // Expected attacks for a rook on a1 when a pawn is blocking at a4
         let expected_attacks = (1 << "a2".into_position())
-            | (1 << "a3".into_position())
             | (1 << "b1".into_position())
             | (1 << "c1".into_position())
             | (1 << "d1".into_position())
@@ -492,4 +521,59 @@ mod tests {
         );
     }
 
+
+    /// Tests that with rooks in a1 and c1, and a pawn in c2, the total number of attacked squares by white rooks is 21.
+    #[test]
+    fn test_double_rooks_with_blocking_pawn() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place rooks at a1 and c1
+        chess_game.set_piece(Rook, true, "a1");
+        chess_game.set_piece(Rook, true, "c1");
+
+        // Place a blocking pawn at c2
+        chess_game.set_piece(Pawn, true, "c2");
+
+        let attacks = chess_game.get_attacked_squares_rook(true);
+
+        // Count the number of attacked squares
+        let total_attacked_squares = attacks.count_ones();
+
+        assert_eq!(
+            total_attacked_squares, 16,
+            "Total number of attacked squares by white rooks should be 15, but got {}.",
+            total_attacked_squares
+        );
+    }
+
+
+    /// Tests that a white rook at e4 with black pieces at e3, e5, d4, and f4 attacks only 4 squares.
+    #[test]
+    fn test_rook_e4_with_blocking_pieces() {
+        let mut chess_game = GameConstructor::empty();
+
+        // Place a white rook at e4
+        chess_game.set_piece(Rook, true, "e4");
+
+        // Place black pieces at e3, e5, d4, and f4
+        chess_game.set_piece(Pawn, false, "e3");
+        chess_game.set_piece(Pawn, false, "e5");
+        chess_game.set_piece(Pawn, false, "d4");
+        chess_game.set_piece(Pawn, false, "f4");
+
+        let attacks = chess_game.get_attacked_squares_rook(true);
+
+        // Expected attacks for a rook on e4 with blocking pieces
+        let expected_attacks = (1 << "e3".into_position())
+            | (1 << "e5".into_position())
+            | (1 << "d4".into_position())
+            | (1 << "f4".into_position());
+
+        assert_eq!(
+            attacks, expected_attacks,
+            "Rook at e4 should attack only 4 squares when blocked by pieces at e3, e5, d4, and f4."
+        );
+    }
+    
+    
 }
