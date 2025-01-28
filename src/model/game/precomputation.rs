@@ -115,15 +115,16 @@ fn king_attacks() -> [u64; 64] {
 /// given direction.
 ///
 /// Directions are defined as: N, S, E, W, as per the ordering defined in the class.
-fn sliding_attacks() -> [[Vec<ChessPosition>; 64]; 4] {
-    // Use std::array::from_fn to initialize the 2D array
-    std::array::from_fn(|direction| {
+fn sliding_attacks() -> [[Vec<ChessPosition>; 64]; 8] {
+    // Use std::array::from_fn to initialize the 2D array (1st dimension is the direction)
+    std::array::from_fn(|direction_index| {
+        // For each square on the board, compute the sliding ray for the given direction
         std::array::from_fn(|sq| {
             let mut ray = Vec::new();
             let rank = sq / 8;
             let file = sq % 8;
 
-            match direction {
+            match direction_index {
                 0 => {
                     // North (upwards direction)
                     for r in rank + 1..8 {
@@ -148,6 +149,46 @@ fn sliding_attacks() -> [[Vec<ChessPosition>; 64]; 4] {
                         ray.push(from_rank_file(rank, f));
                     }
                 }
+                4 => {
+                    // Northeast (up-right)
+                    let mut r = rank as isize + 1;
+                    let mut f = file as isize + 1;
+                    while r < 8 && f < 8 {
+                        ray.push(from_rank_file(r as usize, f as usize));
+                        r += 1;
+                        f += 1;
+                    }
+                }
+                5 => {
+                    // Northwest (up-left)
+                    let mut r = rank as isize + 1;
+                    let mut f = file as isize - 1;
+                    while r < 8 && f >= 0 {
+                        ray.push(from_rank_file(r as usize, f as usize));
+                        r += 1;
+                        f -= 1;
+                    }
+                }
+                6 => {
+                    // Southeast (down-right)
+                    let mut r = rank as isize - 1;
+                    let mut f = file as isize + 1;
+                    while r >= 0 && f < 8 {
+                        ray.push(from_rank_file(r as usize, f as usize));
+                        r -= 1;
+                        f += 1;
+                    }
+                }
+                7 => {
+                    // Southwest (down-left)
+                    let mut r = rank as isize - 1;
+                    let mut f = file as isize - 1;
+                    while r >= 0 && f >= 0 {
+                        ray.push(from_rank_file(r as usize, f as usize));
+                        r -= 1;
+                        f -= 1;
+                    }
+                }
                 _ => unreachable!(),
             }
 
@@ -165,4 +206,4 @@ pub static KNIGHT_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(knight_attacks);
 
 pub static KING_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(king_attacks);
 
-pub static SLIDING_ATTACK_MASKS: Lazy<[[Vec<ChessPosition>; 64]; 4]> = Lazy::new(sliding_attacks);
+pub static SLIDING_ATTACK_MASKS: Lazy<[[Vec<ChessPosition>; 64]; 8]> = Lazy::new(sliding_attacks);

@@ -1,3 +1,4 @@
+use std::ops::Range;
 use crate::model::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
@@ -18,6 +19,90 @@ trait ChessAttacks {
     fn get_attacked_squares_king(&self, white_playing: bool) -> u64;
 
     fn get_attacked_squares_rook(&self, white_playing: bool) -> u64;
+}
+
+impl ChessGame {
+    /// Computes the squares attacked by a sliding piece (rook, bishop, or queen) 
+    /// on the chessboard.
+    ///
+    /// Sliding pieces attack squares along straight paths until obstructed 
+    /// by another piece or reaching the edge of the board. This function uses 
+    /// precomputed sliding attack masks for each square and direction to determine 
+    /// the attacks.
+    ///
+    /// # Arguments
+    ///
+    /// - `pieces`: A bitboard representing the positions of the sliding pieces whose 
+    ///   attacks are to be computed.
+    /// - `direction_indices`: A range specifying the indices of directions to consider 
+    ///   in the `SLIDING_ATTACK_MASKS`. For example:
+    ///   - `0..4`: Horizontal and vertical directions (rook-like movement).
+    ///   - `4..8`: Diagonal directions (bishop-like movement).
+    ///
+    /// # Returns
+    ///
+    /// A bitboard representing all squares attacked by the sliding pieces.
+    ///
+    /// # Details
+    ///
+    /// The calculation proceeds as follows:
+    /// - For each piece in the bitboard, its position is determined.
+    /// - For each direction in the given range, the attack ray for this direction 
+    ///   is retrieved from the precomputed `SLIDING_ATTACK_MASKS`.
+    /// - The attack is calculated iteratively until an occupied square is encountered 
+    ///   (blocking the attack in that direction).
+    ///
+    /// This method makes use of bitwise operations for efficient computation.
+    ///
+    /// # Notes
+    ///
+    /// The method assumes a precomputed occupancy bitboard (`self.rooks | self.kings | 
+    /// self.queens | self.pawns | self.bishops | self.knights`) to identify blocking pieces.
+    ///
+    /// # Example
+    ///
+    /// Consider the following scenario:
+    /// ```text
+    ///    8  .  .  .  .  .  .  .  .
+    ///    7  .  .  .  .  .  .  .  .
+    ///    6  .  .  .  .  .  .  .  .
+    ///    5  .  .  .  .  .  .  .  .
+    ///    4  .  .  R  .  .  .  .  .
+    ///    3  .  .  .  .  .  .  .  .
+    ///    2  .  .  .  .  .  .  .  .
+    ///    1  .  .  .  .  .  .  .  .
+    ///       a  b  c  d  e  f  g  h
+    /// ```
+    /// If a rook is at "c4", its attack squares in horizontal and vertical directions are computed,
+    /// with blocking taken into account appropriately.
+    /// ```
+    fn get_attacked_squares_from_sliding_piece(
+        &self,
+        mut pieces: u64,
+        direction_indices: Range<usize>,
+    ) -> u64 {
+        let mut attacks = 0;
+        let occupancy =
+            self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
+        while pieces != 0 {
+            let sq = pieces.trailing_zeros() as usize;
+            // For each direction
+            for dir in direction_indices.clone() {
+                // Get the attack ray for this direction from the precomputed sliding masks
+                let ray = &SLIDING_ATTACK_MASKS[dir][sq];
+                // Go through all the positions
+                for position in ray {
+                    set_at!(attacks, *position);
+                    // If the square is occupied, end
+                    if is_set!(occupancy, *position) {
+                        break;
+                    }
+                }
+            }
+            pieces &= pieces - 1;
+        }
+        attacks
+    }
 }
 
 impl ChessAttacks for ChessGame {
@@ -99,45 +184,15 @@ impl ChessAttacks for ChessGame {
         attacks
     }
 
-    // Combine precomputed rays for rooks and bishops
     fn get_attacked_squares_rook(&self, white_playing: bool) -> u64 {
-        let mut attacks = 0;
-        // TODO I'm pretty sure this is used somewhere, so let's try to refactor it (if it is the case...)
-        let occupancy =
-            self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
-
-        let mut rook_left = self.rooks
+        let rook_left = self.rooks
             & (if white_playing {
                 self.whites
             } else {
                 !self.whites
             });
 
-        while rook_left != 0 {
-            let sq = rook_left.trailing_zeros() as usize;
-
-            // For each direction (North, South, East, West)
-            for dir in 0..4 {
-                // Get the attack ray for this direction from the precomputed sliding masks
-                let ray = &SLIDING_ATTACK_MASKS[dir][sq];
-
-                println!("Ray {ray:?} for direction {dir}");
-
-                for position in ray {
-                    println!(" * Square {position}");
-                    set_at!(attacks, *position);
-                    // If the square is occupied, end
-                    if is_set!(occupancy, *position) {
-                        println!(" * Square {position} is occupied");
-                        break;
-                    }
-                }
-            }
-
-            rook_left &= rook_left - 1;
-        }
-
-        attacks
+        self.get_attacked_squares_from_sliding_piece(rook_left, 0..4)
     }
 }
 
@@ -521,7 +576,6 @@ mod tests {
         );
     }
 
-
     /// Tests that with rooks in a1 and c1, and a pawn in c2, the total number of attacked squares by white rooks is 21.
     #[test]
     fn test_double_rooks_with_blocking_pawn() {
@@ -545,7 +599,6 @@ mod tests {
             total_attacked_squares
         );
     }
-
 
     /// Tests that a white rook at e4 with black pieces at e3, e5, d4, and f4 attacks only 4 squares.
     #[test]
@@ -574,6 +627,4 @@ mod tests {
             "Rook at e4 should attack only 4 squares when blocked by pieces at e3, e5, d4, and f4."
         );
     }
-    
-    
 }
