@@ -454,6 +454,9 @@ impl ChessGame {
     /// Fills the provided container with all the available moves at the current position.
     ///
     /// This function also resets the move container before running anything.
+    ///
+    /// TODO see how I could use bitmasks to improve this computation
+    /// TODO would be nice to move this function (and associated helper) in a submodule
     pub fn update_move_container<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
 
