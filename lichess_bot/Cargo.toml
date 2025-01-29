@@ -1,0 +1,12 @@
+[package]
+name = "lichess_bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+model = {workspace = true}
+engine = {workspace = true}
+
+[[bin]]
+name = "lichess_bot"
+path = "src/main.rs"

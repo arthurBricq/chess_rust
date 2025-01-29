@@ -1,24 +1,18 @@
-[package]
-name = "chess"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+resolver = "2"
 
-[[bin]]
-name = "chess"
-path = "src/main.rs"
-
-[[bin]]
-name = "benchmark"
-path = "src/benchmark.rs"
+members = [
+    "ui",
+    "model",
+    "engine",
+    "benchmark",
+    "lichess_bot"
+]
 
 [profile.release]
 lto = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-regex = "1"
-fltk = {version = "^1.4"}
-arrayvec = "0.7"
-once_cell = "1.20.1"
+[workspace.dependencies]
+model = {path = "./model"}
+engine = {path = "./engine"}
 

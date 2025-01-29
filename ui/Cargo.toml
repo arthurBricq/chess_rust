@@ -1,0 +1,15 @@
+[package]
+name = "ui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+model = {workspace = true}
+engine = {workspace = true}
+
+fltk = {version = "^1.4"}
+regex = "1.11.1"
+
+[[bin]]
+name = "chess_ui"
+path = "src/main.rs"

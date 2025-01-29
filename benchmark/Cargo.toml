@@ -1,0 +1,12 @@
+[package]
+name = "benchmark"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+model = {workspace = true}
+engine = {workspace = true}
+
+[[bin]]
+name = "engine_benchmark"
+path = "src/main.rs"
