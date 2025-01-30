@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 model = {workspace = true}
 engine = {workspace = true}
+vampirc-uci = "0.11"
 
 [[bin]]
 name = "lichess_bot"
