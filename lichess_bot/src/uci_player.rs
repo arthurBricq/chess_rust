@@ -29,15 +29,17 @@ impl UciPlayer {
             UciMessage::UciNewGame => {
                 self.set_game_to_default();
                 UciAnswer::None
-            },
+            }
             UciMessage::Position {
                 startpos,
                 fen,
                 moves,
             } => {
                 // TODO handle different arguments
-                self.play_moves(moves);
-                // TODO return the best move
+                if !moves.is_empty() {
+                    let best_move = self.play_moves(moves);
+                    return UciAnswer::BestMove(best_move);
+                }
                 UciAnswer::None
             }
             UciMessage::Go { time_control, .. } => {
@@ -52,15 +54,16 @@ impl UciPlayer {
         self.game = GameConstructor::standard_game()
     }
 
-    fn play_moves(&mut self, moves: Vec<UciMove>) {
+    fn play_moves(&mut self, moves: Vec<UciMove>) -> Move {
         for mv in moves {
             let mv = uci_move_to_move(mv, self.white_to_move);
             self.white_to_move = !self.white_to_move;
-            let SearchResult { score, best_move } =
-                self.solver.find_best_move(self.game, self.white_to_move);
-            // TODO error handling should be better than this
-            let best_move = best_move.unwrap();
         }
+        // Once all the moves are applied, response with the best move
+        let SearchResult { score, best_move } =
+            self.solver.find_best_move(self.game, self.white_to_move);
+        // TODO error handling should be better than this
+        best_move.unwrap()
     }
 }
 

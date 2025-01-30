@@ -7,27 +7,27 @@
 mod uci_player;
 mod uci_answers;
 
-use std::fs::OpenOptions;
+use std::fs::{File, OpenOptions};
 use std::io::{self, BufRead};
 use vampirc_uci::{parse, MessageList, UciMessage, UciTimeControl};
 
 use std::io::Write;
 use crate::uci_player::UciPlayer;
 
+fn write_to_file(mut file: &File, content: &str, prefix: &str)  {
+    if let Err(e) = writeln!(file, "{prefix:<7} >>> {}", content) {
+        eprintln!("Error writing to output.txt: {}", e);
+    }
+}
+
 fn main() {
     let stdin = io::stdin();
     let handle = stdin.lock();
 
-    // Open "inputs.txt" and "output.txt" in append mode
-    let mut input_file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("inputs.txt")
-        .expect("Failed to open inputs.txt");
-
     let mut output_file = OpenOptions::new()
         .create(true)
-        .append(true)
+        .write(true) // Enable write mode (and disable appending)
+        .truncate(true) // Ensure the file is cleared if it already exists
         .open("output.txt")
         .expect("Failed to open output.txt");
 
@@ -36,21 +36,21 @@ fn main() {
     for line in handle.lines() {
         match line {
             Ok(input) => {
-                if let Err(e) = writeln!(input_file, "{}", input) {
-                    eprintln!("Error writing to inputs.txt: {}", e);
-                }
+                write_to_file(&mut output_file, &input, "INPUT");
 
                 // Process the input as a UCI message
                 let messages: MessageList = parse(&input);
                 for m in messages {
-                    let answer = uci_player.handle_message(m);
-                    if let Some(output) = answer.into_formatted() {
-                        // Print and save the output
-                        println!("{}", output); // Ensure the output is printed
+                    let answers = uci_player.handle_message(m).into_formatted();
 
-                        if let Err(e) = writeln!(output_file, "{}", output) {
-                            eprintln!("Error writing to output.txt: {}", e);
+                    match answers {
+                        (None, Some(msg)) => write_to_file(&mut output_file, &msg, "DEBUG"),
+                        (Some(msg), _ ) => {
+                            // Print and save the output
+                            println!("{}", msg); // Ensure the output is printed
+                            write_to_file(&mut output_file, &msg, "OUTPUT")
                         }
+                        (None, None) => {}
                     }
                 }
             }

@@ -28,10 +28,6 @@ impl Engine for AlphaBetaEngine {
             None,
         );
         let end = start.elapsed().as_millis() as f64 / 1000.;
-
-        println!("\n\nSolver finished");
-        println!("    score = {} [points]", result.score);
-        println!("    time = {end} [second]");
         result
     }
 }
