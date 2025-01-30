@@ -4,11 +4,15 @@
 //! - Example of a typical workflow: https://stackoverflow.com/questions/17003561/using-the-universal-chess-interface
 //! - Requirements of the UCI protocol: https://gist.github.com/DOBRO/2592c6dad754ba67e6dcaec8c90165bf
 
+mod uci_player;
+mod uci_answers;
+
 use std::fs::OpenOptions;
 use std::io::{self, BufRead};
 use vampirc_uci::{parse, MessageList, UciMessage, UciTimeControl};
 
 use std::io::Write;
+use crate::uci_player::UciPlayer;
 
 fn main() {
     let stdin = io::stdin();
@@ -20,18 +24,18 @@ fn main() {
         .append(true)
         .open("inputs.txt")
         .expect("Failed to open inputs.txt");
-    
+
     let mut output_file = OpenOptions::new()
         .create(true)
         .append(true)
         .open("output.txt")
         .expect("Failed to open output.txt");
 
+    let mut uci_player = UciPlayer::new();
+
     for line in handle.lines() {
         match line {
             Ok(input) => {
-                // Print and save the input
-                println!("{}", input); // Ensure the input is printed
                 if let Err(e) = writeln!(input_file, "{}", input) {
                     eprintln!("Error writing to inputs.txt: {}", e);
                 }
@@ -39,36 +43,14 @@ fn main() {
                 // Process the input as a UCI message
                 let messages: MessageList = parse(&input);
                 for m in messages {
-                    let output = match m {
-                        UciMessage::Uci => {
-                            "Setting up UCI engine mode.".to_string()
-                        }
-                        UciMessage::IsReady => {
-                            "Engine is ready.".to_string()
-                        }
-                        UciMessage::UciNewGame => {
-                            "Starting a new game.".to_string()
-                        }
-                        UciMessage::Position { startpos, fen, moves } => {
-                            format!(
-                                "Position received. Startpos: {:?}, FEN: {:?}, Moves: {:?}",
-                                startpos, fen, moves
-                            )
-                        }
-                        UciMessage::Go { time_control, .. } => {
-                            match time_control {
-                                Some(tc) => format!("Go command received with time control: {:?}", tc),
-                                None => "Go command received with no time control.".to_string(),
-                            }
-                        }
-                        _ => format!("Unknown message: {:?}", m),
-                    };
+                    let answer = uci_player.handle_message(m);
+                    if let Some(output) = answer.into_formatted() {
+                        // Print and save the output
+                        println!("{}", output); // Ensure the output is printed
 
-                    // Print and save the output
-                    println!("{}", output); // Ensure the output is printed
-                    
-                    if let Err(e) = writeln!(output_file, "{}", output) {
-                        eprintln!("Error writing to output.txt: {}", e);
+                        if let Err(e) = writeln!(output_file, "{}", output) {
+                            eprintln!("Error writing to output.txt: {}", e);
+                        }
                     }
                 }
             }

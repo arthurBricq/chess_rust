@@ -33,6 +33,12 @@ pub enum MoveQuality {
     Motion,
 }
 
+impl Default for MoveQuality {
+    fn default() -> Self {
+        Self::Motion
+    }
+}
+
 #[derive(Copy, Clone, Eq)]
 pub struct Move {
     pub from: ChessPosition,

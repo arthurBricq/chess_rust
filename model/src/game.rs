@@ -8,6 +8,7 @@ use super::moves::*;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::chess_type::{ScoreType, Type};
 use crate::game::attacks::ChessAttacks;
+use crate::game_constructor::GameConstructor;
 use crate::motion_iterator::StepMotionIterator;
 use crate::moves_container::{MovesContainer, SimpleMovesContainer};
 use crate::utils::{clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
@@ -31,6 +32,12 @@ pub struct ChessGame {
     pub(crate) queens: u64,
     pub(crate) kings: u64,
     pub(crate) flags: u64,
+}
+
+impl Default for ChessGame {
+    fn default() -> Self {
+        GameConstructor::standard_game()
+    }
 }
 
 const FLAG_WK_MOVED: i8 = 0;
