@@ -199,5 +199,19 @@ mod tests {
         assert_eq!(second, m3);
         assert_eq!(third, m2);
     }
+
+    #[test]
+    fn test_possible_moves_with_fen_game() {
+        let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
+        let game = GameConstructor::from_fen(fen);
+        let mut container = SmartMoveContainer::new();
+        game.update_move_container(&mut container, true);
+        while container.has_next() {
+            let m = container.get_next();
+            assert_ne!(m.from, m.to);
+            assert_eq!(true, m.is_white);
+            println!("{m}")
+        }
+    }
 }
 

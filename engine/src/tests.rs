@@ -2,6 +2,7 @@ use crate::engine::{Engine, SearchResult};
 use crate::iterative_deepening::IterativeDeepeningEngine;
 use model::game_constructor::GameConstructor;
 use model::moves::Move;
+use crate::alpha_beta::AlphaBetaEngine;
 
 struct PuzzleAssert {
     expected_best_move: Move,
@@ -46,7 +47,8 @@ fn mate_in_two_a() {
     let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
 
     solve_puzzle(
-        IterativeDeepeningEngine::new(4, 4),
+        // IterativeDeepeningEngine::new(4, 4),
+        AlphaBetaEngine::new(),
         fen,
         true,
         &[
