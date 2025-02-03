@@ -1,7 +1,9 @@
-use std::cmp::Ordering;
 use crate::chess_type::ScoreType;
-use crate::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Principal, KillerMove, Motion};
-use crate::utils::{index_to_chesspos, ChessPosition};
+use crate::moves::MoveQuality::{
+    EqualCapture, GoodCapture, KillerMove, LowCapture, Motion, Principal,
+};
+use crate::utils::{index_to_chesspos, ChessPosition, IntoChessPosition};
+use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
@@ -9,19 +11,11 @@ pub const WHITE_PAWN_MOVES: [i8; 4] = [8, 9, 7, 16];
 
 pub const BLACK_PAWN_MOVES: [i8; 4] = [-8, -9, -7, -16];
 
-pub const KNIGHT_MOVES: [i8; 8] = [
-    17, 15, -15, -17,
-    10, -6, 6, -10
-];
+pub const KNIGHT_MOVES: [i8; 8] = [17, 15, -15, -17, 10, -6, 6, -10];
 
-pub const KING_MOVES: [i8; 8] = [
-    1, -1, 8, -8,
-    9, 7, -9, -7
-];
+pub const KING_MOVES: [i8; 8] = [1, -1, 8, -8, 9, 7, -9, -7];
 
-pub const KING_SPECIAL_MOVES: [i8; 2] = [
-    2, -2
-];
+pub const KING_SPECIAL_MOVES: [i8; 2] = [2, -2];
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum MoveQuality {
@@ -55,8 +49,17 @@ impl PartialEq<Self> for Move {
 }
 
 impl Debug for Move {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{} to {}", self.from, self.to)
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Write strictly the first element into the supplied output
+        // stream: `f`. Returns `fmt::Result` which indicates whether the
+        // operation succeeded or failed. Note that `write!` uses syntax which
+        // is very similar to `println!`.
+        write!(
+            f,
+            "{}->{}",
+            index_to_chesspos(self.from),
+            index_to_chesspos(self.to)
+        )
     }
 }
 
@@ -67,13 +70,38 @@ impl fmt::Display for Move {
         // stream: `f`. Returns `fmt::Result` which indicates whether the
         // operation succeeded or failed. Note that `write!` uses syntax which
         // is very similar to `println!`.
-        write!(f, "{}->{}", index_to_chesspos(self.from), index_to_chesspos(self.to))
+        write!(
+            f,
+            "{}->{}",
+            index_to_chesspos(self.from),
+            index_to_chesspos(self.to)
+        )
     }
 }
 
 impl Move {
     pub fn new(from: ChessPosition, to: ChessPosition, is_white: bool) -> Self {
-        Self { from, to, is_white, quality: MoveQuality::Motion }
+        Self {
+            from,
+            to,
+            is_white,
+            quality: Motion,
+        }
+    }
+
+    
+    #[allow(dead_code)]
+    pub fn from_str(
+        from: impl IntoChessPosition,
+        to: impl IntoChessPosition,
+        is_white: bool,
+    ) -> Self {
+        Self {
+            from: from.into_position(),
+            to: to.into_position(),
+            is_white,
+            quality: Motion,
+        }
     }
 
     pub fn set_quality(&mut self, q: MoveQuality) {
@@ -91,9 +119,7 @@ impl Move {
     }
 
     pub fn is_capture(&self) -> bool {
-        self.quality == GoodCapture ||
-            self.quality == EqualCapture ||
-            self.quality == LowCapture
+        self.quality == GoodCapture || self.quality == EqualCapture || self.quality == LowCapture
     }
 
     /// Returns the increment that represents the direction of the given move
@@ -135,8 +161,8 @@ impl Move {
                     -7
                 }
             } else {
-                // println!("WARNING: asked for the direction of a move for which is not well defined"); 
-                // println!("Move was: {} to {}, diff = {}", self.from, self.to, diff); 
+                // println!("WARNING: asked for the direction of a move for which is not well defined");
+                // println!("Move was: {} to {}, diff = {}", self.from, self.to, diff);
                 0
             }
         }
@@ -151,7 +177,7 @@ impl From<&MoveQuality> for u8 {
             GoodCapture => 3,
             EqualCapture => 2,
             LowCapture => 1,
-            Motion => 0
+            Motion => 0,
         }
     }
 }
@@ -167,7 +193,6 @@ impl Ord for MoveQuality {
         u8::from(self).cmp(&u8::from(other))
     }
 }
-
 
 impl PartialOrd for Move {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
