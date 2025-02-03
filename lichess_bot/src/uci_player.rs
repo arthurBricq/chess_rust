@@ -36,12 +36,11 @@ impl UciPlayer {
                 fen,
                 moves,
             } => {
-                // TODO handle different arguments
-                if !moves.is_empty() {
-                    let best_move = self.play_moves(moves);
-                    return UciAnswer::BestMove(best_move);
+                if startpos {
+                    self.set_game_to_default();
                 }
-                UciAnswer::None
+                self.play_moves(moves);
+                UciAnswer::BestMove(self.find_best_move())
             }
             UciMessage::Go { .. } => {
                 // TODO handle settings ?
@@ -52,14 +51,18 @@ impl UciPlayer {
     }
 
     fn set_game_to_default(&mut self) {
-        self.game = GameConstructor::standard_game()
+        self.game = GameConstructor::standard_game();
+        self.white_to_move = true;
     }
 
-    fn play_moves(&mut self, moves: Vec<UciMove>) -> Move {
+    fn play_moves(&mut self, moves: Vec<UciMove>) {
         for mv in moves {
             let mv = uci_move_to_move(mv, self.white_to_move);
             self.white_to_move = !self.white_to_move;
         }
+    }
+
+    fn find_best_move(&mut self) -> Move {
         // Once all the moves are applied, response with the best move
         let SearchResult { score, best_move } =
             self.solver.find_best_move(self.game, self.white_to_move);
@@ -87,5 +90,25 @@ fn uci_move_to_move(uci_move: UciMove, is_white: bool) -> Move {
         to: uci_square_to_chess_position(uci_move.to),
         is_white,
         quality: Default::default(), // Default quality; modify if needed
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::uci_player::UciPlayer;
+    use vampirc_uci::parse;
+
+    #[test]
+    fn test_simple_position() {
+        let command = "position startpos moves e2e4 e7e6 d2d4";
+        let commands = parse(command);
+        let mut uci_player = UciPlayer::new();
+        let last_answer = commands
+            .into_iter()
+            .map(|m| uci_player.handle_message(m))
+            .last()
+            .expect("No answer");
+
+        println!("Last answer: {last_answer:?}");
     }
 }
