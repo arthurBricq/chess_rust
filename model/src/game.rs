@@ -628,15 +628,22 @@ impl ChessGame {
     /// Returns the type of the provided position.
     /// If no type is present, returns None.
     #[allow(dead_code)]
-    pub fn type_at(&self, x: ChessPosition, y: ChessPosition) -> Option<Type> {
+    pub fn type_at_xy(&self, x: i8, y: i8) -> Option<Type> {
         self.type_at_index(pos_to_index(x, y))
     }
 
     /// Returns true if the given (x,y) coordinates contains a white piece
     #[allow(dead_code)]
-    pub fn is_white_at(&self, x: ChessPosition, y: ChessPosition) -> bool {
+    pub fn is_white_at_xy(&self, x: i8, y: i8) -> bool {
         is_set!(self.whites, pos_to_index(x, y))
     }
+
+    #[allow(dead_code)]
+    pub fn is_black_at(&self, pos: ChessPosition) -> bool {
+        self.type_at_index(pos).is_some() && !is_set!(self.whites, pos)
+
+    }
+
 }
 
 #[cfg(test)]

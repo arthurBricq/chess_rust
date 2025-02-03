@@ -58,6 +58,7 @@ impl UciPlayer {
     fn play_moves(&mut self, moves: Vec<UciMove>) {
         for mv in moves {
             let mv = uci_move_to_move(mv, self.white_to_move);
+            self.game.apply_move_unsafe(&mv);
             self.white_to_move = !self.white_to_move;
         }
     }
@@ -97,6 +98,8 @@ fn uci_move_to_move(uci_move: UciMove, is_white: bool) -> Move {
 mod tests {
     use crate::uci_player::UciPlayer;
     use vampirc_uci::parse;
+    use model::utils::index_to_chesspos;
+    use crate::uci_answers::UciAnswer;
 
     #[test]
     fn test_simple_position() {
@@ -109,6 +112,13 @@ mod tests {
             .last()
             .expect("No answer");
 
-        println!("Last answer: {last_answer:?}");
+        match last_answer {
+            UciAnswer::BestMove(m) => {
+                println!("Best move: {}{}", index_to_chesspos(m.from), index_to_chesspos(m.to));
+                assert!(uci_player.game.is_black_at(m.from));
+            }
+            _ => panic!("Expecting a best move, got: {:?}", last_answer),
+        }
+
     }
 }

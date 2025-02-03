@@ -41,8 +41,8 @@ impl ChessViewModel {
     }
 
     pub fn get_image_name_at(&self, i: i8, j: i8) -> Option<String> {
-        if let Some(t) = self.game.type_at(i, j) {
-            if self.game.is_white_at(i, j) {
+        if let Some(t) = self.game.type_at_xy(i, j) {
+            if self.game.is_white_at_xy(i, j) {
                 match t {
                     Type::Pawn => Some("pawn_white.svg".to_string()),
                     Type::Bishop => Some("bishop_white.svg".to_string()),
@@ -68,8 +68,8 @@ impl ChessViewModel {
 
     #[allow(dead_code)]
     pub fn get_char_at(&self, i: i8, j: i8) -> String {
-        if let Some(t) = self.game.type_at(i, j) {
-            if self.game.is_white_at(i, j) {
+        if let Some(t) = self.game.type_at_xy(i, j) {
+            if self.game.is_white_at_xy(i, j) {
                 match t {
                     Type::Pawn => "♙".to_string(),
                     Type::Bishop => "♗".to_string(),
