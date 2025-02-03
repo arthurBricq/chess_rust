@@ -67,23 +67,8 @@ impl ChessGame {
     /// The method assumes a precomputed occupancy bitboard (`self.rooks | self.kings |
     /// self.queens | self.pawns | self.bishops | self.knights`) to identify blocking pieces.
     ///
-    /// # Example
-    ///
-    /// Consider the following scenario:
-    /// ```text
-    ///    8  .  .  .  .  .  .  .  .
-    ///    7  .  .  .  .  .  .  .  .
-    ///    6  .  .  .  .  .  .  .  .
-    ///    5  .  .  .  .  .  .  .  .
-    ///    4  .  .  R  .  .  .  .  .
-    ///    3  .  .  .  .  .  .  .  .
-    ///    2  .  .  .  .  .  .  .  .
-    ///    1  .  .  .  .  .  .  .  .
-    ///       a  b  c  d  e  f  g  h
-    /// ```
     /// If a rook is at "c4", its attack squares in horizontal and vertical directions are computed,
     /// with blocking taken into account appropriately.
-    /// ```
     fn get_attacked_squares_from_sliding_piece(
         &self,
         mut pieces: u64,
