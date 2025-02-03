@@ -27,7 +27,6 @@ impl Engine for AlphaBetaEngine {
             false,
             None,
         );
-        let end = start.elapsed().as_millis() as f64 / 1000.;
         result
     }
 }

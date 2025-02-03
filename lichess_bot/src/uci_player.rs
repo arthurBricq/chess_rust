@@ -24,8 +24,9 @@ impl UciPlayer {
 
     pub(crate) fn handle_message(&mut self, m: UciMessage) -> UciAnswer {
         match m {
-            UciMessage::Uci => UciAnswer::None,
+            UciMessage::Uci => UciAnswer::Initialize,
             UciMessage::IsReady => UciAnswer::EngineReady,
+            UciMessage::Quit => std::process::exit(0),
             UciMessage::UciNewGame => {
                 self.set_game_to_default();
                 UciAnswer::None
@@ -42,7 +43,7 @@ impl UciPlayer {
                 }
                 UciAnswer::None
             }
-            UciMessage::Go { time_control, .. } => {
+            UciMessage::Go { .. } => {
                 // TODO handle settings ?
                 UciAnswer::None
             }

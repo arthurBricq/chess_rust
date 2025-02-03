@@ -26,10 +26,16 @@ fn main() {
 
     let mut output_file = OpenOptions::new()
         .create(true)
-        .write(true) // Enable write mode (and disable appending)
-        .truncate(true) // Ensure the file is cleared if it already exists
+        .append(true)
         .open("output.txt")
         .expect("Failed to open output.txt");
+    
+    // Write the header
+    let current_time = chrono::Local::now();
+    let formatted_time = current_time.format("%Y-%m-%d %H:%M:%S");
+    if let Err(e) = writeln!(output_file, "\n###### NEW PROCESS: {}", formatted_time) {
+        eprintln!("Error writing to output.txt: {}", e);
+    }
 
     let mut uci_player = UciPlayer::new();
 

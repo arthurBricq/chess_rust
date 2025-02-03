@@ -7,6 +7,7 @@ edition = "2021"
 model = {workspace = true}
 engine = {workspace = true}
 vampirc-uci = "0.11"
+chrono = "0.4.39"
 
 [[bin]]
 name = "lichess_bot"

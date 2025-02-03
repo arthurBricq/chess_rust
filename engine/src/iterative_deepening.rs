@@ -32,7 +32,6 @@ impl Engine for IterativeDeepeningEngine {
             );
 
             if depth == self.depth {
-                let end = start.elapsed().as_millis() as f64 / 1000.;
                 return result;
             }
 
