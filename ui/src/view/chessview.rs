@@ -2,7 +2,6 @@ use engine::engine::Engine;
 use engine::iterative_deepening::IterativeDeepeningEngine;
 use model::chess_type::Type;
 use model::game::ChessGame;
-use model::game_constructor::GameConstructor;
 use model::moves::Move;
 use model::moves_container::SimpleMovesContainer;
 use model::utils::pos_to_index;
@@ -32,7 +31,7 @@ pub struct ChessViewModel {
 impl ChessViewModel {
     pub fn new() -> Self {
         Self {
-            game: GameConstructor::standard_game(),
+            game: ChessGame::standard_game(),
             solver: Box::new(IterativeDeepeningEngine::new(6, 2)),
             selected_pos: None,
             attacked_positions: vec![],
@@ -150,7 +149,7 @@ impl ChessViewModel {
     pub fn message_received(&mut self, msg: &Msg) -> bool {
         match msg {
             Msg::RestartGame => {
-                self.game = GameConstructor::standard_game();
+                self.game = ChessGame::standard_game();
                 true
             }
 

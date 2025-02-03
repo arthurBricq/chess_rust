@@ -1,9 +1,7 @@
 use crate::game::ChessGame;
 use crate::utils::{pos_to_index, set_at, ChessPosition};
 
-pub struct GameConstructor;
-
-impl GameConstructor {
+impl ChessGame {
     /// An empty chess game
     #[allow(dead_code)]
     pub fn empty() -> ChessGame {
@@ -194,8 +192,8 @@ mod tests {
     #[test]
     fn test_from_fen_standard_game() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        let fen_game = GameConstructor::from_fen(fen);
-        let standard_game = GameConstructor::standard_game();
+        let fen_game = ChessGame::from_fen(fen);
+        let standard_game = ChessGame::standard_game();
 
         assert_eq!(fen_game.whites, standard_game.whites, "Mismatch in whites bitboard");
         assert_eq!(fen_game.pawns, standard_game.pawns, "Mismatch in pawns bitboard");

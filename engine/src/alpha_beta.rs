@@ -184,7 +184,6 @@ impl AlphaBetaEngine {
 mod tests {
     use model::chess_type::Type::{King, Knight, Pawn, Rook};
     use model::game::ChessGame;
-    use model::game_constructor::GameConstructor;
     use model::moves::Move;
     use model::utils::{chesspos_to_index, index_to_chesspos};
     use crate::alpha_beta::AlphaBetaEngine;
@@ -193,7 +192,7 @@ mod tests {
     #[test]
     /// A test in which white or black can take a pawn
     fn test_simple_engine1() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
         game.set_piece(Pawn, true, "e4");
         game.set_piece(Pawn, true, "e2");
 
@@ -245,7 +244,7 @@ mod tests {
     #[test]
     /// A test in which white can take a pawn or a bishop
     fn test_simple_engine2() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
         game.set_piece(King, true, "a2");
         game.set_piece(King, false, "a7");
 
@@ -295,7 +294,7 @@ mod tests {
     /// A test in which white can take a pawn, but if it does then it reveals a check
     /// So white is supposed to move the pawn up
     fn test_simple_engine3() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
 
         // White has one pawn
         game.set_piece(Pawn, true, "e4");
@@ -354,7 +353,7 @@ mod tests {
     #[test]
     /// A test in which white can deliver check on the king and get a free piece
     fn test_simple_engine4() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
 
         // White has one pawn
         game.set_piece(Pawn, true, "e2");
@@ -434,7 +433,7 @@ mod tests {
 
     #[test]
     fn test_score_with_low_depth() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
         game.set_piece(King, true, "a2");
         game.set_piece(King, false, "a7");
 

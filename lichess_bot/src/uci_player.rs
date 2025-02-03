@@ -2,7 +2,6 @@ use crate::uci_answers::UciAnswer;
 use engine::engine::{Engine, SearchResult};
 use engine::iterative_deepening::IterativeDeepeningEngine;
 use model::game::ChessGame;
-use model::game_constructor::GameConstructor;
 use model::moves::Move;
 use model::utils::ChessPosition;
 use vampirc_uci::{UciMessage, UciMove, UciSquare};
@@ -41,7 +40,7 @@ impl UciPlayer {
                 }
 
                 if let Some(fen) = fen {
-                    self.game = GameConstructor::from_fen(fen.as_str());
+                    self.game = ChessGame::from_fen(fen.as_str());
                 }
 
                 self.play_moves(moves);
@@ -56,7 +55,7 @@ impl UciPlayer {
     }
 
     fn set_game_to_default(&mut self) {
-        self.game = GameConstructor::standard_game();
+        self.game = ChessGame::standard_game();
         self.white_to_move = true;
     }
 

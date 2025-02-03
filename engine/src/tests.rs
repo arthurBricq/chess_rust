@@ -1,5 +1,5 @@
+use model::game::ChessGame;
 use crate::engine::{Engine, SearchResult};
-use model::game_constructor::GameConstructor;
 use model::moves::Move;
 use crate::alpha_beta::AlphaBetaEngine;
 
@@ -17,7 +17,7 @@ fn solve_puzzle(
     white_to_play: bool,
     expected_answers: &[PuzzleAssert],
 ) {
-    let mut game = GameConstructor::from_fen(fen);
+    let mut game = ChessGame::from_fen(fen);
     game.display();
 
     for PuzzleAssert {
@@ -31,10 +31,10 @@ fn solve_puzzle(
         assert_eq!(Some(*expected_best_move), best_move);
 
         // Apply the puzzle continuation
-        if let Some(puzzle_continution) = puzzle_continuation {
+        if let Some(forced_answer) = puzzle_continuation {
             game.apply_move_unsafe(&expected_best_move);
             game.display();
-            game.apply_move_unsafe(&puzzle_continution);
+            game.apply_move_unsafe(&forced_answer);
             game.display();
         }
     }
@@ -101,10 +101,10 @@ fn practice_back_rank_mate_2() {
 }
 
 /// This one is interesting: `AlphaBetaPrunning` works better than `IterativeDeepening`
-/// 
-/// What does this mean ? Is it even possible ? 
+///
+/// What does this mean ? Is it even possible ?
 /// It means that a wrong cut is introduced...
-/// 
+///
 /// TODO: understand what is happening with this test.
 #[test]
 fn practice_back_rank_mate_3() {

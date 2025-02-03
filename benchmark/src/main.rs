@@ -52,7 +52,7 @@ fn main() {
 
     // 2. Run the engine in an end-game
     /*
-    let mut game = GameConstructor::empty();
+    let mut game = ChessGame::empty();
 
     game.set_piece(King, true, "d1");
     game.set_piece(King, false, "d8");

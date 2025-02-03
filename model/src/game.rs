@@ -1,15 +1,15 @@
 /// Defines chess attacks
 mod attacks;
 
+mod constructor;
+mod display;
 /// Computes some bitmask that can be reused efficently at runtime.
 mod precomputation;
-mod display;
 
 use super::moves::*;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::chess_type::{ScoreType, Type};
 use crate::game::attacks::ChessAttacks;
-use crate::game_constructor::GameConstructor;
 use crate::motion_iterator::StepMotionIterator;
 use crate::moves_container::{MovesContainer, SimpleMovesContainer};
 use crate::utils::{clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoChessPosition};
@@ -37,7 +37,7 @@ pub struct ChessGame {
 
 impl Default for ChessGame {
     fn default() -> Self {
-        GameConstructor::standard_game()
+        ChessGame::standard_game()
     }
 }
 
@@ -642,21 +642,18 @@ impl ChessGame {
     #[allow(dead_code)]
     pub fn is_black_at(&self, pos: ChessPosition) -> bool {
         self.type_at_index(pos).is_some() && !is_set!(self.whites, pos)
-
     }
-
 }
 
 #[cfg(test)]
 mod tests {
     use crate::chess_type::Type::Pawn;
     use crate::game::ChessGame;
-    use crate::game_constructor::GameConstructor;
     use crate::moves::Move;
 
     #[test]
     fn test_wrong_knight_move() {
-        let game = GameConstructor::standard_game();
+        let game = ChessGame::standard_game();
         let mut invalid_move = Move::new(6, 31, true);
         assert!(!game.is_move_valid(&mut invalid_move))
     }
@@ -715,7 +712,7 @@ mod tests {
     #[test]
     fn test_simple_motions() {
         // Create a new chess game
-        let mut game = GameConstructor::standard_game();
+        let mut game = ChessGame::standard_game();
 
         // A stupid move should not pass
         let m = Move::new(10, 11, false);
@@ -743,7 +740,7 @@ mod tests {
     #[test]
     fn test_king_cant_go_everywhere() {
         // Create a new chess game
-        let mut game = GameConstructor::standard_game();
+        let mut game = ChessGame::standard_game();
 
         // Try moving the king from e1 to e4
         let m = Move::new(4, 28, true);
@@ -755,13 +752,13 @@ mod tests {
 
     #[test]
     fn test_initial_score() {
-        let game = GameConstructor::standard_game();
+        let game = ChessGame::standard_game();
         assert_eq!(0, game.score());
     }
 
     #[test]
     fn test_score1() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
         game.set_piece(Pawn, true, "e2");
         game.set_piece(Pawn, false, "e7");
         assert_eq!(0, game.score());
@@ -769,7 +766,7 @@ mod tests {
 
     #[test]
     fn test_invalid_pawn_move_at_begining() {
-        let game = GameConstructor::standard_game();
+        let game = ChessGame::standard_game();
         assert!(!game.is_move_valid(&Move::new(12, 36, true)))
     }
 

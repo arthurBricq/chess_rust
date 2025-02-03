@@ -114,14 +114,14 @@ impl MovesContainer for SmartMoveContainer {
 #[cfg(test)]
 mod tests {
     use crate::chess_type::Type::Pawn;
-    use crate::game_constructor::GameConstructor;
+    use crate::game::ChessGame;
     use crate::moves::Move;
     use crate::moves::MoveQuality::GoodCapture;
     use crate::moves_container::{MovesContainer, SmartMoveContainer};
 
     #[test]
     fn test_moves_container_with_basic_position() {
-        let mut game = GameConstructor::empty();
+        let mut game = ChessGame::empty();
         game.set_piece(Pawn, true, "e2");
         game.set_piece(Pawn, false, "e7");
 
@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_moves_container_with_standard_position() {
-        let game = GameConstructor::standard_game();
+        let game = ChessGame::standard_game();
 
         let mut container = SmartMoveContainer::new();
 
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn test_possible_moves_with_fen_game() {
         let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
-        let game = GameConstructor::from_fen(fen);
+        let game = ChessGame::from_fen(fen);
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, true);
         while container.has_next() {

@@ -211,14 +211,14 @@ impl ChessAttacks for ChessGame {
 mod tests {
     use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Rook};
     use crate::game::attacks::ChessAttacks;
-    use crate::game_constructor::GameConstructor;
+    use crate::game::ChessGame;
     use crate::utils::{print_bitboard, IntoChessPosition};
 
     /// Asserts that if a white pawn is in e4, d5 and f5 are attacked
     #[test]
     fn test_pawn_attacks() {
         // Example pre-setup for the test
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a pawn at e4 (28th bit in Little-Endian Rank-File mapping)
         chess_game.set_piece(Pawn, true, "e4");
@@ -237,7 +237,7 @@ mod tests {
     /// Asserts that a white pawn at the edge of the board (e.g., h4) only attacks one square (g5).
     #[test]
     fn test_pawn_attacks_edge_of_board() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Pawn, true, "h4");
 
         let attacks = chess_game.get_attacked_squares_pawn(true);
@@ -252,7 +252,7 @@ mod tests {
     /// Asserts that a black pawn at the edge of the board (e.g., a5) only attacks one square (b4).
     #[test]
     fn test_black_pawn_attacks_edge_of_board() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Pawn, false, "a5");
 
         let attacks = chess_game.get_attacked_squares_pawn(false);
@@ -267,7 +267,7 @@ mod tests {
     /// Asserts that two white pawns attacking the same squares both contribute to the attack.
     #[test]
     fn test_two_pawns_attacking_same_square() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Pawn, true, "e4");
         chess_game.set_piece(Pawn, true, "g4");
 
@@ -286,7 +286,7 @@ mod tests {
     /// Asserts that white pawns attacking on their turn behave correctly.
     #[test]
     fn test_white_pawn_attacks() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Pawn, true, "d4");
 
         let attacks = chess_game.get_attacked_squares_pawn(true);
@@ -301,7 +301,7 @@ mod tests {
     /// Tests that a knight in e4 attacks the correct 8 squares.
     #[test]
     fn test_knight_attacks_e4() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a knight at e4
         chess_game.set_piece(Knight, true, "e4");
@@ -328,7 +328,7 @@ mod tests {
     #[test]
     fn test_knight_attacks_edges() {
         // Test a knight at a1
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "a1");
         let attacks_a1 = chess_game.get_attacked_squares_knight(true);
         let expected_a1 = (1 << "b3".into_position()) | (1 << "c2".into_position());
@@ -338,7 +338,7 @@ mod tests {
         );
 
         // Test a knight at a8
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "a8");
         let attacks_a8 = chess_game.get_attacked_squares_knight(true);
         let expected_a8 = (1 << "b6".into_position()) | (1 << "c7".into_position());
@@ -348,7 +348,7 @@ mod tests {
         );
 
         // Test a knight at h1
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "h1");
         let attacks_h1 = chess_game.get_attacked_squares_knight(true);
         let expected_h1 = (1 << "g3".into_position()) | (1 << "f2".into_position());
@@ -358,7 +358,7 @@ mod tests {
         );
 
         // Test a knight at h8
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "h8");
         let attacks_h8 = chess_game.get_attacked_squares_knight(true);
         let expected_h8 = (1 << "g6".into_position()) | (1 << "f7".into_position());
@@ -371,7 +371,7 @@ mod tests {
     /// Tests that a king in the center of the board (e.g., e4) attacks all 8 adjoining squares.
     #[test]
     fn test_king_attacks_center() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a king at e4
         chess_game.set_piece(King, true, "e4");
@@ -398,7 +398,7 @@ mod tests {
     #[test]
     fn test_king_attacks_edges() {
         // Test a king at a4
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "a4");
         let attacks_a4 = chess_game.get_attacked_squares_king(true);
         let expected_a4 = (1 << "a3".into_position())
@@ -413,7 +413,7 @@ mod tests {
         );
 
         // Test a king at h4
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "h4");
         let attacks_h4 = chess_game.get_attacked_squares_king(true);
         let expected_h4 = (1 << "g3".into_position())
@@ -428,7 +428,7 @@ mod tests {
         );
 
         // Test a king at e1
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "e1");
         let attacks_e1 = chess_game.get_attacked_squares_king(true);
         let expected_e1 = (1 << "d1".into_position())
@@ -443,7 +443,7 @@ mod tests {
         );
 
         // Test a king at e8
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "e8");
         let attacks_e8 = chess_game.get_attacked_squares_king(true);
         let expected_e8 = (1 << "d8".into_position())
@@ -462,7 +462,7 @@ mod tests {
     #[test]
     fn test_king_attacks_corners() {
         // Test a king at a1
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "a1");
         let attacks_a1 = chess_game.get_attacked_squares_king(true);
         let expected_a1 =
@@ -474,7 +474,7 @@ mod tests {
         );
 
         // Test a king at h1
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "h1");
         let attacks_h1 = chess_game.get_attacked_squares_king(true);
         let expected_h1 =
@@ -486,7 +486,7 @@ mod tests {
         );
 
         // Test a king at a8
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "a8");
         let attacks_a8 = chess_game.get_attacked_squares_king(true);
         let expected_a8 =
@@ -498,7 +498,7 @@ mod tests {
         );
 
         // Test a king at h8
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "h8");
         let attacks_h8 = chess_game.get_attacked_squares_king(true);
         let expected_h8 =
@@ -513,7 +513,7 @@ mod tests {
     /// Tests that a rook in a1 attacks exactly 14 squares.
     #[test]
     fn test_rook_attacks_a1() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a rook at a1
         chess_game.set_piece(Rook, true, "a1");
@@ -547,7 +547,7 @@ mod tests {
     /// Tests that a rook in a1 attacks correctly when a pawn blocks part of its path at a4.
     #[test]
     fn test_rook_attacks_a1_with_blocking_pawn() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Rook, true, "a1");
         chess_game.set_piece(Pawn, true, "a2");
 
@@ -576,7 +576,7 @@ mod tests {
     /// Tests that with rooks in a1 and c1, and a pawn in c2, the total number of attacked squares by white rooks is 21.
     #[test]
     fn test_double_rooks_with_blocking_pawn() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place rooks at a1 and c1
         chess_game.set_piece(Rook, true, "a1");
@@ -600,7 +600,7 @@ mod tests {
     /// Tests that a white rook at e4 with black pieces at e3, e5, d4, and f4 attacks only 4 squares.
     #[test]
     fn test_rook_e4_with_blocking_pieces() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a white rook at e4
         chess_game.set_piece(Rook, true, "e4");
@@ -628,7 +628,7 @@ mod tests {
     /// Tests that a bishop in a1 attacks all squares in its diagonal paths without any blockers.
     #[test]
     fn test_bishop_attacks_a1() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a bishop at a1
         chess_game.set_piece(Bishop, true, "a1");
@@ -653,7 +653,7 @@ mod tests {
     /// Tests that a bishop in e4 attacks all squares in its diagonal paths without any blockers.
     #[test]
     fn test_bishop_attacks_e4() {
-        let mut chess_game = GameConstructor::empty();
+        let mut chess_game = ChessGame::empty();
 
         // Place a bishop at e4
         chess_game.set_piece(Bishop, true, "e4");
@@ -684,7 +684,7 @@ mod tests {
     
     #[test]
     fn test_attacks_of_pawns_at_first_rank() {
-        let game = GameConstructor::standard_game();
+        let game = ChessGame::standard_game();
         print_bitboard(game.get_attacked_squares_pawn(true));
         // println!("-----");
         // print_bitboard(game.get_attacked_squares(false));
