@@ -5,7 +5,7 @@ use crate::moves::MoveQuality::{
 use crate::utils::{index_to_chesspos, ChessPosition, IntoChessPosition};
 use std::cmp::Ordering;
 use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
 
 pub const WHITE_PAWN_MOVES: [i8; 4] = [8, 9, 7, 16];
 
@@ -89,7 +89,6 @@ impl Move {
         }
     }
 
-    
     #[allow(dead_code)]
     pub fn from_str(
         from: impl IntoChessPosition,

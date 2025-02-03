@@ -1,6 +1,5 @@
 use std::cmp::{max, min};
 use std::collections::HashMap;
-use std::time::Instant;
 use model::chess_type::ScoreType;
 use model::game::ChessGame;
 use model::moves::Move;
@@ -17,7 +16,6 @@ pub struct AlphaBetaEngine {
 impl Engine for AlphaBetaEngine {
     fn find_best_move(&mut self, game: ChessGame, white_to_play: bool) -> SearchResult {
         self.reset_killer_moves();
-        let start = Instant::now();
         let result = self.alpha_beta_search(
             game,
             white_to_play,
@@ -34,7 +32,7 @@ impl Engine for AlphaBetaEngine {
 impl AlphaBetaEngine {
     pub fn new() -> Self {
         Self {
-            depth: 6,
+            depth: 8,
             extra_depth: 0,
             transposition_table: Default::default(),
             killer_moves: Default::default(),

@@ -3,7 +3,7 @@ use crate::game::ChessGame;
 
 impl ChessGame {
     pub fn display(&self) {
-        print!("\n    |---------------------------------------| \n");
+        print!("");
         for i in (0..8).rev() {
             print!("    | ");
             for j in 0..8 {
@@ -13,7 +13,6 @@ impl ChessGame {
             }
             print!("\n");
         }
-        print!("\n    |---------------------------------------| \n");
     }
 
     fn get_char_at(&self, i: i8, j: i8) -> String {
