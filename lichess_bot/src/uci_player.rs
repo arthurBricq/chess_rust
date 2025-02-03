@@ -41,9 +41,8 @@ impl UciPlayer {
                 }
 
                 if let Some(fen) = fen {
-
+                    self.game = GameConstructor::from_fen(fen.as_str());
                 }
-
 
                 self.play_moves(moves);
                 UciAnswer::BestMove(self.find_best_move())
@@ -71,7 +70,7 @@ impl UciPlayer {
 
     fn find_best_move(&mut self) -> Move {
         // Once all the moves are applied, response with the best move
-        let SearchResult { score, best_move } =
+        let SearchResult { score: _, best_move } =
             self.solver.find_best_move(self.game, self.white_to_move);
         // TODO error handling should be better than this
         best_move.unwrap()
@@ -131,14 +130,4 @@ mod tests {
 
     }
 
-    fn test_fen() {
-        let command = "position startpos moves e2e4 e7e6 d2d4";
-        let commands = parse(command);
-        let mut uci_player = UciPlayer::new();
-        let last_answer = commands
-            .into_iter()
-            .map(|m| uci_player.handle_message(m))
-            .last()
-            .expect("No answer");
-    }
 }

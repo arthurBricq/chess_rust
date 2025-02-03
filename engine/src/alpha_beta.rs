@@ -30,10 +30,10 @@ impl Engine for AlphaBetaEngine {
 }
 
 impl AlphaBetaEngine {
-    pub fn new() -> Self {
+    pub fn new(depth: usize, extra_depth: usize) -> Self {
         Self {
-            depth: 8,
-            extra_depth: 0,
+            depth,
+            extra_depth,
             transposition_table: Default::default(),
             killer_moves: Default::default(),
         }
@@ -204,7 +204,7 @@ mod tests {
         game.set_piece(King, true, "a2");
         game.set_piece(King, false, "a7");
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = AlphaBetaEngine::new(6, 0);
 
         // If it is white to play, white captures the pawn
         let result = engine.find_best_move(game.clone(), true);
@@ -256,7 +256,7 @@ mod tests {
         game.set_piece(Pawn, false, "d5");
         game.set_piece(Knight, false, "f5");
 
-        let mut engine = Box::new(AlphaBetaEngine::new());
+        let mut engine = Box::new(AlphaBetaEngine::new(6, 0));
 
         // If it is white to play, it should capture the bishop
         let result = engine.find_best_move(game.clone(), true);
@@ -308,7 +308,7 @@ mod tests {
         game.set_piece(King, true, "e2");
         game.set_piece(King, false, "a7");
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = AlphaBetaEngine::new(6, 0);
         engine.set_engine_depth(4, 0);
 
         let valid_white_moves = [
@@ -370,7 +370,7 @@ mod tests {
         game.set_piece(King, false, "d5");
         game.block_castling();
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = AlphaBetaEngine::new(6, 0);
 
         // If it is white to play, it should move the pawn up and not capture anything
         let result = engine.find_best_move(game.clone(), true);
@@ -405,7 +405,7 @@ mod tests {
             0,
         );
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = AlphaBetaEngine::new(6, 0);
         engine.set_engine_depth(4, 4);
 
         // What is the best move for black ?
@@ -445,7 +445,7 @@ mod tests {
         game.set_piece(Pawn, false, "d5");
         game.set_piece(Knight, false, "f5");
 
-        let mut engine = AlphaBetaEngine::new();
+        let mut engine = AlphaBetaEngine::new(6, 0);
         engine.set_engine_depth(1, 0);
 
         // Asserts that the black captures the knight

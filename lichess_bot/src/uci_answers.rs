@@ -1,4 +1,3 @@
-use std::fmt::format;
 use model::moves::Move;
 use model::utils::index_to_chesspos;
 

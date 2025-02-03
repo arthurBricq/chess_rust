@@ -46,7 +46,7 @@ fn puzzle_1() {
     let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
 
     solve_puzzle(
-        AlphaBetaEngine::new(),
+        AlphaBetaEngine::new(6, 0),
         fen,
         true,
         &[
@@ -67,7 +67,7 @@ fn puzzle_1() {
 #[test]
 fn practice_back_rank_mate_1() {
     solve_puzzle(
-        AlphaBetaEngine::new(),
+        AlphaBetaEngine::new(6, 0),
         "6k1/4Rppp/8/8/8/8/5PPP/6K1 w - - 0 1",
         true,
         &[
@@ -82,7 +82,7 @@ fn practice_back_rank_mate_1() {
 #[test]
 fn practice_back_rank_mate_2() {
     solve_puzzle(
-        AlphaBetaEngine::new(),
+        AlphaBetaEngine::new(6, 0),
         "2r1r1k1/5ppp/8/8/Q7/8/5PPP/4R1K1 w - - 0 1",
         true,
         &[
@@ -101,7 +101,7 @@ fn practice_back_rank_mate_2() {
 #[test]
 fn practice_back_rank_mate_3() {
     solve_puzzle(
-        AlphaBetaEngine::new(),
+        AlphaBetaEngine::new(6, 0),
         "6k1/3qb1pp/4p3/ppp1P3/8/2PP1Q2/PP4PP/5RK1 w - - 0 1",
         true,
         &[
