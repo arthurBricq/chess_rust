@@ -39,6 +39,12 @@ impl UciPlayer {
                 if startpos {
                     self.set_game_to_default();
                 }
+
+                if let Some(fen) = fen {
+
+                }
+
+
                 self.play_moves(moves);
                 UciAnswer::BestMove(self.find_best_move())
             }
@@ -119,6 +125,20 @@ mod tests {
             }
             _ => panic!("Expecting a best move, got: {:?}", last_answer),
         }
+        
+        uci_player.game.display();
 
+
+    }
+
+    fn test_fen() {
+        let command = "position startpos moves e2e4 e7e6 d2d4";
+        let commands = parse(command);
+        let mut uci_player = UciPlayer::new();
+        let last_answer = commands
+            .into_iter()
+            .map(|m| uci_player.handle_message(m))
+            .last()
+            .expect("No answer");
     }
 }

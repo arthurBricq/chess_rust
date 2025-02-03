@@ -3,6 +3,7 @@ mod attacks;
 
 /// Computes some bitmask that can be reused efficently at runtime.
 mod precomputation;
+mod display;
 
 use super::moves::*;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
