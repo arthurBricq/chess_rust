@@ -2,7 +2,9 @@ use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::game::ChessGame;
 use crate::motion_iterator::StepMotionIterator;
-use crate::moves::{Move, BLACK_PAWN_MOVES, KING_MOVES, KING_SPECIAL_MOVES, KNIGHT_MOVES, WHITE_PAWN_MOVES};
+use crate::moves::{
+    Move, BLACK_PAWN_MOVES, KING_MOVES, KING_SPECIAL_MOVES, KNIGHT_MOVES, WHITE_PAWN_MOVES,
+};
 use crate::moves_container::MovesContainer;
 use crate::utils::ChessPosition;
 
@@ -35,7 +37,7 @@ impl ChessGame {
                             i,
                             &WHITE_PAWN_MOVES,
                             is_white,
-                            crate::chess_type::Type::Pawn,
+                            Pawn,
                         );
                     } else {
                         self.fill_move_container_with_list_of_moves(
@@ -43,7 +45,7 @@ impl ChessGame {
                             i,
                             &BLACK_PAWN_MOVES,
                             is_white,
-                            crate::chess_type::Type::Pawn,
+                            Pawn,
                         );
                     }
                 }
@@ -52,7 +54,7 @@ impl ChessGame {
                     i,
                     &KNIGHT_MOVES,
                     is_white,
-                    crate::chess_type::Type::Knight,
+                    Knight,
                 ),
                 King => {
                     self.fill_move_container_with_list_of_moves(
@@ -60,51 +62,71 @@ impl ChessGame {
                         i,
                         &KING_MOVES,
                         is_white,
-                        crate::chess_type::Type::King,
+                        King,
                     );
                     self.fill_move_container_with_list_of_moves(
                         container,
                         i,
                         &KING_SPECIAL_MOVES,
                         is_white,
-                        crate::chess_type::Type::King,
+                        King,
                     );
                 }
                 Bishop => self.fill_move_container_with_iterator(
                     container,
                     &mut [
-                        StepMotionIterator::new(i, 9, is_white, crate::chess_type::Type::Bishop),
-                        StepMotionIterator::new(i, -9, is_white, crate::chess_type::Type::Bishop),
-                        StepMotionIterator::new(i, 7, is_white, crate::chess_type::Type::Bishop),
-                        StepMotionIterator::new(i, -7, is_white, crate::chess_type::Type::Bishop),
+                        StepMotionIterator::new(i, 9, is_white, Bishop),
+                        StepMotionIterator::new(i, -9, is_white, Bishop),
+                        StepMotionIterator::new(i, 7, is_white, Bishop),
+                        StepMotionIterator::new(i, -7, is_white, Bishop),
                     ],
                 ),
                 Rook => self.fill_move_container_with_iterator(
                     container,
                     &mut [
-                        StepMotionIterator::new(i, 1, is_white, crate::chess_type::Type::Rook),
-                        StepMotionIterator::new(i, -1, is_white, crate::chess_type::Type::Rook),
-                        StepMotionIterator::new(i, 8, is_white, crate::chess_type::Type::Rook),
-                        StepMotionIterator::new(i, -8, is_white, crate::chess_type::Type::Rook),
+                        StepMotionIterator::new(i, 1, is_white, Rook),
+                        StepMotionIterator::new(i, -1, is_white, Rook),
+                        StepMotionIterator::new(i, 8, is_white, Rook),
+                        StepMotionIterator::new(i, -8, is_white, Rook),
                     ],
                 ),
                 Queen => {
                     self.fill_move_container_with_iterator(
                         container,
                         &mut [
-                            StepMotionIterator::new(i, 9, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, -9, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, 7, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, -7, is_white, crate::chess_type::Type::Queen),
+                            StepMotionIterator::new(i, 9, is_white, Queen),
+                            StepMotionIterator::new(
+                                i,
+                                -9,
+                                is_white,
+                                Queen,
+                            ),
+                            StepMotionIterator::new(i, 7, is_white, Queen),
+                            StepMotionIterator::new(
+                                i,
+                                -7,
+                                is_white,
+                                Queen,
+                            ),
                         ],
                     );
                     self.fill_move_container_with_iterator(
                         container,
                         &mut [
-                            StepMotionIterator::new(i, 1, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, -1, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, 8, is_white, crate::chess_type::Type::Queen),
-                            StepMotionIterator::new(i, -8, is_white, crate::chess_type::Type::Queen),
+                            StepMotionIterator::new(i, 1, is_white, Queen),
+                            StepMotionIterator::new(
+                                i,
+                                -1,
+                                is_white,
+                                Queen,
+                            ),
+                            StepMotionIterator::new(i, 8, is_white, Queen),
+                            StepMotionIterator::new(
+                                i,
+                                -8,
+                                is_white,
+                                Queen,
+                            ),
                         ],
                     );
                 }
@@ -150,5 +172,4 @@ impl ChessGame {
             }
         }
     }
-
 }

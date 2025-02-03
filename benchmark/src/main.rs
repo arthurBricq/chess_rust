@@ -46,7 +46,7 @@ fn main() {
         1152921504606846992,
         0,
     );
-    benchmark(game, 10, false, 8);
+    benchmark(game, 10, false, 6);
     /*
      */
 
