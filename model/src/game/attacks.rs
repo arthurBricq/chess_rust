@@ -226,7 +226,7 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_pawn(true); // true for white pawns attacking
 
         // Bitboard representing d5 and f5 squares
-        let expected_attacks = (1 << "d5".into_position()) | (1 << "f5".into_position());
+        let expected_attacks = (1 << "d5".as_chess_position()) | (1 << "f5".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -242,7 +242,7 @@ mod tests {
 
         let attacks = chess_game.get_attacked_squares_pawn(true);
 
-        let expected_attacks = 1 << "g5".into_position();
+        let expected_attacks = 1 << "g5".as_chess_position();
         assert_eq!(
             attacks, expected_attacks,
             "Pawn at h4 should only attack g5, but got incorrect attack squares."
@@ -257,7 +257,7 @@ mod tests {
 
         let attacks = chess_game.get_attacked_squares_pawn(false);
 
-        let expected_attacks = 1 << "b4".into_position();
+        let expected_attacks = 1 << "b4".as_chess_position();
         assert_eq!(
             attacks, expected_attacks,
             "Pawn at a5 should only attack b4, but got incorrect attack squares."
@@ -273,10 +273,10 @@ mod tests {
 
         let attacks = chess_game.get_attacked_squares_pawn(true);
 
-        let expected_attacks = (1 << "d5".into_position())
-            | (1 << "f5".into_position())
-            | (1 << "f5".into_position())
-            | (1 << "h5".into_position());
+        let expected_attacks = (1 << "d5".as_chess_position())
+            | (1 << "f5".as_chess_position())
+            | (1 << "f5".as_chess_position())
+            | (1 << "h5".as_chess_position());
         assert_eq!(
             attacks, expected_attacks,
             "Both pawns at e4 and g4 should contribute to attack squares d5, f5, and h5, but got incorrect attack squares."
@@ -291,7 +291,7 @@ mod tests {
 
         let attacks = chess_game.get_attacked_squares_pawn(true);
 
-        let expected_attacks = (1 << "c5".into_position()) | (1 << "e5".into_position());
+        let expected_attacks = (1 << "c5".as_chess_position()) | (1 << "e5".as_chess_position());
         assert_eq!(
             attacks, expected_attacks,
             "Pawn at d4 should attack c5 and e5, but got incorrect attack squares."
@@ -309,14 +309,14 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_knight(true);
 
         // Expected attacks for a knight on e4
-        let expected_attacks = (1 << "d2".into_position())
-            | (1 << "f2".into_position())
-            | (1 << "c3".into_position())
-            | (1 << "g3".into_position())
-            | (1 << "c5".into_position())
-            | (1 << "g5".into_position())
-            | (1 << "d6".into_position())
-            | (1 << "f6".into_position());
+        let expected_attacks = (1 << "d2".as_chess_position())
+            | (1 << "f2".as_chess_position())
+            | (1 << "c3".as_chess_position())
+            | (1 << "g3".as_chess_position())
+            | (1 << "c5".as_chess_position())
+            | (1 << "g5".as_chess_position())
+            | (1 << "d6".as_chess_position())
+            | (1 << "f6".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -331,7 +331,7 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "a1");
         let attacks_a1 = chess_game.get_attacked_squares_knight(true);
-        let expected_a1 = (1 << "b3".into_position()) | (1 << "c2".into_position());
+        let expected_a1 = (1 << "b3".as_chess_position()) | (1 << "c2".as_chess_position());
         assert_eq!(
             attacks_a1, expected_a1,
             "Knight at a1 should only attack b3 and c2, but got incorrect result."
@@ -341,7 +341,7 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "a8");
         let attacks_a8 = chess_game.get_attacked_squares_knight(true);
-        let expected_a8 = (1 << "b6".into_position()) | (1 << "c7".into_position());
+        let expected_a8 = (1 << "b6".as_chess_position()) | (1 << "c7".as_chess_position());
         assert_eq!(
             attacks_a8, expected_a8,
             "Knight at a8 should only attack b6 and c7, but got incorrect result."
@@ -351,7 +351,7 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "h1");
         let attacks_h1 = chess_game.get_attacked_squares_knight(true);
-        let expected_h1 = (1 << "g3".into_position()) | (1 << "f2".into_position());
+        let expected_h1 = (1 << "g3".as_chess_position()) | (1 << "f2".as_chess_position());
         assert_eq!(
             attacks_h1, expected_h1,
             "Knight at h1 should only attack g3 and f2, but got incorrect result."
@@ -361,7 +361,7 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(Knight, true, "h8");
         let attacks_h8 = chess_game.get_attacked_squares_knight(true);
-        let expected_h8 = (1 << "g6".into_position()) | (1 << "f7".into_position());
+        let expected_h8 = (1 << "g6".as_chess_position()) | (1 << "f7".as_chess_position());
         assert_eq!(
             attacks_h8, expected_h8,
             "Knight at h8 should only attack g6 and f7, but got incorrect result."
@@ -379,14 +379,14 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_king(true);
 
         // Expected attacks for a king on e4
-        let expected_attacks = (1 << "d3".into_position())
-            | (1 << "d4".into_position())
-            | (1 << "d5".into_position())
-            | (1 << "e3".into_position())
-            | (1 << "e5".into_position())
-            | (1 << "f3".into_position())
-            | (1 << "f4".into_position())
-            | (1 << "f5".into_position());
+        let expected_attacks = (1 << "d3".as_chess_position())
+            | (1 << "d4".as_chess_position())
+            | (1 << "d5".as_chess_position())
+            | (1 << "e3".as_chess_position())
+            | (1 << "e5".as_chess_position())
+            | (1 << "f3".as_chess_position())
+            | (1 << "f4".as_chess_position())
+            | (1 << "f5".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -401,11 +401,11 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "a4");
         let attacks_a4 = chess_game.get_attacked_squares_king(true);
-        let expected_a4 = (1 << "a3".into_position())
-            | (1 << "a5".into_position())
-            | (1 << "b3".into_position())
-            | (1 << "b4".into_position())
-            | (1 << "b5".into_position());
+        let expected_a4 = (1 << "a3".as_chess_position())
+            | (1 << "a5".as_chess_position())
+            | (1 << "b3".as_chess_position())
+            | (1 << "b4".as_chess_position())
+            | (1 << "b5".as_chess_position());
 
         assert_eq!(
             attacks_a4, expected_a4,
@@ -416,11 +416,11 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "h4");
         let attacks_h4 = chess_game.get_attacked_squares_king(true);
-        let expected_h4 = (1 << "g3".into_position())
-            | (1 << "g4".into_position())
-            | (1 << "g5".into_position())
-            | (1 << "h3".into_position())
-            | (1 << "h5".into_position());
+        let expected_h4 = (1 << "g3".as_chess_position())
+            | (1 << "g4".as_chess_position())
+            | (1 << "g5".as_chess_position())
+            | (1 << "h3".as_chess_position())
+            | (1 << "h5".as_chess_position());
 
         assert_eq!(
             attacks_h4, expected_h4,
@@ -431,11 +431,11 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "e1");
         let attacks_e1 = chess_game.get_attacked_squares_king(true);
-        let expected_e1 = (1 << "d1".into_position())
-            | (1 << "d2".into_position())
-            | (1 << "e2".into_position())
-            | (1 << "f1".into_position())
-            | (1 << "f2".into_position());
+        let expected_e1 = (1 << "d1".as_chess_position())
+            | (1 << "d2".as_chess_position())
+            | (1 << "e2".as_chess_position())
+            | (1 << "f1".as_chess_position())
+            | (1 << "f2".as_chess_position());
 
         assert_eq!(
             attacks_e1, expected_e1,
@@ -446,11 +446,11 @@ mod tests {
         let mut chess_game = ChessGame::empty();
         chess_game.set_piece(King, true, "e8");
         let attacks_e8 = chess_game.get_attacked_squares_king(true);
-        let expected_e8 = (1 << "d8".into_position())
-            | (1 << "d7".into_position())
-            | (1 << "e7".into_position())
-            | (1 << "f8".into_position())
-            | (1 << "f7".into_position());
+        let expected_e8 = (1 << "d8".as_chess_position())
+            | (1 << "d7".as_chess_position())
+            | (1 << "e7".as_chess_position())
+            | (1 << "f8".as_chess_position())
+            | (1 << "f7".as_chess_position());
 
         assert_eq!(
             attacks_e8, expected_e8,
@@ -466,7 +466,7 @@ mod tests {
         chess_game.set_piece(King, true, "a1");
         let attacks_a1 = chess_game.get_attacked_squares_king(true);
         let expected_a1 =
-            (1 << "a2".into_position()) | (1 << "b1".into_position()) | (1 << "b2".into_position());
+            (1 << "a2".as_chess_position()) | (1 << "b1".as_chess_position()) | (1 << "b2".as_chess_position());
 
         assert_eq!(
             attacks_a1, expected_a1,
@@ -478,7 +478,7 @@ mod tests {
         chess_game.set_piece(King, true, "h1");
         let attacks_h1 = chess_game.get_attacked_squares_king(true);
         let expected_h1 =
-            (1 << "h2".into_position()) | (1 << "g1".into_position()) | (1 << "g2".into_position());
+            (1 << "h2".as_chess_position()) | (1 << "g1".as_chess_position()) | (1 << "g2".as_chess_position());
 
         assert_eq!(
             attacks_h1, expected_h1,
@@ -490,7 +490,7 @@ mod tests {
         chess_game.set_piece(King, true, "a8");
         let attacks_a8 = chess_game.get_attacked_squares_king(true);
         let expected_a8 =
-            (1 << "a7".into_position()) | (1 << "b8".into_position()) | (1 << "b7".into_position());
+            (1 << "a7".as_chess_position()) | (1 << "b8".as_chess_position()) | (1 << "b7".as_chess_position());
 
         assert_eq!(
             attacks_a8, expected_a8,
@@ -502,7 +502,7 @@ mod tests {
         chess_game.set_piece(King, true, "h8");
         let attacks_h8 = chess_game.get_attacked_squares_king(true);
         let expected_h8 =
-            (1 << "h7".into_position()) | (1 << "g8".into_position()) | (1 << "g7".into_position());
+            (1 << "h7".as_chess_position()) | (1 << "g8".as_chess_position()) | (1 << "g7".as_chess_position());
 
         assert_eq!(
             attacks_h8, expected_h8,
@@ -523,20 +523,20 @@ mod tests {
         print_bitboard(attacks);
 
         // Expected attacks for a rook on a1
-        let expected_attacks = (1 << "a2".into_position())
-            | (1 << "a3".into_position())
-            | (1 << "a4".into_position())
-            | (1 << "a5".into_position())
-            | (1 << "a6".into_position())
-            | (1 << "a7".into_position())
-            | (1 << "a8".into_position())
-            | (1 << "b1".into_position())
-            | (1 << "c1".into_position())
-            | (1 << "d1".into_position())
-            | (1 << "e1".into_position())
-            | (1 << "f1".into_position())
-            | (1 << "g1".into_position())
-            | (1 << "h1".into_position());
+        let expected_attacks = (1 << "a2".as_chess_position())
+            | (1 << "a3".as_chess_position())
+            | (1 << "a4".as_chess_position())
+            | (1 << "a5".as_chess_position())
+            | (1 << "a6".as_chess_position())
+            | (1 << "a7".as_chess_position())
+            | (1 << "a8".as_chess_position())
+            | (1 << "b1".as_chess_position())
+            | (1 << "c1".as_chess_position())
+            | (1 << "d1".as_chess_position())
+            | (1 << "e1".as_chess_position())
+            | (1 << "f1".as_chess_position())
+            | (1 << "g1".as_chess_position())
+            | (1 << "h1".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -558,14 +558,14 @@ mod tests {
         println!("Number of attacked squares: {}", count);
 
         // Expected attacks for a rook on a1 when a pawn is blocking at a4
-        let expected_attacks = (1 << "a2".into_position())
-            | (1 << "b1".into_position())
-            | (1 << "c1".into_position())
-            | (1 << "d1".into_position())
-            | (1 << "e1".into_position())
-            | (1 << "f1".into_position())
-            | (1 << "g1".into_position())
-            | (1 << "h1".into_position());
+        let expected_attacks = (1 << "a2".as_chess_position())
+            | (1 << "b1".as_chess_position())
+            | (1 << "c1".as_chess_position())
+            | (1 << "d1".as_chess_position())
+            | (1 << "e1".as_chess_position())
+            | (1 << "f1".as_chess_position())
+            | (1 << "g1".as_chess_position())
+            | (1 << "h1".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -614,10 +614,10 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_rook(true);
 
         // Expected attacks for a rook on e4 with blocking pieces
-        let expected_attacks = (1 << "e3".into_position())
-            | (1 << "e5".into_position())
-            | (1 << "d4".into_position())
-            | (1 << "f4".into_position());
+        let expected_attacks = (1 << "e3".as_chess_position())
+            | (1 << "e5".as_chess_position())
+            | (1 << "d4".as_chess_position())
+            | (1 << "f4".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -636,13 +636,13 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_bishop(true);
 
         // Expected attacks for a bishop on a1
-        let expected_attacks = (1 << "b2".into_position())
-            | (1 << "c3".into_position())
-            | (1 << "d4".into_position())
-            | (1 << "e5".into_position())
-            | (1 << "f6".into_position())
-            | (1 << "g7".into_position())
-            | (1 << "h8".into_position());
+        let expected_attacks = (1 << "b2".as_chess_position())
+            | (1 << "c3".as_chess_position())
+            | (1 << "d4".as_chess_position())
+            | (1 << "e5".as_chess_position())
+            | (1 << "f6".as_chess_position())
+            | (1 << "g7".as_chess_position())
+            | (1 << "h8".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,
@@ -661,19 +661,19 @@ mod tests {
         let attacks = chess_game.get_attacked_squares_bishop(true);
 
         // Expected attacks for a bishop on e4
-        let expected_attacks = (1 << "d3".into_position())
-            | (1 << "c2".into_position())
-            | (1 << "b1".into_position())
-            | (1 << "f3".into_position())
-            | (1 << "g2".into_position())
-            | (1 << "h1".into_position())
-            | (1 << "d5".into_position())
-            | (1 << "c6".into_position())
-            | (1 << "b7".into_position())
-            | (1 << "a8".into_position())
-            | (1 << "f5".into_position())
-            | (1 << "g6".into_position())
-            | (1 << "h7".into_position());
+        let expected_attacks = (1 << "d3".as_chess_position())
+            | (1 << "c2".as_chess_position())
+            | (1 << "b1".as_chess_position())
+            | (1 << "f3".as_chess_position())
+            | (1 << "g2".as_chess_position())
+            | (1 << "h1".as_chess_position())
+            | (1 << "d5".as_chess_position())
+            | (1 << "c6".as_chess_position())
+            | (1 << "b7".as_chess_position())
+            | (1 << "a8".as_chess_position())
+            | (1 << "f5".as_chess_position())
+            | (1 << "g6".as_chess_position())
+            | (1 << "h7".as_chess_position());
 
         assert_eq!(
             attacks, expected_attacks,

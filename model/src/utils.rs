@@ -43,11 +43,11 @@ pub fn from_rank_file(rank: usize, file: usize) -> ChessPosition {
 
 
 pub trait IntoChessPosition {
-    fn into_position(&self) -> ChessPosition;
+    fn as_chess_position(&self) -> ChessPosition;
 }
 
 impl IntoChessPosition for &str {
-    fn into_position(&self) -> ChessPosition {
+    fn as_chess_position(&self) -> ChessPosition {
         chesspos_to_index(self).unwrap()
     }
 }

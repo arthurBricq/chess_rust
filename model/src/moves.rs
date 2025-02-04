@@ -96,8 +96,8 @@ impl Move {
         is_white: bool,
     ) -> Self {
         Self {
-            from: from.into_position(),
-            to: to.into_position(),
+            from: from.as_chess_position(),
+            to: to.as_chess_position(),
             is_white,
             quality: Motion,
         }

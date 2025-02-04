@@ -107,7 +107,7 @@ impl ChessGame {
     /// Can be used to create custom boards.
     #[allow(dead_code)]
     pub fn set_piece(&mut self, piece: Type, white: bool, at: impl IntoChessPosition) {
-        let at: ChessPosition = at.into_position();
+        let at: ChessPosition = at.as_chess_position();
         match piece {
             Pawn => set_at!(self.pawns, at),
             Bishop => set_at!(self.bishops, at),

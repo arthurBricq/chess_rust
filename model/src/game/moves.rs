@@ -1,5 +1,6 @@
 use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
+use crate::game::attacks::ChessAttacks;
 use crate::game::ChessGame;
 use crate::motion_iterator::StepMotionIterator;
 use crate::moves::{
@@ -17,6 +18,24 @@ impl ChessGame {
     /// TODO would be nice to move this function (and associated helper) in a submodule
     pub fn update_move_container<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
+
+        // """"""""""
+        // 1. New way
+        // """"""""""
+
+        let mut attacks = self.get_attacked_squares_knight(is_white);
+        while attacks != 0 {
+            let sq = attacks.trailing_zeros() as usize;
+            
+            
+            attacks &= attacks - 1;
+        }
+        
+        // Consume all the attacks
+
+        // """"""""""
+        // 2. Old Way
+        // """"""""""
 
         let mut pieces = if is_white {
             (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings)
@@ -49,13 +68,7 @@ impl ChessGame {
                         );
                     }
                 }
-                Knight => self.fill_move_container_with_list_of_moves(
-                    container,
-                    i,
-                    &KNIGHT_MOVES,
-                    is_white,
-                    Knight,
-                ),
+                Knight => {}
                 King => {
                     self.fill_move_container_with_list_of_moves(
                         container,
@@ -95,38 +108,18 @@ impl ChessGame {
                         container,
                         &mut [
                             StepMotionIterator::new(i, 9, is_white, Queen),
-                            StepMotionIterator::new(
-                                i,
-                                -9,
-                                is_white,
-                                Queen,
-                            ),
+                            StepMotionIterator::new(i, -9, is_white, Queen),
                             StepMotionIterator::new(i, 7, is_white, Queen),
-                            StepMotionIterator::new(
-                                i,
-                                -7,
-                                is_white,
-                                Queen,
-                            ),
+                            StepMotionIterator::new(i, -7, is_white, Queen),
                         ],
                     );
                     self.fill_move_container_with_iterator(
                         container,
                         &mut [
                             StepMotionIterator::new(i, 1, is_white, Queen),
-                            StepMotionIterator::new(
-                                i,
-                                -1,
-                                is_white,
-                                Queen,
-                            ),
+                            StepMotionIterator::new(i, -1, is_white, Queen),
                             StepMotionIterator::new(i, 8, is_white, Queen),
-                            StepMotionIterator::new(
-                                i,
-                                -8,
-                                is_white,
-                                Queen,
-                            ),
+                            StepMotionIterator::new(i, -8, is_white, Queen),
                         ],
                     );
                 }
