@@ -7,7 +7,7 @@ use crate::moves::{
     Move, BLACK_PAWN_MOVES, KING_MOVES, KING_SPECIAL_MOVES, KNIGHT_MOVES, WHITE_PAWN_MOVES,
 };
 use crate::moves_container::MovesContainer;
-use crate::utils::ChessPosition;
+use crate::utils::{consume_bits, ChessPosition};
 
 impl ChessGame {
     /// Fills the provided container with all the available moves at the current position.
@@ -26,11 +26,11 @@ impl ChessGame {
         let mut attacks = self.get_attacked_squares_knight(is_white);
         while attacks != 0 {
             let sq = attacks.trailing_zeros() as usize;
-            
-            
+
+
             attacks &= attacks - 1;
         }
-        
+
         // Consume all the attacks
 
         // """"""""""
@@ -45,9 +45,8 @@ impl ChessGame {
                 & !self.whites
         };
 
-        while pieces != 0 {
-            let i = pieces.trailing_zeros() as ChessPosition;
-            pieces &= pieces - 1;
+        consume_bits!(pieces, i, {
+            let i  = i as ChessPosition;
             match self.type_at_index(i).unwrap() {
                 Pawn => {
                     if is_white {
@@ -68,7 +67,13 @@ impl ChessGame {
                         );
                     }
                 }
-                Knight => {}
+                Knight => self.fill_move_container_with_list_of_moves(
+                    container,
+                    i,
+                    &KNIGHT_MOVES,
+                    is_white,
+                    Knight,
+                ),
                 King => {
                     self.fill_move_container_with_list_of_moves(
                         container,
@@ -124,7 +129,8 @@ impl ChessGame {
                     );
                 }
             }
-        }
+
+        });
     }
 
     /// Push valid moves in the `MovesContainer`, by trying all the possible moves given

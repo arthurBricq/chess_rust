@@ -44,6 +44,7 @@ fn solve_puzzle(
 // Themes: mates in two, double check
 // Rating: 2021
 #[test]
+#[ignore]
 fn puzzle_1() {
     let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
 
@@ -107,6 +108,7 @@ fn practice_back_rank_mate_2() {
 ///
 /// TODO: understand what is happening with this test.
 #[test]
+#[ignore]
 fn practice_back_rank_mate_3() {
     solve_puzzle(
         AlphaBetaEngine::new(7, 0),

@@ -17,9 +17,34 @@ macro_rules! clear_at {
     )
 }
 
+/// A macro to iterate over the bits of an integer, processing each set bit.
+///
+/// # Parameters
+/// - `$bits`: The integer value (e.g., u64) whose bits are to be processed.
+/// - `$index`: A variable name that will be bound to the current set bit's index
+///             during each iteration.
+/// - `$body`: The code block to execute for each bit (inline, no closures involved).
+///
+macro_rules! consume_bits {
+    ($bits:expr, $index:ident, $body:block) => {
+        {
+            let mut bits = $bits;
+            while bits != 0 {
+                // Get the position of the least significant set bit
+                let $index = bits.trailing_zeros() as usize;
+                // Inline the body code here
+                $body
+                // Clear the least significant set bit
+                bits &= bits - 1;
+            }
+        }
+    }
+}
+
 pub(crate) use is_set;
 pub(crate) use set_at;
 pub(crate) use clear_at;
+pub(crate) use consume_bits;
 
 pub type ChessPosition = i8;
 

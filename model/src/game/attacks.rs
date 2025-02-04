@@ -2,7 +2,7 @@ use crate::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
 use crate::game::ChessGame;
-use crate::utils::{is_set, set_at};
+use crate::utils::{consume_bits, is_set, set_at};
 use std::ops::Range;
 
 pub(super) trait ChessAttacks {
@@ -78,8 +78,8 @@ impl ChessGame {
         // TODO factorize this 
         let occupancy =
             self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
-        while pieces != 0 {
-            let sq = pieces.trailing_zeros() as usize;
+        
+        consume_bits!(pieces, sq, {
             // For each direction
             for dir in direction_indices.clone() {
                 // Get the attack ray for this direction from the precomputed sliding masks
@@ -93,8 +93,8 @@ impl ChessGame {
                     }
                 }
             }
-            pieces &= pieces - 1;
-        }
+        });
+        
         attacks
     }
 }
@@ -111,20 +111,17 @@ impl ChessAttacks for ChessGame {
         };
 
         // Iterate over all pawns
-        let mut pawns_left = self.pawns
+        let pawns_left = self.pawns
             & (if white_playing {
             self.whites
         } else {
             !self.whites
         });
-        while pawns_left != 0 {
-            // Get the position of the least significant bit
-            let sq = pawns_left.trailing_zeros() as usize;
+
+        consume_bits!(pawns_left, sq, {
             // Add attacks for the pawn at sq
             attacks |= attack_masks[sq];
-            // Remove the least significant bit
-            pawns_left &= pawns_left - 1;
-        }
+        });
 
         attacks
     }
@@ -133,22 +130,16 @@ impl ChessAttacks for ChessGame {
     fn get_attacked_squares_knight(&self, white_playing: bool) -> u64 {
         let mut attacks = 0;
 
-        let mut knights_left = self.knights
+        let knights_left = self.knights
             & (if white_playing {
                 self.whites
             } else {
                 !self.whites
             });
 
-        // Iterate over all knights depending on the player's color
-        while knights_left != 0 {
-            // Get the position of the least significant bit (LSB)
-            let sq = knights_left.trailing_zeros() as usize;
-            // Add the precomputed knight attacks for this position
+        consume_bits!(knights_left, sq, {
             attacks |= KNIGHT_ATTACK_MASKS[sq];
-            // Remove the LSB
-            knights_left &= knights_left - 1;
-        }
+        });
 
         attacks
     }
@@ -156,22 +147,16 @@ impl ChessAttacks for ChessGame {
     fn get_attacked_squares_king(&self, white_playing: bool) -> u64 {
         let mut attacks = 0;
 
-        let mut king_left = self.kings
+        let king_left = self.kings
             & (if white_playing {
                 self.whites
             } else {
                 !self.whites
             });
 
-        // Iterate over all king depending on the player's color
-        while king_left != 0 {
-            // Get the position of the least significant bit (LSB)
-            let sq = king_left.trailing_zeros() as usize;
-            // Add the precomputed knight attacks for this position
+        consume_bits!(king_left, sq, {
             attacks |= KING_ATTACK_MASKS[sq];
-            // Remove the LSB
-            king_left &= king_left - 1;
-        }
+        });
 
         attacks
     }
