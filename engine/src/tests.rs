@@ -108,7 +108,7 @@ fn practice_back_rank_mate_2() {
 ///
 /// TODO: understand what is happening with this test.
 #[test]
-#[ignore]
+// #[ignore]
 fn practice_back_rank_mate_3() {
     solve_puzzle(
         AlphaBetaEngine::new(7, 0),

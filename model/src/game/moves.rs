@@ -1,6 +1,5 @@
 use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
-use crate::game::attacks::ChessAttacks;
 use crate::game::ChessGame;
 use crate::motion_iterator::StepMotionIterator;
 use crate::moves::{
@@ -20,24 +19,10 @@ impl ChessGame {
         container.reset();
 
         // """"""""""
-        // 1. New way
-        // """"""""""
-
-        let mut attacks = self.get_attacked_squares_knight(is_white);
-        while attacks != 0 {
-            let sq = attacks.trailing_zeros() as usize;
-
-
-            attacks &= attacks - 1;
-        }
-
-        // Consume all the attacks
-
-        // """"""""""
         // 2. Old Way
         // """"""""""
 
-        let mut pieces = if is_white {
+        let pieces = if is_white {
             (self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings)
                 & self.whites
         } else {
