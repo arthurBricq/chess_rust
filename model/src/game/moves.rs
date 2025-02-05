@@ -296,23 +296,22 @@ impl ChessGame {
 
         // 4. Rooks
         let rook_left = pieces_for_color!(self.whites, self.rooks, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(rook_left, 0..4, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(rook_left, occupancy, 0..4, white_playing, container);
 
         // 5. Bishops
         let bishops = pieces_for_color!(self.whites, self.bishops, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(bishops, 4..8, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(bishops, occupancy, 4..8, white_playing, container);
 
         // 6. Queens
         let queens = pieces_for_color!(self.whites, self.queens, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(queens, 0..8, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(queens, occupancy, 0..8, white_playing, container);
 
         // 7. Castle
 
         // White castling
 
         if white_playing && !is_set!(self.flags, FLAG_WHITE_KING_MOVED) {
-            // For white, king is at position 4
-            let mut attacked: Option<u64> = None; // `None` means we haven't computed it yet
+            let mut attacked: Option<u64> = None;
 
             // Check occupancy for first condition
             if !is_set!(occupancy, 5) && !is_set!(occupancy, 6) {
@@ -330,7 +329,6 @@ impl ChessGame {
 
             // Check occupancy for second condition
             if !is_set!(occupancy, 3) && !is_set!(occupancy, 2) && !is_set!(occupancy, 1) {
-                // Compute attacked squares only if needed (if not already done)
                 if attacked.is_none() {
                     attacked = Some(self.get_attacked_squares(false));
                 }
@@ -346,17 +344,14 @@ impl ChessGame {
         // black castling
 
         if !white_playing && !is_set!(self.flags, FLAG_BLACK_KING_MOVED) {
-            let mut attacked: Option<u64> = None; // `None` means we haven't computed it yet
+            let mut attacked: Option<u64> = None;
 
-            // Check occupancy for black's small castle
             if !is_set!(occupancy, 61) && !is_set!(occupancy, 62) {
-                // Compute attacked squares only if needed
                 if attacked.is_none() {
                     attacked = Some(self.get_attacked_squares(true));
                 }
                 if let Some(attacked) = attacked {
                     if !is_set!(attacked, 60) && !is_set!(attacked, 61) && !is_set!(attacked, 62) {
-                        // Black can small castle
                         container.push(Move::new(60, 62, white_playing));
                     }
                 }
@@ -364,13 +359,11 @@ impl ChessGame {
 
             // Check occupancy for black's large castle
             if !is_set!(occupancy, 59) && !is_set!(occupancy, 58) && !is_set!(occupancy, 57) {
-                // Compute attacked squares only if needed (if not already done)
                 if attacked.is_none() {
                     attacked = Some(self.get_attacked_squares(true));
                 }
                 if let Some(attacked) = attacked {
                     if !is_set!(attacked, 60) && !is_set!(attacked, 59) && !is_set!(attacked, 58) {
-                        // Black can large castle
                         container.push(Move::new(60, 58, white_playing));
                     }
                 }
@@ -381,14 +374,11 @@ impl ChessGame {
     fn fill_attacked_squares_from_sliding_piece<T: MovesContainer>(
         &self,
         pieces: u64,
+        occupancy: u64,
         direction_indices: Range<usize>,
         white_playing: bool,
         container: &mut T,
     ) {
-        // TODO factorize this
-        let occupancy =
-            self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
-
         consume_bits!(pieces, from, {
             // For each direction
             for dir in direction_indices.clone() {
