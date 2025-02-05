@@ -18,6 +18,7 @@ fn solve_puzzle(
     expected_answers: &[PuzzleAssert],
 ) {
     let mut game = ChessGame::from_fen(fen);
+    game.block_castling();
     game.display();
 
     for PuzzleAssert {
