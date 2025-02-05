@@ -124,7 +124,7 @@ impl AlphaBetaEngine {
 
         while container.has_next() {
             let mut new_game = game.clone();
-            let m = container.get_next();
+            let m = container.pop_next_move();
             new_game.apply_move_unsafe(&m);
 
             let result = self.alpha_beta_search(

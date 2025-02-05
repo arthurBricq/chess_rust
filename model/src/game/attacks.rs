@@ -2,27 +2,8 @@ use crate::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
 use crate::game::ChessGame;
-use crate::utils::{consume_bits, is_set, set_at};
+use crate::utils::{consume_bits, is_set, pieces_for_color, set_at};
 use std::ops::Range;
-
-/// A macro to get the bitboard of pieces filtered by color.
-///
-/// # Parameters
-/// - `$self`: The current instance of the chessboard/game.
-/// - `$pieces`: The bitboard of the pieces to filter (e.g., `self.pawns`).
-/// - `$white_playing`: A boolean indicating if the white player is playing.
-///
-/// # Returns
-/// A bitboard with the pieces filtered by the current player's color.
-macro_rules! pieces_for_color {
-    ($whites:expr, $pieces:expr, $white_playing:expr) => {
-        $pieces & (if $white_playing {
-            $whites
-        } else {
-            !$whites
-        })
-    };
-}
 
 pub(super) trait ChessAttacks {
     /// Returns the list of attack squares
@@ -121,14 +102,13 @@ impl ChessGame {
 impl ChessAttacks for ChessGame {
     fn get_attacked_squares_pawn(&self, white_playing: bool) -> u64 {
         let (white_pawn_attacks, black_pawn_attacks) = &*PAWN_ATTACK_MASKS;
-        let mut attacks = 0;
-
         let attack_masks = if white_playing {
             white_pawn_attacks
         } else {
             black_pawn_attacks
         };
 
+        let mut attacks = 0;
         let pawns_left = pieces_for_color!(self.whites, self.pawns, white_playing);
         consume_bits!(pawns_left, sq, {
             // Add attacks for the pawn at sq

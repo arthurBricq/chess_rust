@@ -41,10 +41,10 @@ impl Default for ChessGame {
     }
 }
 
-const FLAG_WK_MOVED: i8 = 0;
-const FLAG_BK_MOVED: i8 = 1;
-const FLAG_WK_CASTLED: i8 = 2;
-const FLAG_BK_CASTLED: i8 = 3;
+const FLAG_WHITE_KING_MOVED: i8 = 0;
+const FLAG_BLACK_KING_MOVED: i8 = 1;
+const FLAG_WHITE_KING_CASTLED: i8 = 2;
+const FLAG_BLACK_KING_CASTLED: i8 = 3;
 
 impl ChessGame {
     /// Construct a chess game from the integers
@@ -123,10 +123,10 @@ impl ChessGame {
 
     #[allow(dead_code)]
     pub fn block_castling(&mut self) {
-        set_at!(self.flags, FLAG_BK_CASTLED);
-        set_at!(self.flags, FLAG_WK_CASTLED);
-        set_at!(self.flags, FLAG_WK_MOVED);
-        set_at!(self.flags, FLAG_BK_MOVED);
+        set_at!(self.flags, FLAG_BLACK_KING_CASTLED);
+        set_at!(self.flags, FLAG_WHITE_KING_CASTLED);
+        set_at!(self.flags, FLAG_WHITE_KING_MOVED);
+        set_at!(self.flags, FLAG_BLACK_KING_MOVED);
     }
 
     /// Returns true if one of the two kind is dead
@@ -195,8 +195,8 @@ impl ChessGame {
         if motion == 2 || motion == -2 {
             // 1. check that the king did not move or castled
             // using the flag for white or black
-            if (m.is_white && is_set!(self.flags, FLAG_WK_MOVED))
-                || (!m.is_white && is_set!(self.flags, FLAG_BK_MOVED))
+            if (m.is_white && is_set!(self.flags, FLAG_WHITE_KING_MOVED))
+                || (!m.is_white && is_set!(self.flags, FLAG_BLACK_KING_MOVED))
             {
                 return false;
             }
@@ -362,18 +362,18 @@ impl ChessGame {
                     // Flags update : king moved
                     // TODO OPT: check if setting the flag only at the first is worth it
                     if m.is_white {
-                        set_at!(self.flags, FLAG_WK_MOVED);
+                        set_at!(self.flags, FLAG_WHITE_KING_MOVED);
                     } else {
-                        set_at!(self.flags, FLAG_BK_MOVED);
+                        set_at!(self.flags, FLAG_BLACK_KING_MOVED);
                     }
 
                     // Handle castling move here
                     let motion = m.to - m.from;
                     if motion == 2 || motion == -2 {
                         if m.is_white {
-                            set_at!(self.flags, FLAG_WK_CASTLED);
+                            set_at!(self.flags, FLAG_WHITE_KING_CASTLED);
                         } else {
-                            set_at!(self.flags, FLAG_BK_CASTLED);
+                            set_at!(self.flags, FLAG_BLACK_KING_CASTLED);
                         }
                         let (rook_from, rook_to) = if motion == 2 {
                             (m.from + 3, m.from + 1)

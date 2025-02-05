@@ -41,10 +41,30 @@ macro_rules! consume_bits {
     }
 }
 
+/// A macro to get the bitboard of pieces filtered by color.
+///
+/// # Parameters
+/// - `$self`: The current instance of the chessboard/game.
+/// - `$pieces`: The bitboard of the pieces to filter (e.g., `self.pawns`).
+/// - `$white_playing`: A boolean indicating if the white player is playing.
+///
+/// # Returns
+/// A bitboard with the pieces filtered by the current player's color.
+macro_rules! pieces_for_color {
+    ($whites:expr, $pieces:expr, $white_playing:expr) => {
+        $pieces & (if $white_playing {
+            $whites
+        } else {
+            !$whites
+        })
+    };
+}
+
 pub(crate) use is_set;
 pub(crate) use set_at;
 pub(crate) use clear_at;
 pub(crate) use consume_bits;
+pub(crate) use pieces_for_color;
 
 pub type ChessPosition = i8;
 

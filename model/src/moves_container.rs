@@ -5,16 +5,30 @@ use std::collections::BinaryHeap;
 /// Stores a list of moves and retrieve them in an order that implementation can define
 /// This allows to not have to sort a list of move based on an order.
 pub trait MovesContainer {
+    /// Adds a new move in the container
     fn push(&mut self, m: Move);
+    /// Returns true if the container has some moves
     fn has_next(&self) -> bool;
-    fn get_next(&mut self) -> Move;
+    /// Consumes one move of the container
+    fn pop_next_move(&mut self) -> Move;
+    /// Clear all moves in the container
     fn reset(&mut self);
+    /// Returns the number of moves in the container
     fn count(&self) -> usize;
     /// Asks to retain the given move as the first move to evaluate
     fn set_first_move(&mut self, m: Move);
     /// Add killer move
     /// A killer is a move that produced a cutoff at the same depth
     fn add_killer_move(&mut self, m: Move);
+    /// Function that prints all the moves in the container
+    /// This function removes all the moves from the container
+    /// Note: if you just need to print,
+    fn debug(&mut self) {
+        while self.has_next() {
+            let m = self.pop_next_move();
+            println!("{m}");
+        }
+    }
 }
 
 pub struct SimpleMovesContainer {
@@ -37,7 +51,7 @@ impl MovesContainer for SimpleMovesContainer {
         self.index < self.moves.len()
     }
 
-    fn get_next(&mut self) -> Move {
+    fn pop_next_move(&mut self) -> Move {
         let i = self.index;
         self.index += 1;
         self.moves[i]
@@ -86,7 +100,7 @@ impl MovesContainer for SmartMoveContainer {
         self.moves.len() > 0
     }
 
-    fn get_next(&mut self) -> Move {
+    fn pop_next_move(&mut self) -> Move {
         self.moves.pop().unwrap()
     }
 
@@ -128,10 +142,12 @@ mod tests {
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, true);
         let count = container.count();
+        container.debug();
         assert_eq!(2, count);
 
         game.update_move_container(&mut container, false);
         let count = container.count();
+        container.debug();
         assert_eq!(2, count);
     }
 
@@ -167,14 +183,14 @@ mod tests {
         assert_eq!(3, container.count());
 
         // The first value (m3) is supposed to be a capture
-        assert!(container.get_next().is_capture());
+        assert!(container.pop_next_move().is_capture());
         assert!(container.has_next());
 
         // the next two values are not capture move
-        assert!(!container.get_next().is_capture());
+        assert!(!container.pop_next_move().is_capture());
         assert!(container.has_next());
 
-        assert!(!container.get_next().is_capture());
+        assert!(!container.pop_next_move().is_capture());
 
         // now the container is empty
         assert!(!container.has_next());
@@ -191,9 +207,9 @@ mod tests {
         container.push(m3);
         container.set_first_move(m1);
 
-        let first = container.get_next();
-        let second = container.get_next();
-        let third = container.get_next();
+        let first = container.pop_next_move();
+        let second = container.pop_next_move();
+        let third = container.pop_next_move();
 
         assert_eq!(first, m1);
         assert_eq!(second, m3);
@@ -207,7 +223,7 @@ mod tests {
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, true);
         while container.has_next() {
-            let m = container.get_next();
+            let m = container.pop_next_move();
             assert_ne!(m.from, m.to);
             assert_eq!(true, m.is_white);
             println!("{m}")
