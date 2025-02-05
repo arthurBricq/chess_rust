@@ -136,6 +136,7 @@ mod tests {
     #[test]
     fn test_moves_container_with_basic_position() {
         let mut game = ChessGame::empty();
+        game.block_castling();
         game.set_piece(Pawn, true, "e2");
         game.set_piece(Pawn, false, "e7");
 

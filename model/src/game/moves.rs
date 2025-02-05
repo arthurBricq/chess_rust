@@ -1,10 +1,11 @@
 use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
+use crate::game::attacks::ChessAttacks;
 use crate::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, PAWN_MOTION_MASKS,
     SLIDING_ATTACK_MASKS,
 };
-use crate::game::{ChessGame, FLAG_WHITE_KING_MOVED};
+use crate::game::{ChessGame, FLAG_BLACK_KING_MOVED, FLAG_WHITE_KING_MOVED};
 use crate::motion_iterator::StepMotionIterator;
 use crate::moves::MoveQuality::{EqualCapture, GoodCapture};
 use crate::moves::{
@@ -13,7 +14,6 @@ use crate::moves::{
 use crate::moves_container::MovesContainer;
 use crate::utils::{consume_bits, is_set, pieces_for_color, ChessPosition};
 use std::ops::Range;
-use crate::game::attacks::ChessAttacks;
 
 impl ChessGame {
     /// Fills the provided container with all the available moves at the current position.
@@ -233,11 +233,8 @@ impl ChessGame {
                 // For pawns to move on an attack, the square must be occupied
                 let occupied = is_set!(occupancy, to);
                 if occupied && (is_set!(self.whites, to) != white_playing) {
-                    let mut m = Move::new(
-                        from as ChessPosition,
-                        to as ChessPosition,
-                        white_playing,
-                    );
+                    let mut m =
+                        Move::new(from as ChessPosition, to as ChessPosition, white_playing);
                     m.set_quality(GoodCapture);
                     container.push(m);
                 }
@@ -272,7 +269,11 @@ impl ChessGame {
 
             // Pawn special moves: two squares up or down
             let rank = from / 8;
-            if white_playing && rank == 1 && !is_set!(occupancy, from + 8) && !is_set!(occupancy, from + 16) {
+            if white_playing
+                && rank == 1
+                && !is_set!(occupancy, from + 8)
+                && !is_set!(occupancy, from + 16)
+            {
                 container.push(Move::new(
                     from as ChessPosition,
                     from as ChessPosition + 16,
@@ -280,14 +281,17 @@ impl ChessGame {
                 ));
             }
 
-            if !white_playing && rank == 6 && !is_set!(occupancy, from - 8) && !is_set!(occupancy, from - 16) {
+            if !white_playing
+                && rank == 6
+                && !is_set!(occupancy, from - 8)
+                && !is_set!(occupancy, from - 16)
+            {
                 container.push(Move::new(
                     from as ChessPosition,
                     from as ChessPosition - 16,
                     white_playing,
                 ));
             }
-
         });
 
         // 4. Rooks
@@ -303,16 +307,10 @@ impl ChessGame {
         self.fill_attacked_squares_from_sliding_piece(queens, 0..8, white_playing, container);
 
         // 7. Castle
-        // TODO
-        // 1. check that the king did not move or castled
-        // using the flag for white or black
-        
-        /*
-        
 
         // White castling
-        if white_playing && !is_set!(self.flags, FLAG_WHITE_KING_MOVED)
-        {
+
+        if white_playing && !is_set!(self.flags, FLAG_WHITE_KING_MOVED) {
             // For white, king is at position 4
             let mut attacked: Option<u64> = None; // `None` means we haven't computed it yet
 
@@ -343,12 +341,41 @@ impl ChessGame {
                     }
                 }
             }
-
         }
-         */
 
+        // black castling
 
+        if !white_playing && !is_set!(self.flags, FLAG_BLACK_KING_MOVED) {
+            let mut attacked: Option<u64> = None; // `None` means we haven't computed it yet
 
+            // Check occupancy for black's small castle
+            if !is_set!(occupancy, 61) && !is_set!(occupancy, 62) {
+                // Compute attacked squares only if needed
+                if attacked.is_none() {
+                    attacked = Some(self.get_attacked_squares(true));
+                }
+                if let Some(attacked) = attacked {
+                    if !is_set!(attacked, 60) && !is_set!(attacked, 61) && !is_set!(attacked, 62) {
+                        // Black can small castle
+                        container.push(Move::new(60, 62, white_playing));
+                    }
+                }
+            }
+
+            // Check occupancy for black's large castle
+            if !is_set!(occupancy, 59) && !is_set!(occupancy, 58) && !is_set!(occupancy, 57) {
+                // Compute attacked squares only if needed (if not already done)
+                if attacked.is_none() {
+                    attacked = Some(self.get_attacked_squares(true));
+                }
+                if let Some(attacked) = attacked {
+                    if !is_set!(attacked, 60) && !is_set!(attacked, 59) && !is_set!(attacked, 58) {
+                        // Black can large castle
+                        container.push(Move::new(60, 58, white_playing));
+                    }
+                }
+            }
+        }
     }
 
     fn fill_attacked_squares_from_sliding_piece<T: MovesContainer>(
@@ -390,6 +417,7 @@ impl ChessGame {
 #[cfg(test)]
 mod tests {
     use crate::game::ChessGame;
+    use crate::moves::Move;
     use crate::moves_container::{MovesContainer, SimpleMovesContainer};
 
     #[test]
@@ -442,5 +470,33 @@ mod tests {
         assert_eq!(1, container.count())
     }
 
+    fn assert_container_contains(container: &mut dyn MovesContainer, expected: Move) -> bool {
+        while container.has_next() {
+            let next = container.pop_next_move();
+            if next == expected {
+                return true;
+            }
+        }
+        false
+    }
+
+    #[test]
+    fn test_small_castle_no_enemies() {
+        let game = ChessGame::from_fen("4k2r/4pppp/8/8/8/8/4PPPP/4K2R w - - 0 1");
+        let mut container = SimpleMovesContainer::new();
+        // White can small castle
+        game.update_move_container(&mut container, true);
+        assert!(assert_container_contains(
+            &mut container,
+            Move::new(4, 6, true)
+        ));
+
+        // Black can small castle
+        game.update_move_container(&mut container, false);
+        assert!(assert_container_contains(
+            &mut container,
+            Move::new(60, 62, false)
+        ))
+    }
 
 }
