@@ -2,8 +2,7 @@ use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
 use crate::game::attacks::ChessAttacks;
 use crate::game::precomputation::{
-    KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, PAWN_MOTION_MASKS,
-    SLIDING_ATTACK_MASKS,
+    KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
 };
 use crate::game::{ChessGame, FLAG_BLACK_KING_MOVED, FLAG_WHITE_KING_MOVED};
 use crate::motion_iterator::StepMotionIterator;
@@ -243,29 +242,25 @@ impl ChessGame {
 
         // 3.b Pawns motions
 
-        // TODO Assert whether for pawns, using a mask makes sense at all.
-        //      Maybe it is equally fast, or even faster, to just compute manually here.
-        //      This is because the second for-loop always contain 1 element, but the compiler
-        //      does not know about this.
-        let (white_pawn_motion, black_pawn_motions) = &*PAWN_MOTION_MASKS;
-        let motion_mask = if white_playing {
-            white_pawn_motion
-        } else {
-            black_pawn_motions
-        };
-
         let pieces = pieces_for_color!(self.whites, self.pawns, white_playing);
         consume_bits!(pieces, from, {
-            let possible_moves = motion_mask[from];
-            consume_bits!(possible_moves, to, {
-                if !is_set!(occupancy, to) {
+            if white_playing {
+                if !is_set!(occupancy, from + 8) {
                     container.push(Move::new(
                         from as ChessPosition,
-                        to as ChessPosition,
+                        from as ChessPosition + 8,
                         white_playing,
                     ));
                 }
-            });
+            } else {
+                if !is_set!(occupancy, from - 8) {
+                    container.push(Move::new(
+                        from as ChessPosition,
+                        from as ChessPosition - 8,
+                        white_playing,
+                    ));
+                }
+            }
 
             // Pawn special moves: two squares up or down
             let rank = from / 8;
@@ -295,16 +290,37 @@ impl ChessGame {
         });
 
         // 4. Rooks
+
         let rook_left = pieces_for_color!(self.whites, self.rooks, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(rook_left, occupancy, 0..4, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(
+            rook_left,
+            occupancy,
+            0..4,
+            white_playing,
+            container,
+        );
 
         // 5. Bishops
+
         let bishops = pieces_for_color!(self.whites, self.bishops, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(bishops, occupancy, 4..8, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(
+            bishops,
+            occupancy,
+            4..8,
+            white_playing,
+            container,
+        );
 
         // 6. Queens
+
         let queens = pieces_for_color!(self.whites, self.queens, white_playing);
-        self.fill_attacked_squares_from_sliding_piece(queens, occupancy, 0..8, white_playing, container);
+        self.fill_attacked_squares_from_sliding_piece(
+            queens,
+            occupancy,
+            0..8,
+            white_playing,
+            container,
+        );
 
         // 7. Castle
 
@@ -488,5 +504,4 @@ mod tests {
             Move::new(60, 62, false)
         ))
     }
-
 }

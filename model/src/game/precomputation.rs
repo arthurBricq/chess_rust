@@ -43,29 +43,6 @@ fn pawn_attacks() -> ([u64; 64], [u64; 64]) {
     (white_attacks, black_attacks)
 }
 
-/// Precomputes the pawns motion
-/// This does not include two square jumps
-fn pawn_motion() -> ([u64; 64], [u64; 64]) {
-    let mut white_motions = [0u64; 64];
-    let mut black_motions = [0u64; 64];
-
-    for position in 0..64 {
-        let rank = position / 8;
-
-        // White motions
-        if rank < 7 {
-            white_motions[position] |= 1 << (position + 8); // Single square up
-        }
-
-        // Black motions
-        if rank > 0 {
-            black_motions[position] |= 1 << (position - 8); // Single square down
-        }
-    }
-
-    (white_motions, black_motions)
-}
-
 fn knight_attacks() -> [u64; 64] {
     let mut attacks = [0u64; 64];
 
@@ -231,4 +208,3 @@ pub static KING_ATTACK_MASKS: Lazy<[u64; 64]> = Lazy::new(king_attacks);
 
 pub static SLIDING_ATTACK_MASKS: Lazy<[[Vec<ChessPosition>; 64]; 8]> = Lazy::new(sliding_attacks);
 
-pub static PAWN_MOTION_MASKS: Lazy<([u64; 64], [u64; 64])> = Lazy::new(pawn_motion);
