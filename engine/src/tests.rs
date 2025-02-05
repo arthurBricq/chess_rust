@@ -33,8 +33,10 @@ fn solve_puzzle(
         // Apply the puzzle continuation
         if let Some(forced_answer) = puzzle_continuation {
             game.apply_move_unsafe(&expected_best_move);
+            println!("found: {expected_best_move}");
             game.display();
             game.apply_move_unsafe(&forced_answer);
+            println!("answered by: {forced_answer}");
             game.display();
         }
     }
@@ -44,7 +46,6 @@ fn solve_puzzle(
 // Themes: mates in two, double check
 // Rating: 2021
 #[test]
-#[ignore]
 fn puzzle_1() {
     let fen = "6r1/p1q3bk/4rnR1/2p2Q1P/1p1p4/3P2P1/2PK1B2/8 w - - 0 46";
 
@@ -104,9 +105,10 @@ fn practice_back_rank_mate_2() {
 /// This one is interesting: `AlphaBetaPrunning` works better than `IterativeDeepening`
 ///
 /// What does this mean ? Is it even possible ?
-/// It means that a wrong cut is introduced...
+/// It means that a wrong cut is introduced... I think that this should be strictly impossible, 
+/// let's try to understand it...
 ///
-/// TODO: understand what is happening with this test.
+/// TODO: understand what is happening with this test. 
 #[test]
 // #[ignore]
 fn practice_back_rank_mate_3() {
@@ -130,3 +132,29 @@ fn practice_back_rank_mate_3() {
         ],
     )
 }
+
+#[test]
+fn practice_hook_2_mate_in_3() {
+    solve_puzzle(
+        AlphaBetaEngine::new(7, 0),
+        "5r1b/2R1R3/P4r2/2p2Nkp/2b4N/6P1/4PP2/6K1 w - - 0 1",
+        true,
+        &[
+            PuzzleAssert {
+                expected_best_move: Move::from_str("e7", "g7", true),
+                puzzle_continuation: Move::from_str("h8", "g7", false).into(),
+            },
+            PuzzleAssert {
+                expected_best_move: Move::from_str("c7", "g7", true),
+                puzzle_continuation: Move::from_str("f6", "g6", false).into(),
+            },
+            PuzzleAssert {
+                expected_best_move: Move::from_str("g7", "g6", true),
+                puzzle_continuation: None
+            },
+        ],
+    )
+}
+
+
+
