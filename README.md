@@ -11,22 +11,15 @@ in [C++](https://github.com/arthurBricq/chess_cpp)*)
 It features:
 
 - Very compact representation of a chess-game (*1 game is represented with 8 bytes*)
-- alpha-beta pruning
-- move ordering to favor captures
-- iterative deepening to improve move ordering
+- Alpha-beta pruning + iterative deepening engine
+- Move ordering to favor captures
+- Compatible with the `lichess-bot`, so that I can play as a bot online, [read more here](./lichess_bot/README.md)
 
-## Quick Start
-
-The only required dependency is cargo.
+You can also play with a UI locally,
 
 ```bash
-git clone <...>
-cd chess_rust
 cargo run --bin chess --release
 ```
-
-The flag `--release` tells rust to optimize the code (this is absolutely required), and `--features fltk` specify that
-you want to compile the UI and to run with the UI.
 
 ## More words about the Engine
 
@@ -76,6 +69,12 @@ The command `cargo run` without any features will run the benchmarking test.
 
 ## [Dev] TODO List for myself
 
+List of problems
+
+- Some tests that I have written passes with `AlphaBetaEngine` but fails with `IterativeDeepening`. This is really
+  weird.
+- Lots of `TODO` in the code, often hinting some possible optimizations
+
 List of missing features
 
 - Chess Rules
@@ -86,34 +85,3 @@ List of missing features
     - Parallel alpha-beta pruning
     - Engine Server to keep expanding while the other player is thinking
 
-- Lichess API
-
-What I am not happy about
-
-- I don't really like the "redundancy" between the `attacks` module and the `get_next_moves`: when computing the next
-  moves, we absolutely don't use the next pre-computed masks. I can probably optimize some things.
-- I could come up with a better benchmarking system.
-- All the `TODO` in the code that I have left.
-
-### Castling
-
-The very big challenge to implement castling is that you need to know which squares are attacked in a given position.
-There are no easy ways to compute that optimally.
-
-It is very easy to understand that the problem of implementing castling rules is equally hard as the problem to compute
-attacked squares by a player. Most specifically, the player that is not currently playing.
-
-I have implemented this computation using bitmasks that are precomputed before starting a game, and stored in memory.
-The idea is quite simple, and must be differentiated between two kinds of pieces.
-
-- For pawns, kights and kings: given every 64 possible positions, you always know the attacked positions. These can be
-  precomputed and stored at all time.
-- For bishops, rooks and queens: given every 64 possible positions, you always know the "rays" attacked. You can always
-  go through the raw in a defined order until (1) the ray is finished or (2) you find a piece.
-
-All of this logic is defined in the `attacks` module.
-
-**Is it possible to "factorize" the computation of the attacked squares and the computation of the next moves ?**
-
-No, it's not. Because when you compute the attacked squares, the player has not yet played. The fact that the player
-applies 1 more move change everything.

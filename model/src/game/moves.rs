@@ -177,7 +177,8 @@ impl ChessGame {
                 let occupied = is_set!(occupancy, to);
                 if !occupied {
                     container.push(Move::new(
-                        // TODO Can I avoid casting ? Does it have any impact on performance ?
+                        // Note: all these casting don't have a performance impact.
+                        // I have tested this manually and it's fine.
                         from as ChessPosition,
                         to as ChessPosition,
                         white_playing,
