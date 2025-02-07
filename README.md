@@ -18,7 +18,7 @@ It features:
 You can also play with a UI locally,
 
 ```bash
-cargo run --bin chess --release
+run --package ui --bin chess_ui --release
 ```
 
 ## More words about the Engine
@@ -71,6 +71,8 @@ The command `cargo run` without any features will run the benchmarking test.
 
 ## Ideas
 
+- Keep track of the occupancy
+- Keep track of the per-color occupancy ?
 - Compute moves that deliver checks and use this in the move ordering.
 - Maybe I could do a better transposition table that is able to "shortcut" branches to go deeper. At the moment, my transposition table only works at the maximum depth. 
 

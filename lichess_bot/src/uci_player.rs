@@ -16,7 +16,7 @@ impl UciPlayer {
     pub fn new() -> Self {
         Self {
             game: Default::default(),
-            solver: IterativeDeepeningEngine::new(4, 4),
+            solver: IterativeDeepeningEngine::new(7, 0),
             white_to_move: true,
         }
     }
