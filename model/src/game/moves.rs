@@ -18,6 +18,8 @@ impl ChessGame {
     /// Fills the provided container with all the available moves at the current position.
     ///
     /// This function also resets the move container before running anything.
+    /// 
+    /// TODO: remove this ! It's twice slower now :)
     pub fn update_move_container_old<T: MovesContainer>(&self, container: &mut T, is_white: bool) {
         container.reset();
 

@@ -69,17 +69,10 @@ The command `cargo run` without any features will run the benchmarking test.
 
 ## [Dev] TODO List for myself
 
-### Inconsistency of the engine
+## Ideas
 
-I have several problems with my implementation of alpha beta pruning that were revealed by my latest test setup. The
-test `practice_back_rank_mate_3` fails depending on some parameters of the engine.
-
-The biggest issue is that if I add **move ordering** in the `AlphaBetaPruning`, the puzzle fails. This puzzle consists
-of a queen sacrifice. I noticed that if I lower the queen value to 1, the puzzle is solved... Does this highlight a
-problem with my alpha-beta pruning ?
-
-It consistently fails with `IterativeDeepening`. This is really weird, but could be explained by a bug in the
-implementation.
+- Compute moves that deliver checks and use this in the move ordering.
+- Maybe I could do a better transposition table that is able to "shortcut" branches to go deeper. At the moment, my transposition table only works at the maximum depth. 
 
 ### Missing features
 

@@ -2,6 +2,7 @@ use model::game::ChessGame;
 use crate::engine::{Engine, SearchResult};
 use model::moves::Move;
 use crate::alpha_beta::AlphaBetaEngine;
+use crate::iterative_deepening::IterativeDeepeningEngine;
 
 /// Struct used when asserting a puzzle.
 /// Puzzles often consists of a series of forced moved with 1 forced answer.
@@ -114,7 +115,7 @@ fn practice_back_rank_mate_2() {
 // #[ignore]
 fn practice_back_rank_mate_3() {
     solve_puzzle(
-        AlphaBetaEngine::new(7, 0),
+        IterativeDeepeningEngine::new(7, 0),
         "6k1/3qb1pp/4p3/ppp1P3/8/2PP1Q2/PP4PP/5RK1 w - - 0 1",
         true,
         &[
