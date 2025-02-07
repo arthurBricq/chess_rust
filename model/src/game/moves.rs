@@ -1,5 +1,5 @@
-use crate::chess_type::Type;
 use crate::chess_type::Type::{Bishop, King, Knight, Pawn, Queen, Rook};
+use crate::chess_type::Type;
 use crate::game::attacks::ChessAttacks;
 use crate::game::precomputation::{
     KING_ATTACK_MASKS, KNIGHT_ATTACK_MASKS, PAWN_ATTACK_MASKS, SLIDING_ATTACK_MASKS,
@@ -187,7 +187,9 @@ impl ChessGame {
                     // TODO assert if it is worth checking which piece is being captures to have a better ordering
                     let mut m =
                         Move::new(from as ChessPosition, to as ChessPosition, white_playing);
-                    m.set_quality(EqualCapture);
+                    if let Some(captured) = self.type_at_index(m.to) {
+                        m.set_quality_from_scores(Knight, captured);
+                    }
                     container.push(m);
                 }
             })
@@ -209,6 +211,7 @@ impl ChessGame {
                 } else if is_set!(self.whites, to) != white_playing {
                     let mut m =
                         Move::new(from as ChessPosition, to as ChessPosition, white_playing);
+                    // A king can't possibly do a good capture...
                     m.set_quality(EqualCapture);
                     container.push(m);
                 }
@@ -235,6 +238,7 @@ impl ChessGame {
                 if occupied && (is_set!(self.whites, to) != white_playing) {
                     let mut m =
                         Move::new(from as ChessPosition, to as ChessPosition, white_playing);
+                    // A pawn can only do a good capture
                     m.set_quality(GoodCapture);
                     container.push(m);
                 }
@@ -295,6 +299,7 @@ impl ChessGame {
         let rook_left = pieces_for_color!(self.whites, self.rooks, white_playing);
         self.fill_attacked_squares_from_sliding_piece(
             rook_left,
+            Rook,
             occupancy,
             0..4,
             white_playing,
@@ -306,6 +311,7 @@ impl ChessGame {
         let bishops = pieces_for_color!(self.whites, self.bishops, white_playing);
         self.fill_attacked_squares_from_sliding_piece(
             bishops,
+            Bishop,
             occupancy,
             4..8,
             white_playing,
@@ -317,6 +323,8 @@ impl ChessGame {
         let queens = pieces_for_color!(self.whites, self.queens, white_playing);
         self.fill_attacked_squares_from_sliding_piece(
             queens,
+            // The score of the queen is the problem...
+            Queen,
             occupancy,
             0..8,
             white_playing,
@@ -391,6 +399,7 @@ impl ChessGame {
     fn fill_attacked_squares_from_sliding_piece<T: MovesContainer>(
         &self,
         pieces: u64,
+        t: Type,
         occupancy: u64,
         direction_indices: Range<usize>,
         white_playing: bool,
@@ -408,7 +417,9 @@ impl ChessGame {
                         container.push(Move::new(from as ChessPosition, *to, white_playing));
                     } else if is_set!(self.whites, to) != white_playing {
                         let mut m = Move::new(from as ChessPosition, *to, white_playing);
-                        m.set_quality(EqualCapture);
+                        if let Some(captured) = self.type_at_index(m.to) {
+                            m.set_quality_from_scores(t, captured);
+                        }
                         container.push(m);
                     }
 
@@ -425,6 +436,7 @@ impl ChessGame {
 mod tests {
     use crate::game::ChessGame;
     use crate::moves::Move;
+    use crate::moves::MoveQuality::{EqualCapture, GoodCapture, LowCapture, Motion};
     use crate::moves_container::{MovesContainer, SimpleMovesContainer};
 
     #[test]
@@ -491,6 +503,7 @@ mod tests {
     fn test_small_castle_no_enemies() {
         let game = ChessGame::from_fen("4k2r/4pppp/8/8/8/8/4PPPP/4K2R w - - 0 1");
         let mut container = SimpleMovesContainer::new();
+
         // White can small castle
         game.update_move_container(&mut container, true);
         assert!(assert_container_contains(
@@ -504,5 +517,76 @@ mod tests {
             &mut container,
             Move::new(60, 62, false)
         ))
+    }
+
+    /// Asserts that every move on the move container matches 1 and exactly one matcher.
+    /// The order of the matcher does not matter.
+    fn asserts_moves_matching(
+        container: &mut dyn MovesContainer,
+        mut matchers: Vec<fn(&Move) -> bool>,
+    ) {
+        while container.has_next() {
+            let next = container.pop_next_move();
+            let matched_predicate = matchers.iter().position(|f| f(&next));
+            if let Some(index) = matched_predicate {
+                matchers.remove(index);
+            } else {
+                panic!("Unexpected move for which no predicate worked: {:?}", next);
+            }
+        }
+    }
+
+    #[test]
+    fn test_move_evaluation_1() {
+        let mut game = ChessGame::from_fen("8/8/8/8/8/1n6/2p5/N7 w - - 0 1");
+        game.block_castling();
+        let mut container = SimpleMovesContainer::new();
+
+        // White has two moves: 1 equal capture and one lower capture
+        game.update_move_container(&mut container, true);
+
+        asserts_moves_matching(
+            &mut container,
+            vec![|m: &Move| m.quality == EqualCapture, |m: &Move| {
+                m.quality == LowCapture
+            }],
+        )
+    }
+
+    #[test]
+    fn test_move_evaluation_2() {
+        let mut game = ChessGame::from_fen("8/8/8/8/8/1q6/8/N7 w - - 0 1");
+        game.block_castling();
+        let mut container = SimpleMovesContainer::new();
+
+        // White has two moves: 1 equal capture and one lower capture
+        game.update_move_container(&mut container, true);
+
+        asserts_moves_matching(
+            &mut container,
+            vec![|m: &Move| m.quality == Motion, |m: &Move| {
+                m.quality == GoodCapture
+            }],
+        )
+    }
+
+    #[test]
+    fn test_move_evaluation_3() {
+        let mut game = ChessGame::from_fen("8/8/3p1b2/4B3/3q1P2/8/8/8 w - - 0 1");
+        game.block_castling();
+        let mut container = SimpleMovesContainer::new();
+
+        // White has two moves: 1 equal capture and one lower capture
+        game.update_move_container(&mut container, true);
+
+        asserts_moves_matching(
+            &mut container,
+            vec![
+                |m: &Move| m.quality == LowCapture,
+                |m: &Move| m.quality == EqualCapture,
+                |m: &Move| m.quality == GoodCapture,
+                |m: &Move| m.quality == Motion,
+            ],
+        )
     }
 }
