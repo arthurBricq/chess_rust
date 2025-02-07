@@ -11,7 +11,7 @@ pub enum Type {
 pub type ScoreType = i64;
 
 impl Type {
-    pub fn score(&self) -> ScoreType {
+    pub const fn score(&self) -> ScoreType {
         match self {
             Type::Pawn => 1,
             Type::Bishop => 3,

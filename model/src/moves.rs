@@ -1,6 +1,6 @@
-use crate::chess_type::ScoreType;
+use crate::chess_type::Type;
 use crate::moves::MoveQuality::{
-    EqualCapture, GoodCapture, KillerMove, LowCapture, Motion, Principal,
+    Check, EqualCapture, GoodCapture, KillerMove, LowCapture, Motion, Principal,
 };
 use crate::utils::{index_to_chesspos, ChessPosition, IntoChessPosition};
 use std::cmp::Ordering;
@@ -21,6 +21,7 @@ pub const KING_SPECIAL_MOVES: [i8; 2] = [2, -2];
 pub enum MoveQuality {
     Principal,
     KillerMove,
+    Check,
     GoodCapture,
     EqualCapture,
     LowCapture,
@@ -107,13 +108,28 @@ impl Move {
         self.quality = q;
     }
 
-    pub fn set_quality_from_scores(&mut self, piece: ScoreType, captured: ScoreType) {
-        if piece < captured {
-            self.set_quality(GoodCapture);
-        } else if piece == captured {
-            self.set_quality(EqualCapture)
-        } else {
-            self.set_quality(LowCapture)
+    pub fn set_quality_from_scores(&mut self, capturing: Type, captured: Type) {
+        use crate::chess_type::Type::*;
+
+        if capturing == captured {
+            self.quality = EqualCapture;
+            return;
+        }
+
+        match (capturing, captured) {
+            (_, King) => self.quality = Check,
+            (_, Queen) | (Pawn, _) => self.quality = GoodCapture,
+            _ => {
+                let capturing = capturing.score();
+                let captured = captured.score();
+                if capturing < captured {
+                    self.set_quality(GoodCapture);
+                } else if capturing == captured {
+                    self.set_quality(EqualCapture)
+                } else {
+                    self.set_quality(LowCapture)
+                }
+            }
         }
     }
 
@@ -171,8 +187,9 @@ impl Move {
 impl From<&MoveQuality> for u8 {
     fn from(value: &MoveQuality) -> Self {
         match value {
-            Principal => 5,
-            KillerMove => 4,
+            Principal => 6,
+            KillerMove => 5,
+            Check => 4,
             GoodCapture => 3,
             EqualCapture => 2,
             LowCapture => 1,

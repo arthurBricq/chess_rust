@@ -56,7 +56,7 @@ impl StepMotionIterator {
             // Keep track that this direction is finished
             self.found_capture = true;
             let piece = game.type_at_index(m.from).unwrap();
-            m.set_quality_from_scores(piece.score(), captured.score());
+            m.set_quality_from_scores(piece, captured);
         }
 
         Some(m)

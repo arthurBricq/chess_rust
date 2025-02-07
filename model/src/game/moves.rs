@@ -137,7 +137,7 @@ impl ChessGame {
                 if self.is_move_valid_for_type(&m, t) {
                     if let Some(captured) = self.type_at_index(m.to) {
                         let piece = self.type_at_index(m.from).unwrap();
-                        m.set_quality_from_scores(piece.score(), captured.score());
+                        m.set_quality_from_scores(piece, captured);
                     }
                     to_fill.push(m);
                 }

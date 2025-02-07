@@ -69,13 +69,19 @@ The command `cargo run` without any features will run the benchmarking test.
 
 ## [Dev] TODO List for myself
 
-List of problems
+### Inconsistency of the engine
 
-- Some tests that I have written passes with `AlphaBetaEngine` but fails with `IterativeDeepening`. This is really
-  weird.
-- Lots of `TODO` in the code, often hinting some possible optimizations
+I have several problems with my implementation of alpha beta pruning that were revealed by my latest test setup. The
+test `practice_back_rank_mate_3` fails depending on some parameters of the engine.
 
-List of missing features
+The biggest issue is that if I add **move ordering** in the `AlphaBetaPruning`, the puzzle fails. This puzzle consists
+of a queen sacrifice. I noticed that if I lower the queen value to 1, the puzzle is solved... Does this highlight a
+problem with my alpha-beta pruning ?
+
+It consistently fails with `IterativeDeepening`. This is really weird, but could be explained by a bug in the
+implementation.
+
+### Missing features
 
 - Chess Rules
     - [ ] En Passant, using a stateful representation

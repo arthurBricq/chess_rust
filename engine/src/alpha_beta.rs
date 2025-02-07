@@ -10,7 +10,7 @@ pub struct AlphaBetaEngine {
     depth: usize,
     extra_depth: usize,
     transposition_table: HashMap<ChessGame, ScoreType>,
-    killer_moves: HashMap<usize, Vec<Move>>,
+    // killer_moves: HashMap<usize, Vec<Move>>,
 }
 
 impl Engine for AlphaBetaEngine {
@@ -35,7 +35,7 @@ impl AlphaBetaEngine {
             depth,
             extra_depth,
             transposition_table: Default::default(),
-            killer_moves: Default::default(),
+            // killer_moves: Default::default(),
         }
     }
 
@@ -47,10 +47,10 @@ impl AlphaBetaEngine {
     }
 
     fn reset_killer_moves(&mut self) {
-        self.killer_moves.clear();
-        for i in 0..self.depth + self.extra_depth {
-            self.killer_moves.insert(i, vec![]);
-        }
+        // self.killer_moves.clear();
+        // for i in 0..self.depth + self.extra_depth {
+        //     self.killer_moves.insert(i, vec![]);
+        // }
     }
 
     /// Returns the best move found using alpha-beta pruning with
@@ -97,7 +97,7 @@ impl AlphaBetaEngine {
             };
         }
 
-        // get the list of available moves
+        // Create the container of moves, in charge of move ordering
         let mut container = SmartMoveContainer::new();
         game.update_move_container(&mut container, white_to_play);
 
@@ -108,21 +108,23 @@ impl AlphaBetaEngine {
         }
 
         // Adds the killer move potentially found by other branches
-        if let Some(moves) = self.killer_moves.get(&depth) {
-            for i in 0..min(2, moves.len()) {
-                container.add_killer_move(moves[i]);
-            }
-        }
+        // if let Some(moves) = self.killer_moves.get(&depth) {
+        //     for i in 0..min(2, moves.len()) {
+        //         container.add_killer_move(moves[i]);
+        //     }
+        // }
 
         let mut score = if white_to_play {
             ScoreType::MIN
         } else {
             ScoreType::MAX
         };
+        
         // TODO is there a way to not keep track of the best move at runtime ?
         let mut best_move = None;
 
         while container.has_next() {
+            // Use the move container to get the next best move, as per move ordering logic
             let mut new_game = game.clone();
             let m = container.pop_next_move();
             new_game.apply_move_unsafe(&m);
@@ -150,10 +152,10 @@ impl AlphaBetaEngine {
                 alpha = max(alpha, score);
                 if score >= beta {
                     // cutoff: remember the "killer move" for future branches
-                    self.killer_moves
-                        .get_mut(&depth)
-                        .expect("The datastructure is always initialized to support this usage")
-                        .push(m);
+                    // self.killer_moves
+                    //     .get_mut(&depth)
+                    //     .expect("The datastructure is always initialized to support this usage")
+                    //     .push(m);
                     break;
                 }
             } else {
