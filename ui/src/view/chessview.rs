@@ -32,7 +32,7 @@ impl ChessViewModel {
     pub fn new() -> Self {
         Self {
             game: ChessGame::standard_game(),
-            solver: Box::new(IterativeDeepeningEngine::new(6, 2)),
+            solver: Box::new(IterativeDeepeningEngine::new(7, 0)),
             selected_pos: None,
             attacked_positions: vec![],
             engine_move: None,
