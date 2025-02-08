@@ -93,10 +93,6 @@ impl ChessGame {
 
     /// Returns true if there is a piece at this position
     pub(crate) fn has_piece_at(&self, at: ChessPosition) -> bool {
-        // TODO maybe adding 1 integer in the struct that just keeps the position of the pieces would be faster than this...
-        //      It's a small change to test.
-        // Note: since the occupancy grid is computed in many places in the `attacks.rs` module, I really think that
-        // this would make sense...
         is_set!(
             self.pawns | self.bishops | self.knights | self.rooks | self.queens | self.kings,
             at

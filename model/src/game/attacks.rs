@@ -75,7 +75,6 @@ impl ChessGame {
         direction_indices: Range<usize>,
     ) -> u64 {
         let mut attacks = 0;
-        // TODO factorize this 
         let occupancy =
             self.rooks | self.kings | self.queens | self.pawns | self.bishops | self.knights;
 
