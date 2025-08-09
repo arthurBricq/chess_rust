@@ -14,6 +14,7 @@ impl ChessGame {
             queens: 0,
             kings: 0,
             flags: 0,
+            en_passant_target: 0,
         }
     }
 
@@ -80,6 +81,7 @@ impl ChessGame {
             queens,
             kings,
             flags: 0,
+            en_passant_target: 0,
         }
     }
 
@@ -181,6 +183,7 @@ impl ChessGame {
             queens,
             kings,
             flags: 0, // Flags for castling, active color, etc., can be computed if necessary
+            en_passant_target: 0,
         }
     }
 }

@@ -235,12 +235,18 @@ impl ChessGame {
         consume_bits!(pieces, from, {
             let attacked = attack_masks[from];
             consume_bits!(attacked, to, {
-                // For pawns to move on an attack, the square must be occupied
+                // For pawns to move on an attack, the square must be occupied, or be an en passant target
                 let occupied = is_set!(occupancy, to);
                 if occupied && (is_set!(self.whites, to) != white_playing) {
                     let mut m =
                         Move::new(from as ChessPosition, to as ChessPosition, white_playing);
-                    // A pawn can only do a good capture
+                    // A pawn capture is considered good by default
+                    m.set_quality(GoodCapture);
+                    container.push(m);
+                } else if !occupied && is_set!(self.en_passant_target, to) {
+                    // En passant capture: diagonal to empty square matching ep target
+                    let mut m =
+                        Move::new(from as ChessPosition, to as ChessPosition, white_playing);
                     m.set_quality(GoodCapture);
                     container.push(m);
                 }

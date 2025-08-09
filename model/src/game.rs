@@ -23,7 +23,7 @@ use crate::utils::{clear_at, is_set, pos_to_index, set_at, ChessPosition, IntoCh
 ///     1: has black king moved
 ///     2: has white king castled
 ///     3: has black king castled
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct ChessGame {
     pub(crate) whites: u64,
     pub(crate) pawns: u64,
@@ -33,6 +33,8 @@ pub struct ChessGame {
     pub(crate) queens: u64,
     pub(crate) kings: u64,
     pub(crate) flags: u64,
+    /// en passant target square: has exactly one bit set when an en passant capture is available; otherwise 0
+    pub(crate) en_passant_target: u64,
 }
 
 impl Default for ChessGame {
@@ -68,6 +70,7 @@ impl ChessGame {
             queens,
             kings,
             flags,
+            en_passant_target: 0,
         }
     }
 
@@ -171,11 +174,23 @@ impl ChessGame {
             return false;
         }
 
-        // If it is a capture, then it has to be diagonal
+        let same_file = m.from % 8 == m.to % 8;
+
+        // If it is a capture on an occupied square, it has to be diagonal
         if self.has_piece_at(m.to) {
-            return m.from % 8 != m.to % 8;
-        } else if m.from % 8 != m.to % 8 {
-            // diagonal moves need to be captured only moves
+            return !same_file;
+        } else if !same_file {
+            // destination empty but diagonal move: could be en passant
+            if is_set!(self.en_passant_target, m.to) {
+                // Ensure the move is a single-step diagonal in the correct direction
+                let motion = m.to - m.from;
+                if m.is_white {
+                    return motion == 7 || motion == 9;
+                } else {
+                    return motion == -7 || motion == -9;
+                }
+            }
+            // diagonal moves need to be captured-only moves (including en passant handled above)
             return false;
         }
 
@@ -321,13 +336,46 @@ impl ChessGame {
     /// Apply the move without any kind of safety check
     pub fn apply_move_unsafe(&mut self, m: &Move) {
         if let Some(t) = self.type_at_index(m.from) {
-            // Eventually apply the capture
+            // Keep previous en passant target to detect en passant captures
+            let prev_en_passant = self.en_passant_target;
+            // Clear current en passant by default; will be set again only if a two-square pawn move occurs
+            self.en_passant_target = 0;
+
+            // Eventually apply the capture (standard captures on the destination square)
             self.apply_capture(&m);
 
             // Apply the move
             match t {
                 Pawn => {
+                    // Detect en passant capture: diagonal move to empty square matching previous ep target
+                    let motion = m.to - m.from;
+                    let is_diagonal = m.from % 8 != m.to % 8;
+                    if is_diagonal && !self.has_piece_at(m.to) && is_set!(prev_en_passant, m.to) {
+                        // remove the captured pawn behind the target square
+                        let captured_pos = if m.is_white { m.to - 8 } else { m.to + 8 };
+                        clear_at!(self.pawns, captured_pos);
+                        // also clear color bit for that pawn
+                        if m.is_white {
+                            // captured was black: no whites bit to clear
+                        } else {
+                            // captured was white: clear white bit
+                            clear_at!(self.whites, captured_pos);
+                        }
+                    }
+
+                    // Move the pawn
                     clear_at!(self.pawns, m.from);
+
+                    // If the pawn moved two squares, set en passant target to the intermediate square
+                    if motion == 16 || motion == -16 {
+                        let ep_square = if m.is_white { m.from + 8 } else { m.from - 8 };
+                        self.en_passant_target = 0;
+                        set_at!(self.en_passant_target, ep_square);
+                    } else {
+                        // otherwise, clear en passant target
+                        self.en_passant_target = 0;
+                    }
+
                     // handle the promotion directly here
                     if m.to / 8 == 7 || m.to / 8 == 0 {
                         set_at!(self.queens, m.to);
@@ -502,6 +550,7 @@ mod tests {
     use crate::chess_type::Type::Pawn;
     use crate::game::ChessGame;
     use crate::moves::Move;
+    use crate::utils::pos_to_index;
 
     #[test]
     fn test_wrong_knight_move() {
@@ -528,6 +577,7 @@ mod tests {
             queens: 536870920,
             kings: 1152921504606846992,
             flags: 0,
+            en_passant_target: 0,
         };
 
         // this is castle
@@ -554,6 +604,7 @@ mod tests {
             queens: 576460752303423496,
             kings: 1152921504606846992,
             flags: 0,
+            en_passant_target: 0,
         };
 
         // THEN white must not be able to castle
@@ -630,5 +681,68 @@ mod tests {
             println!("{first_piece}");
             pieces &= pieces - 1;
         }
+    }
+
+    #[test]
+    fn test_en_passant_white_captures() {
+        // Setup: white pawn on e5, black pawn on d7
+        let mut game = ChessGame::empty();
+        game.set_piece(Pawn, true, "e5");
+        game.set_piece(Pawn, false, "d7");
+
+        // Black plays d7 -> d5 (double pawn push), enabling en passant on d6
+        let black_double = Move::from_str("d7", "d5", false);
+        game.apply_move_unsafe(&black_double);
+
+        // White can capture en passant: e5 -> d6
+        let mut ep_capture = Move::from_str("e5", "d6", true);
+        assert!(game.is_move_valid(&mut ep_capture));
+        game.apply_move_unsafe(&ep_capture);
+
+        // After en passant, the captured pawn on d5 must be removed
+        // d5 is index 35
+        assert!(!game.has_piece_at(35), "Captured pawn on d5 should be removed");
+        // White pawn should now be on d6 (index 43)
+        assert!(game.is_white_at_xy(3, 5), "White pawn should be on d6 after en passant");
+    }
+
+    #[test]
+    fn test_en_passant_expires_after_other_move() {
+        // Setup: white pawn on e5, black pawn on d7, plus a white king to make a quiet move
+        let mut game = ChessGame::empty();
+        game.set_piece(Pawn, true, "e5");
+        game.set_piece(Pawn, false, "d7");
+        game.set_piece(crate::chess_type::Type::King, true, "a1");
+
+        // Black double push: d7 -> d5 enables en passant on d6
+        game.apply_move_unsafe(&Move::from_str("d7", "d5", false));
+
+        // White plays an unrelated move: Ka1 -> Ka2
+        game.apply_move_unsafe(&Move::from_str("a1", "a2", true));
+
+        // Now en passant should no longer be available: e5 -> d6 must be invalid
+        let mut ep_too_late = Move::from_str("e5", "d6", true);
+        assert!(!game.is_move_valid(&mut ep_too_late));
+    }
+
+    #[test]
+    fn test_en_passant_black_captures() {
+        // Setup: black pawn on e4, white pawn on d2
+        let mut game = ChessGame::empty();
+        game.set_piece(Pawn, false, "e4");
+        game.set_piece(Pawn, true, "d2");
+
+        // White plays d2 -> d4 (double pawn push), enabling en passant on d3
+        game.apply_move_unsafe(&Move::from_str("d2", "d4", true));
+
+        // Black can capture en passant: e4 -> d3
+        let mut ep_capture = Move::from_str("e4", "d3", false);
+        assert!(game.is_move_valid(&mut ep_capture));
+        game.apply_move_unsafe(&ep_capture);
+
+        // After en passant, the captured pawn on d4 must be removed (index 27)
+        assert!(!game.has_piece_at(27), "Captured pawn on d4 should be removed");
+        // Black pawn should now be on d3 (x=3, y=2)
+        assert!(game.is_black_at(pos_to_index(3, 2)), "Black pawn should be on d3 after en passant");
     }
 }

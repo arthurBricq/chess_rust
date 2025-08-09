@@ -79,7 +79,6 @@ The command `cargo run` without any features will run the benchmarking test.
 ### Missing features
 
 - Chess Rules
-    - [ ] En Passant, using a stateful representation
     - [ ] Non-queen promotions
 
 - Engine
